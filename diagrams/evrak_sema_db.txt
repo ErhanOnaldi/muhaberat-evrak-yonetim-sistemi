@@ -1,0 +1,359 @@
+# Evrak Yönetim Sistemi - Database Schema
+
+## Temel Tablolar
+
+### 1. Users (Kullanıcılar)
+```sql
+CREATE TABLE Users (
+    user_id SERIAL PRIMARY KEY,
+    username VARCHAR(50) UNIQUE NOT NULL,
+    email VARCHAR(100) UNIQUE NOT NULL,
+    password_hash VARCHAR(255) NOT NULL,
+    first_name VARCHAR(50) NOT NULL,
+    last_name VARCHAR(50) NOT NULL,
+    department_id INTEGER REFERENCES Departments(department_id),
+    role_id INTEGER REFERENCES Roles(role_id),
+    is_active BOOLEAN DEFAULT true,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+```
+
+### 2. Departments (Departmanlar)
+```sql
+CREATE TABLE Departments (
+    department_id SERIAL PRIMARY KEY,
+    department_name VARCHAR(100) NOT NULL,
+    department_code VARCHAR(10) UNIQUE NOT NULL,
+    description TEXT,
+    has_full_access BOOLEAN DEFAULT false, -- Muhaberat için özel yetki
+    is_active BOOLEAN DEFAULT true,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Örnek departmanlar
+INSERT INTO Departments (department_name, department_code, has_full_access) VALUES 
+('Muhaberat', 'MUH_BIRIM', true),  -- Tüm evrakları görebilir
+('Muhasebe', 'MUH', false),
+('Şube Portföy Yönetimi', 'SPY', false),
+('Müşteri İlişkileri', 'MIY', false),
+('Operasyon', 'OPR', false);
+```
+
+### 3. Roles (Roller)
+```sql
+CREATE TABLE Roles (
+    role_id SERIAL PRIMARY KEY,
+    role_name VARCHAR(50) NOT NULL,
+    role_code VARCHAR(10) UNIQUE NOT NULL,
+    description TEXT,
+    is_active BOOLEAN DEFAULT true,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Örnek roller
+INSERT INTO Roles (role_name, role_code) VALUES 
+('Muhasebe Uzmanı', 'MUH_UZ'),
+('Portföy Yöneticisi', 'PY'),
+('Müşteri İlişkileri Yöneticisi', 'MIY'),
+('Operasyon Uzmanı', 'OPR_UZ'),
+('Sistem Yöneticisi', 'SYS_ADM');
+```
+
+### 4. Document_Types (Evrak Türleri)
+```sql
+CREATE TABLE Document_Types (
+    document_type_id SERIAL PRIMARY KEY,
+    type_name VARCHAR(100) NOT NULL,
+    type_code VARCHAR(20) UNIQUE NOT NULL,
+    description TEXT,
+    is_urgent BOOLEAN DEFAULT false, -- Acil evrak mı
+    requires_signature BOOLEAN DEFAULT false, -- İmza gerektirir mi
+    package_requirements TEXT, -- Özel paket gereksinimleri
+    estimated_delivery_days INTEGER DEFAULT 3, -- Tahmini teslimat süresi (gün)
+    is_active BOOLEAN DEFAULT true,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Örnek evrak türleri
+INSERT INTO Document_Types (type_name, type_code, is_urgent, requires_signature, estimated_delivery_days) VALUES 
+('Kimlik Belgesi', 'KIMLIK', false, true, 2),
+('İmza Sirküleri', 'IMZA_SIRK', true, true, 1),
+('Mali Durum Belgesi', 'MALI_DURUM', false, false, 3),
+('Risk Değerlendirme Raporu', 'RISK_DEG', false, false, 5),
+('Sözleşme Belgeleri', 'SOZLESME', true, true, 1);
+```
+
+### 5. Documents (Ana Evrak Tablosu)
+```sql
+CREATE TABLE Documents (
+    document_id SERIAL PRIMARY KEY,
+    document_number VARCHAR(50) UNIQUE NOT NULL, -- Evrak numarası (EVR-20250115-001)
+    document_type_id INTEGER REFERENCES Document_Types(document_type_id),
+    title VARCHAR(200) NOT NULL,
+    description TEXT,
+    
+    -- Gönderen ve Alıcı Bilgileri (ÇİFT YÖNLÜ)
+    sender_user_id INTEGER REFERENCES Users(user_id), -- Gönderen kullanıcı
+    sender_department_id INTEGER REFERENCES Departments(department_id), -- Gönderen departman
+    receiver_user_id INTEGER REFERENCES Users(user_id), -- Alıcı kullanıcı (opsiyonel)
+    receiver_department_id INTEGER REFERENCES Departments(department_id), -- Alıcı departman (opsiyonel)
+    
+    -- Müşteri bilgileri (isteğe bağlı)
+    customer_id VARCHAR(100), -- Müşteri ID'si
+    customer_name VARCHAR(200), -- Müşteri adı
+    
+    -- Yükleme bilgileri
+    created_by INTEGER REFERENCES Users(user_id), -- Evrağı oluşturan
+    created_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    
+    -- Fiziksel evrak bilgileri
+    physical_document_type VARCHAR(50), -- ORIGINAL, COPY, NOTARIZED
+    package_type VARCHAR(50), -- ENVELOPE, SMALL_PACKAGE, LARGE_PACKAGE, SPECIAL
+    
+    -- Adres bilgileri
+    shipping_address TEXT NOT NULL, -- Gönderim adresi
+    delivery_address TEXT NOT NULL, -- Teslimat adresi
+    
+    -- Kargo bilgileri (manuel güncelleme)
+    cargo_company VARCHAR(100), -- Kargo şirketi adı
+    cargo_tracking_number VARCHAR(50), -- Takip numarası
+    shipping_date TIMESTAMP, -- Kargoya verilme tarihi
+    delivery_date TIMESTAMP, -- Teslim tarihi
+    estimated_delivery_date TIMESTAMP, -- Tahmini teslimat tarihi
+    delivery_status VARCHAR(20) DEFAULT 'PREPARING', -- PREPARING, SHIPPED, IN_TRANSIT, DELIVERED, RETURNED
+    received_by VARCHAR(100), -- Teslim alan kişi
+    delivery_notes TEXT, -- Teslimat notları
+    
+    -- Durum bilgileri
+    is_active BOOLEAN DEFAULT true,
+    status VARCHAR(20) DEFAULT 'DRAFT', -- DRAFT, SENT, DELIVERED, RECEIVED, CANCELLED
+    
+    -- Onay süreci
+    reviewed_by INTEGER REFERENCES Users(user_id),
+    review_date TIMESTAMP,
+    review_notes TEXT,
+    
+    -- Metadata
+    tags TEXT[], -- Arama için etiketler
+    metadata JSONB, -- Ek özel alanlar
+    
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    
+    -- Constraints
+    CONSTRAINT chk_receiver CHECK (receiver_user_id IS NOT NULL OR receiver_department_id IS NOT NULL),
+    CONSTRAINT chk_delivery_status CHECK (delivery_status IN ('PREPARING', 'SHIPPED', 'IN_TRANSIT', 'DELIVERED', 'RETURNED')),
+    CONSTRAINT chk_status CHECK (status IN ('DRAFT', 'SENT', 'DELIVERED', 'RECEIVED', 'CANCELLED')),
+    CONSTRAINT chk_physical_document_type CHECK (physical_document_type IN ('ORIGINAL', 'COPY', 'NOTARIZED')),
+    CONSTRAINT chk_package_type CHECK (package_type IN ('ENVELOPE', 'SMALL_PACKAGE', 'LARGE_PACKAGE', 'SPECIAL'))
+);
+```
+
+### 6. Document_Permissions (Evrak Yetkilendirme)
+```sql
+CREATE TABLE Document_Permissions (
+    permission_id SERIAL PRIMARY KEY,
+    document_type_id INTEGER REFERENCES Document_Types(document_type_id),
+    role_id INTEGER REFERENCES Roles(role_id),
+    department_id INTEGER REFERENCES Departments(department_id),
+    
+    -- Yetkiler
+    can_view BOOLEAN DEFAULT false,
+    can_upload BOOLEAN DEFAULT false,
+    can_download BOOLEAN DEFAULT false,
+    can_review BOOLEAN DEFAULT false,
+    can_approve BOOLEAN DEFAULT false,
+    
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+```
+
+### 7. Document_History (Evrak Geçmişi)
+```sql
+CREATE TABLE Document_History (
+    history_id SERIAL PRIMARY KEY,
+    document_id INTEGER REFERENCES Documents(document_id),
+    action_type VARCHAR(50) NOT NULL, -- UPLOADED, VIEWED, DOWNLOADED, APPROVED, REJECTED
+    action_by INTEGER REFERENCES Users(user_id),
+    action_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    old_values JSONB, -- Eski değerler
+    new_values JSONB, -- Yeni değerler
+    notes TEXT,
+    ip_address INET
+);
+```
+
+### 8. Cargo_Tracking_Log (Kargo Takip Logları)
+```sql
+CREATE TABLE Cargo_Tracking_Log (
+    log_id SERIAL PRIMARY KEY,
+    document_id INTEGER REFERENCES Documents(document_id),
+    old_status VARCHAR(20),
+    new_status VARCHAR(20),
+    status_change_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    location VARCHAR(200), -- Kargo konumu
+    updated_by INTEGER REFERENCES Users(user_id), -- Kim güncelledi
+    notes TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+```
+
+## İndeksler ve Performans
+
+```sql
+-- Sık kullanılacak alanlar için indeksler
+CREATE INDEX idx_documents_customer_id ON Documents(customer_id);
+CREATE INDEX idx_documents_document_type ON Documents(document_type_id);
+CREATE INDEX idx_documents_created_by ON Documents(created_by);
+CREATE INDEX idx_documents_created_date ON Documents(created_date);
+CREATE INDEX idx_documents_status ON Documents(status);
+CREATE INDEX idx_documents_delivery_status ON Documents(delivery_status);
+CREATE INDEX idx_documents_is_active ON Documents(is_active);
+CREATE INDEX idx_documents_document_number ON Documents(document_number);
+CREATE INDEX idx_documents_cargo_tracking ON Documents(cargo_tracking_number);
+
+-- Gönderen-Alıcı ilişkileri için indeksler
+CREATE INDEX idx_documents_sender_user ON Documents(sender_user_id);
+CREATE INDEX idx_documents_receiver_user ON Documents(receiver_user_id);
+CREATE INDEX idx_documents_sender_dept ON Documents(sender_department_id);
+CREATE INDEX idx_documents_receiver_dept ON Documents(receiver_department_id);
+
+-- Audit tabloları için indeksler
+CREATE INDEX idx_document_history_document_id ON Document_History(document_id);
+CREATE INDEX idx_document_history_action_date ON Document_History(action_date);
+CREATE INDEX idx_cargo_tracking_log_document_id ON Cargo_Tracking_Log(document_id);
+CREATE INDEX idx_cargo_tracking_log_status_change_date ON Cargo_Tracking_Log(status_change_date);
+
+-- Composite indeksler (yetkilendirme sorguları için)
+CREATE INDEX idx_documents_sender_receiver ON Documents(sender_user_id, receiver_user_id);
+CREATE INDEX idx_documents_sender_dept_receiver_dept ON Documents(sender_department_id, receiver_department_id);
+CREATE INDEX idx_documents_active_status ON Documents(is_active, status);
+CREATE INDEX idx_documents_delivery_active ON Documents(delivery_status, is_active);
+
+-- Arama için indeksler
+CREATE INDEX idx_documents_title_search ON Documents USING gin(to_tsvector('english', title));
+CREATE INDEX idx_documents_customer_name_search ON Documents USING gin(to_tsvector('english', customer_name));
+```
+
+## Güvenlik ve Audit
+
+```sql
+-- Trigger for updated_at
+CREATE OR REPLACE FUNCTION update_updated_at_column()
+RETURNS TRIGGER AS $$
+BEGIN
+    NEW.updated_at = CURRENT_TIMESTAMP;
+    RETURN NEW;
+END;
+$$ language 'plpgsql';
+
+CREATE TRIGGER update_documents_updated_at 
+    BEFORE UPDATE ON Documents 
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+
+CREATE TRIGGER update_users_updated_at 
+    BEFORE UPDATE ON Users 
+    FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
+```
+
+## Örnek Veri Sorgular
+
+```sql
+-- Kullanıcının görebileceği evrakları getir (YETKİLENDİRME LOJİĞİ)
+WITH user_info AS (
+    SELECT u.user_id, u.department_id, d.has_full_access
+    FROM Users u
+    JOIN Departments d ON u.department_id = d.department_id
+    WHERE u.user_id = ? -- Giriş yapan kullanıcı ID'si
+)
+SELECT DISTINCT doc.*, dt.type_name, 
+    sender_u.first_name as sender_first_name, sender_u.last_name as sender_last_name,
+    receiver_u.first_name as receiver_first_name, receiver_u.last_name as receiver_last_name,
+    sender_d.department_name as sender_department,
+    receiver_d.department_name as receiver_department
+FROM Documents doc
+JOIN Document_Types dt ON doc.document_type_id = dt.document_type_id
+LEFT JOIN Users sender_u ON doc.sender_user_id = sender_u.user_id
+LEFT JOIN Users receiver_u ON doc.receiver_user_id = receiver_u.user_id
+LEFT JOIN Departments sender_d ON doc.sender_department_id = sender_d.department_id
+LEFT JOIN Departments receiver_d ON doc.receiver_department_id = receiver_d.department_id
+CROSS JOIN user_info ui
+WHERE doc.is_active = true
+AND (
+    -- Muhaberat birimi tüm evrakları görebilir
+    ui.has_full_access = true
+    OR
+    -- Gönderen veya alıcı olan kullanıcı görebilir
+    doc.sender_user_id = ui.user_id
+    OR
+    doc.receiver_user_id = ui.user_id
+    OR
+    -- Departman bazında gönderen veya alıcı
+    doc.sender_department_id = ui.department_id
+    OR
+    doc.receiver_department_id = ui.department_id
+)
+ORDER BY doc.upload_date DESC;
+
+-- Kullanıcının düzenleyebileceği evrakları kontrol et
+SELECT doc.*
+FROM Documents doc
+JOIN Users u ON u.user_id = ?
+JOIN Departments d ON u.department_id = d.department_id
+WHERE doc.document_id = ?
+AND doc.is_active = true
+AND (
+    -- Muhaberat birimi tüm evrakları düzenleyebilir
+    d.has_full_access = true
+    OR
+    -- Gönderen veya alıcı düzenleyebilir
+    doc.sender_user_id = u.user_id
+    OR
+    doc.receiver_user_id = u.user_id
+);
+
+-- Gelen evraklar (Kullanıcının alıcı olduğu)
+SELECT doc.*, dt.type_name,
+    sender_u.first_name as sender_name, sender_d.department_name as sender_dept
+FROM Documents doc
+JOIN Document_Types dt ON doc.document_type_id = dt.document_type_id
+LEFT JOIN Users sender_u ON doc.sender_user_id = sender_u.user_id
+LEFT JOIN Departments sender_d ON doc.sender_department_id = sender_d.department_id
+WHERE doc.is_active = true
+AND (doc.receiver_user_id = ? OR doc.receiver_department_id = (
+    SELECT department_id FROM Users WHERE user_id = ?
+))
+ORDER BY doc.upload_date DESC;
+
+-- Giden evraklar (Kullanıcının gönderen olduğu)
+SELECT doc.*, dt.type_name,
+    receiver_u.first_name as receiver_name, receiver_d.department_name as receiver_dept
+FROM Documents doc
+JOIN Document_Types dt ON doc.document_type_id = dt.document_type_id
+LEFT JOIN Users receiver_u ON doc.receiver_user_id = receiver_u.user_id
+LEFT JOIN Departments receiver_d ON doc.receiver_department_id = receiver_d.department_id
+WHERE doc.is_active = true
+AND (doc.sender_user_id = ? OR doc.sender_department_id = (
+    SELECT department_id FROM Users WHERE user_id = ?
+))
+ORDER BY doc.upload_date DESC;
+
+-- Aktif olmayan evrakları renkli gösterim için işaretle
+SELECT 
+    document_id,
+    title,
+    CASE 
+        WHEN is_active = true THEN 'success'
+        ELSE 'danger'
+    END as status_color,
+    CASE 
+        WHEN is_active = true THEN '✓'
+        ELSE '✗'
+    END as status_icon,
+    CASE 
+        WHEN is_active = true THEN 'Aktif'
+        ELSE 'Pasif'
+    END as status_text
+FROM Documents;
+```
