@@ -14,11 +14,11 @@
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\erhan\\OneDrive\\Masaüstü\\claude\\muhaberat-evrak-yonetim\\muhaberat-evrak-yonetim.csproj",
+      "projectUniqueName": "C:\\Users\\erhan\\OneDrive\\Masaüstü\\muhaberat-evrak-yonetim\\muhaberat-evrak-yonetim.csproj",
       "projectName": "muhaberat-evrak-yonetim",
-      "projectPath": "C:\\Users\\erhan\\OneDrive\\Masaüstü\\claude\\muhaberat-evrak-yonetim\\muhaberat-evrak-yonetim.csproj",
+      "projectPath": "C:\\Users\\erhan\\OneDrive\\Masaüstü\\muhaberat-evrak-yonetim\\muhaberat-evrak-yonetim.csproj",
       "packagesPath": "C:\\Users\\erhan\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\erhan\\OneDrive\\Masaüstü\\claude\\muhaberat-evrak-yonetim\\obj\\",
+      "outputPath": "C:\\Users\\erhan\\OneDrive\\Masaüstü\\muhaberat-evrak-yonetim\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
