@@ -1,7 +1,14 @@
+using Microsoft.EntityFrameworkCore;
+using muhaberat_evrak_yonetim.Models;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
+builder.Services.AddDbContext<DataContext>(options =>
+{
+    var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+}
+);
 
 var app = builder.Build();
 
