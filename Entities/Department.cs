@@ -10,7 +10,6 @@ namespace muhaberat_evrak_yonetim.Entities
         [Required]
         public string DepartmentName { get; set; }
 
-        // A department belongs to one unit
         public int UnitId { get; set; }
         public Unit Unit { get; set; }
     }
