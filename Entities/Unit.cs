@@ -8,12 +8,17 @@ namespace muhaberat_evrak_yonetim.Entities
         public int Id { get; set; }
 
         [Required]
-        public string UnitName { get; set; }
+        [StringLength(100)]
+        public string UnitName { get; set; } = null!;
 
-        public ICollection<User> Users { get; set; }
+        public string? Description { get; set; }
 
-        public ICollection<Department> Departments { get; set; }
+        public bool IsActive { get; set; } = true;
+        
+        public DateTime CreatedAt { get; set; }
 
-        public ICollection<Document> ReceivedDocuments { get; set; }
+        // Navigation properties
+        public ICollection<User> Users { get; set; } = new List<User>();
+        public ICollection<Department> Departments { get; set; } = new List<Department>();
     }
 }

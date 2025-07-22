@@ -8,9 +8,28 @@ namespace muhaberat_evrak_yonetim.Entities
         public int Id { get; set; }
 
         [Required]
-        public string DepartmentName { get; set; }
+        [StringLength(100)]
+        public string DepartmentName { get; set; } = null!;
+
+        [Required]
+        [StringLength(10)]
+        public string DepartmentCode { get; set; } = null!;
+
+        public string? Description { get; set; }
+
+        // Special permission for Muhaberat department
+        public bool HasFullAccess { get; set; } = false;
+
+        public bool IsActive { get; set; } = true;
+        public DateTime CreatedAt { get; set; }
 
         public int UnitId { get; set; }
-        public Unit Unit { get; set; }
+        public Unit Unit { get; set; } = null!;
+
+        // Navigation properties
+        public ICollection<User> Users { get; set; } = new List<User>();
+        public ICollection<Document> SentDocuments { get; set; } = new List<Document>();
+        public ICollection<Document> ReceivedDocuments { get; set; } = new List<Document>();
+        public ICollection<DocumentPermission> DocumentPermissions { get; set; } = new List<DocumentPermission>();
     }
 }

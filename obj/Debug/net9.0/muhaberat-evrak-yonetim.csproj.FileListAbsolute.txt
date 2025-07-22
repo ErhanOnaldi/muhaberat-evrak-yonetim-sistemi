@@ -229,3 +229,5 @@ C:\Users\erhan\OneDrive\Masaüstü\muhaberat-evrak-yonetim\obj\Debug\net9.0\refi
 C:\Users\erhan\OneDrive\Masaüstü\muhaberat-evrak-yonetim\obj\Debug\net9.0\muhaberat-evrak-yonetim.pdb
 C:\Users\erhan\OneDrive\Masaüstü\muhaberat-evrak-yonetim\obj\Debug\net9.0\muhaberat-evrak-yonetim.genruntimeconfig.cache
 C:\Users\erhan\OneDrive\Masaüstü\muhaberat-evrak-yonetim\obj\Debug\net9.0\ref\muhaberat-evrak-yonetim.dll
+C:\Users\erhan\OneDrive\Masaüstü\muhaberat-evrak-yonetim\obj\Debug\net9.0\compressed\7c0fgief6d-2y8sutej5m.gz
+C:\Users\erhan\OneDrive\Masaüstü\muhaberat-evrak-yonetim\bin\Debug\net9.0\BCrypt.Net-Next.dll
