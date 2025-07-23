@@ -1,0 +1,204 @@
+@{
+    ViewData["Title"] = "Giriş Yap";
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Muhaberat Evrak Yönetim Sistemi</title>
+    
+    <!-- CSS Files -->
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link href="~/theme/assets/plugins/global/plugins.bundle.css" rel="stylesheet" type="text/css" />
+    <link href="~/theme/assets/css/style.bundle.css" rel="stylesheet" type="text/css" />
+    <link href="~/fontawesome/css/fontawesome.css" rel="stylesheet" />
+    <link href="~/fontawesome/css/solid.css" rel="stylesheet" />
+    
+    <!-- Fonts -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Poppins:300,400,500,600,700" />
+    
+    <style>
+        .login-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .login-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: none;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+        }
+        .company-logo {
+            max-height: 80px;
+            margin-bottom: 20px;
+        }
+        .login-title {
+            color: #5e72e4;
+            font-weight: 600;
+            margin-bottom: 30px;
+        }
+        .form-control {
+            border-radius: 10px;
+            border: 1px solid #e3e6f0;
+            padding: 12px 15px;
+            font-size: 14px;
+        }
+        .form-control:focus {
+            border-color: #5e72e4;
+            box-shadow: 0 0 0 0.2rem rgba(94, 114, 228, 0.25);
+        }
+        .btn-login {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            border-radius: 10px;
+            padding: 12px 30px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .btn-login:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 7px 14px rgba(94, 114, 228, 0.4);
+        }
+        .remember-me {
+            font-size: 14px;
+            color: #6c757d;
+        }
+        .register-link {
+            color: #5e72e4;
+            text-decoration: none;
+            font-weight: 500;
+        }
+        .register-link:hover {
+            color: #4c63d2;
+            text-decoration: underline;
+        }
+        .alert {
+            border-radius: 10px;
+            border: none;
+        }
+    </style>
+</head>
+
+<body class="login-bg">
+    <div class="d-flex align-items-center justify-content-center min-vh-100 py-5">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-xl-4 col-lg-5 col-md-6 col-sm-8">
+                    <div class="card login-card">
+                        <div class="card-body p-5">
+                            <div class="text-center">
+                                <!-- Company Logo - Replace with actual logo -->
+                                <img src="~/theme/assets/media/logos/fuzulevLogo.svg" alt="Logo" class="company-logo">
+                                <h1 class="h4 login-title">Muhaberat Evrak Yönetim Sistemi</h1>
+                                <p class="text-muted mb-4">Hesabınıza giriş yapın</p>
+                            </div>
+
+                            @if (TempData["Success"] != null)
+                            {
+                                <div class="alert alert-success" role="alert">
+                                    <i class="fas fa-check-circle me-2"></i>@TempData["Success"]
+                                </div>
+                            }
+
+                            @if (TempData["Error"] != null)
+                            {
+                                <div class="alert alert-danger" role="alert">
+                                    <i class="fas fa-exclamation-circle me-2"></i>@TempData["Error"]
+                                </div>
+                            }
+
+                            @if (!ViewData.ModelState.IsValid)
+                            {
+                                <div class="alert alert-danger" role="alert">
+                                    <i class="fas fa-exclamation-triangle me-2"></i>
+                                    @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+                                    {
+                                        <div>@error.ErrorMessage</div>
+                                    }
+                                </div>
+                            }
+
+                            <form method="post" asp-action="Login">
+                                @Html.AntiForgeryToken()
+                                
+                                <div class="mb-3">
+                                    <label for="username" class="form-label">
+                                        <i class="fas fa-user me-2"></i>Kullanıcı Adı
+                                    </label>
+                                    <input type="text" class="form-control" id="username" name="username" 
+                                           placeholder="Kullanıcı adınızı girin" required autocomplete="username">
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="password" class="form-label">
+                                        <i class="fas fa-lock me-2"></i>Şifre
+                                    </label>
+                                    <input type="password" class="form-control" id="password" name="password" 
+                                           placeholder="Şifrenizi girin" required autocomplete="current-password">
+                                </div>
+
+                                <div class="mb-3 form-check">
+                                    <input type="checkbox" class="form-check-input" id="rememberMe" name="rememberMe" value="true">
+                                    <input type="hidden" name="rememberMe" value="false">
+                                    <label class="form-check-label remember-me" for="rememberMe">
+                                        Beni hatırla
+                                    </label>
+                                </div>
+
+                                <div class="d-grid mb-3">
+                                    <button type="submit" class="btn btn-primary btn-login">
+                                        <i class="fas fa-sign-in-alt me-2"></i>Giriş Yap
+                                    </button>
+                                </div>
+
+                                <div class="text-center">
+                                    <p class="mb-0">
+                                        Hesabınız yok mu? 
+                                        <a asp-action="Register" class="register-link">Kayıt olun</a>
+                                    </p>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                    <div class="text-center mt-4">
+                        <p class="text-white-50 small">
+                            © @DateTime.Now.Year Muhaberat Evrak Yönetim Sistemi. Tüm hakları saklıdır.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript -->
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/theme/assets/plugins/global/plugins.bundle.js"></script>
+    
+    <script>
+        $(document).ready(function() {
+            // Focus on username field
+            $('#username').focus();
+            
+            // Auto-fill username from cookie if available
+            var rememberedUser = getCookie('RememberUser');
+            if (rememberedUser) {
+                $('#username').val(rememberedUser);
+                $('#rememberMe').prop('checked', true);
+                $('#password').focus();
+            }
+        });
+
+        function getCookie(name) {
+            var value = "; " + document.cookie;
+            var parts = value.split("; " + name + "=");
+            if (parts.length == 2) return parts.pop().split(";").shift();
+        }
+    </script>
+</body>
+</html>

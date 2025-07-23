@@ -1,0 +1,287 @@
+@model IEnumerable<muhaberat_evrak_yonetim.Entities.Document>
+
+@{
+    ViewData["Title"] = "Evrak Listesi";
+}
+
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3 mb-0 text-gray-800">
+            <i class="fas fa-file-alt mr-2"></i>Evrak Listesi
+        </h1>
+        <a asp-action="Create" class="btn btn-primary">
+            <i class="fas fa-plus mr-1"></i>Yeni Evrak Ekle
+        </a>
+    </div>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="fas fa-check-circle mr-2"></i>@TempData["Success"]
+            <button type="button" class="close" data-dismiss="alert">
+                <span>&times;</span>
+            </button>
+        </div>
+    }
+
+    <!-- Filter Cards -->
+    <div class="row mb-4">
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-primary shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                Toplam Evrak</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">@Model.Count()</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-file-alt fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-warning shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                Bekleyen</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">@Model.Count(d => d.Status == "DRAFT" || d.Status == "SENT")</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-clock fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-info shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                                Kargoda</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">@Model.Count(d => d.DeliveryStatus == "SHIPPED" || d.DeliveryStatus == "IN_TRANSIT")</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-shipping-fast fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-success shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                Teslim Edildi</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">@Model.Count(d => d.DeliveryStatus == "DELIVERED")</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-check-circle fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card shadow mb-4">
+        <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+            <h6 class="m-0 font-weight-bold text-primary">Evrak Listesi</h6>
+            <div class="dropdown no-arrow">
+                <a class="dropdown-toggle" href="#" role="button" id="dropdownMenuLink"
+                   data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    <i class="fas fa-ellipsis-v fa-sm fa-fw text-gray-400"></i>
+                </a>
+                <div class="dropdown-menu dropdown-menu-right shadow animated--fade-in"
+                     aria-labelledby="dropdownMenuLink">
+                    <div class="dropdown-header">Filtrele:</div>
+                    <a class="dropdown-item" href="#" onclick="filterTable('all')">Tüm Evraklar</a>
+                    <a class="dropdown-item" href="#" onclick="filterTable('DRAFT')">Taslaklar</a>
+                    <a class="dropdown-item" href="#" onclick="filterTable('SENT')">Gönderilen</a>
+                    <a class="dropdown-item" href="#" onclick="filterTable('DELIVERED')">Teslim Edilenler</a>
+                </div>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                    <thead>
+                        <tr>
+                            <th>Evrak No</th>
+                            <th>Başlık</th>
+                            <th>Tür</th>
+                            <th>Gönderen</th>
+                            <th>Alıcı</th>
+                            <th>Durum</th>
+                            <th>Kargo Durumu</th>
+                            <th>Oluşturma Tarihi</th>
+                            <th>İşlemler</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model)
+                        {
+                            <tr data-status="@item.Status">
+                                <td>
+                                    <strong class="text-primary">@Html.DisplayFor(modelItem => item.DocumentNumber)</strong>
+                                </td>
+                                <td>
+                                    <a asp-action="Details" asp-route-id="@item.Id" class="text-decoration-none font-weight-bold">
+                                        @Html.DisplayFor(modelItem => item.Title)
+                                    </a>
+                                    @if (!string.IsNullOrEmpty(item.Description))
+                                    {
+                                        <br><small class="text-muted">@item.Description.Substring(0, Math.Min(50, item.Description.Length))...</small>
+                                    }
+                                </td>
+                                <td>
+                                    <span class="badge badge-info badge-pill">
+                                        @Html.DisplayFor(modelItem => item.DocumentType.TypeName)
+                                    </span>
+                                </td>
+                                <td>
+                                    @if (item.SenderUser != null)
+                                    {
+                                        <div><strong>@item.SenderUser.FirstName @item.SenderUser.LastName</strong></div>
+                                    }
+                                    @if (item.SenderDepartment != null)
+                                    {
+                                        <small class="text-muted">@item.SenderDepartment.DepartmentName</small>
+                                    }
+                                </td>
+                                <td>
+                                    @if (item.ReceiverUser != null)
+                                    {
+                                        <div><strong>@item.ReceiverUser.FirstName @item.ReceiverUser.LastName</strong></div>
+                                    }
+                                    @if (item.ReceiverDepartment != null)
+                                    {
+                                        <small class="text-muted">@item.ReceiverDepartment.DepartmentName</small>
+                                    }
+                                </td>
+                                <td>
+                                    @{
+                                        var statusClass = item.Status switch
+                                        {
+                                            "DRAFT" => "badge-secondary",
+                                            "SENT" => "badge-primary",
+                                            "DELIVERED" => "badge-success",
+                                            "RECEIVED" => "badge-success",
+                                            "CANCELLED" => "badge-danger",
+                                            _ => "badge-secondary"
+                                        };
+                                        var statusIcon = item.Status switch
+                                        {
+                                            "DRAFT" => "fas fa-edit",
+                                            "SENT" => "fas fa-paper-plane",
+                                            "DELIVERED" => "fas fa-check-circle",
+                                            "RECEIVED" => "fas fa-inbox",
+                                            "CANCELLED" => "fas fa-times-circle",
+                                            _ => "fas fa-question-circle"
+                                        };
+                                    }
+                                    <span class="badge @statusClass">
+                                        <i class="@statusIcon mr-1"></i>@item.Status
+                                    </span>
+                                </td>
+                                <td>
+                                    @{
+                                        var deliveryStatusClass = item.DeliveryStatus switch
+                                        {
+                                            "PREPARING" => "badge-warning",
+                                            "SHIPPED" => "badge-info",
+                                            "IN_TRANSIT" => "badge-primary",
+                                            "DELIVERED" => "badge-success",
+                                            "RETURNED" => "badge-danger",
+                                            _ => "badge-secondary"
+                                        };
+                                        var deliveryIcon = item.DeliveryStatus switch
+                                        {
+                                            "PREPARING" => "fas fa-clock",
+                                            "SHIPPED" => "fas fa-truck",
+                                            "IN_TRANSIT" => "fas fa-shipping-fast",
+                                            "DELIVERED" => "fas fa-check-double",
+                                            "RETURNED" => "fas fa-undo",
+                                            _ => "fas fa-question"
+                                        };
+                                    }
+                                    <span class="badge @deliveryStatusClass">
+                                        <i class="@deliveryIcon mr-1"></i>@item.DeliveryStatus
+                                    </span>
+                                    @if (!string.IsNullOrEmpty(item.CargoTrackingNumber))
+                                    {
+                                        <br><small class="text-muted">
+                                            <i class="fas fa-barcode mr-1"></i>@item.CargoTrackingNumber
+                                        </small>
+                                    }
+                                </td>
+                                <td>
+                                    <div>@item.CreatedDate.ToString("dd.MM.yyyy")</div>
+                                    <small class="text-muted">@item.CreatedDate.ToString("HH:mm")</small>
+                                </td>
+                                <td>
+                                    <div class="btn-group" role="group">
+                                        <a asp-action="Details" asp-route-id="@item.Id" 
+                                           class="btn btn-sm btn-outline-primary" title="Detaylar">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        @if (item.Status == "DRAFT")
+                                        {
+                                            <a asp-action="Edit" asp-route-id="@item.Id" 
+                                               class="btn btn-sm btn-outline-warning" title="Düzenle">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                        }
+                                        <a asp-action="History" asp-route-id="@item.Id" 
+                                           class="btn btn-sm btn-outline-info" title="Geçmiş">
+                                            <i class="fas fa-history"></i>
+                                        </a>
+                                        <a asp-action="CargoTracking" asp-route-id="@item.Id" 
+                                           class="btn btn-sm btn-outline-success" title="Kargo Takip">
+                                            <i class="fas fa-shipping-fast"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            $('#dataTable').DataTable({
+                "language": {
+                    "url": "//cdn.datatables.net/plug-ins/1.10.25/i18n/Turkish.json"
+                },
+                "order": [[ 7, "desc" ]],
+                "pageLength": 25,
+                "responsive": true,
+                "columnDefs": [
+                    { "orderable": false, "targets": 8 }
+                ]
+            });
+        });
+
+        function filterTable(status) {
+            var table = $('#dataTable').DataTable();
+            if (status === 'all') {
+                table.search('').draw();
+            } else {
+                table.search(status).draw();
+            }
+        }
+    </script>
+}

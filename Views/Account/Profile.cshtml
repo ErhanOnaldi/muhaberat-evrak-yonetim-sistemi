@@ -1,0 +1,253 @@
+@model muhaberat_evrak_yonetim.Entities.User
+
+@{
+    ViewData["Title"] = "Profil";
+    var stats = ViewBag.Statistics;
+}
+
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3 mb-0 text-gray-800">
+            <i class="fas fa-user-circle mr-2"></i>Profil
+        </h1>
+    </div>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="fas fa-check-circle mr-2"></i>@TempData["Success"]
+            <button type="button" class="close" data-dismiss="alert">
+                <span>&times;</span>
+            </button>
+        </div>
+    }
+
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="fas fa-exclamation-circle mr-2"></i>@TempData["Error"]
+            <button type="button" class="close" data-dismiss="alert">
+                <span>&times;</span>
+            </button>
+        </div>
+    }
+
+    <div class="row">
+        <!-- Profile Information Card -->
+        <div class="col-lg-4">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Profil Bilgileri</h6>
+                </div>
+                <div class="card-body text-center">
+                    <div class="mb-4">
+                        <img src="~/theme/assets/media/avatars/blank.png" 
+                             alt="Profile" class="rounded-circle" style="width: 120px; height: 120px;">
+                    </div>
+                    <h5 class="mb-1">@Model.FirstName @Model.LastName</h5>
+                    <p class="text-muted mb-2">@Model.Role?.RoleName</p>
+                    <p class="text-muted mb-3">@Model.Department?.DepartmentName</p>
+                    
+                    <div class="mb-3">
+                        <span class="badge badge-success">
+                            <i class="fas fa-circle mr-1" style="font-size: 8px;"></i>Aktif
+                        </span>
+                    </div>
+
+                    <div class="text-left">
+                        <p><i class="fas fa-envelope text-primary mr-2"></i> @Model.Email</p>
+                        <p><i class="fas fa-user text-primary mr-2"></i> @Model.Username</p>
+                        <p><i class="fas fa-calendar text-primary mr-2"></i> Üyelik: @Model.CreatedAt.ToString("dd.MM.yyyy")</p>
+                        @if (Model.Unit != null)
+                        {
+                            <p><i class="fas fa-sitemap text-primary mr-2"></i> @Model.Unit.UnitName</p>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <!-- Statistics Card -->
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-success">Evrak İstatistikleri</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center mb-3">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                Gönderilen Evraklar
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">@stats.TotalSent</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-paper-plane fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+
+                    <div class="row no-gutters align-items-center mb-3">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                Alınan Evraklar
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">@stats.TotalReceived</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-inbox fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+
+                    <div class="row no-gutters align-items-center mb-3">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                Bekleyen Evraklar
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">@stats.PendingDocuments</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-clock fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                                Bu Ay
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">@stats.ThisMonthDocuments</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-calendar-month fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Edit Profile Form -->
+        <div class="col-lg-8">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Profil Düzenle</h6>
+                </div>
+                <div class="card-body">
+                    <form method="post" asp-action="UpdateProfile">
+                        @Html.AntiForgeryToken()
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="FirstName" class="form-label">
+                                    <i class="fas fa-user mr-2"></i>Ad
+                                </label>
+                                <input asp-for="FirstName" class="form-control" required>
+                                <span asp-validation-for="FirstName" class="text-danger small"></span>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="LastName" class="form-label">
+                                    <i class="fas fa-user mr-2"></i>Soyad
+                                </label>
+                                <input asp-for="LastName" class="form-control" required>
+                                <span asp-validation-for="LastName" class="text-danger small"></span>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Email" class="form-label">
+                                <i class="fas fa-envelope mr-2"></i>E-posta
+                            </label>
+                            <input asp-for="Email" type="email" class="form-control" required>
+                            <span asp-validation-for="Email" class="text-danger small"></span>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">
+                                    <i class="fas fa-at mr-2"></i>Kullanıcı Adı
+                                </label>
+                                <input value="@Model.Username" class="form-control" readonly>
+                                <small class="text-muted">Kullanıcı adı değiştirilemez</small>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">
+                                    <i class="fas fa-building mr-2"></i>Departman
+                                </label>
+                                <input value="@Model.Department?.DepartmentName" class="form-control" readonly>
+                                <small class="text-muted">Departman bilgisi yönetici tarafından değiştirilir</small>
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save mr-2"></i>Profili Güncelle
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Change Password Card -->
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-warning">Şifre Değiştir</h6>
+                </div>
+                <div class="card-body">
+                    <form method="post" asp-action="ChangePassword">
+                        @Html.AntiForgeryToken()
+                        
+                        <div class="mb-3">
+                            <label for="currentPassword" class="form-label">
+                                <i class="fas fa-lock mr-2"></i>Mevcut Şifre
+                            </label>
+                            <input type="password" id="currentPassword" name="currentPassword" 
+                                   class="form-control" required>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="newPassword" class="form-label">
+                                    <i class="fas fa-key mr-2"></i>Yeni Şifre
+                                </label>
+                                <input type="password" id="newPassword" name="newPassword" 
+                                       class="form-control" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="confirmPassword" class="form-label">
+                                    <i class="fas fa-key mr-2"></i>Yeni Şifre Tekrar
+                                </label>
+                                <input type="password" id="confirmPassword" name="confirmPassword" 
+                                       class="form-control" required>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <button type="submit" class="btn btn-warning">
+                                <i class="fas fa-key mr-2"></i>Şifreyi Değiştir
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Password confirmation validation
+            $('#confirmPassword').on('blur', function() {
+                var newPassword = $('#newPassword').val();
+                var confirmPassword = $(this).val();
+                
+                if (newPassword !== confirmPassword && confirmPassword !== '') {
+                    $(this).addClass('is-invalid');
+                    if (!$(this).next('.invalid-feedback').length) {
+                        $(this).after('<div class="invalid-feedback">Şifreler eşleşmiyor.</div>');
+                    }
+                } else {
+                    $(this).removeClass('is-invalid');
+                    $(this).next('.invalid-feedback').remove();
+                }
+            });
+        });
+    </script>
+}

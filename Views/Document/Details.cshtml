@@ -1,0 +1,389 @@
+@model muhaberat_evrak_yonetim.Entities.Document
+
+@{
+    ViewData["Title"] = "Evrak Detayları";
+}
+
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3 mb-0 text-gray-800">
+            <i class="fas fa-file-alt mr-2"></i>Evrak Detayları
+        </h1>
+        <div>
+            @if (Model.Status == "DRAFT")
+            {
+                <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning btn-sm mr-2">
+                    <i class="fas fa-edit mr-1"></i>Düzenle
+                </a>
+                <form method="post" asp-action="Send" asp-route-id="@Model.Id" class="d-inline">
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="btn btn-success btn-sm mr-2" 
+                            onclick="return confirm('Bu evrağı göndermek istediğinizden emin misiniz?')">
+                        <i class="fas fa-paper-plane mr-1"></i>Gönder
+                    </button>
+                </form>
+            }
+            <a asp-action="Index" class="btn btn-secondary btn-sm">
+                <i class="fas fa-arrow-left mr-1"></i>Geri
+            </a>
+        </div>
+    </div>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="fas fa-check-circle mr-2"></i>@TempData["Success"]
+            <button type="button" class="close" data-dismiss="alert">
+                <span>&times;</span>
+            </button>
+        </div>
+    }
+
+    <div class="row">
+        <!-- Main Document Info -->
+        <div class="col-lg-8">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-info-circle mr-2"></i>Evrak Bilgileri
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <strong>Evrak Numarası:</strong>
+                            <p class="text-primary font-weight-bold">@Model.DocumentNumber</p>
+                        </div>
+                        <div class="col-md-6">
+                            <strong>Evrak Türü:</strong>
+                            <p><span class="badge badge-info badge-pill">@Model.DocumentType?.TypeName</span></p>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <strong>Başlık:</strong>
+                        <p class="font-weight-bold">@Model.Title</p>
+                    </div>
+
+                    @if (!string.IsNullOrEmpty(Model.Description))
+                    {
+                        <div class="mb-3">
+                            <strong>Açıklama:</strong>
+                            <p class="text-muted">@Model.Description</p>
+                        </div>
+                    }
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <strong>Müşteri ID:</strong>
+                            <p>@Model.CustomerId</p>
+                        </div>
+                        <div class="col-md-6">
+                            <strong>Müşteri Adı:</strong>
+                            <p>@Model.CustomerName</p>
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <strong>Fiziksel Evrak Türü:</strong>
+                            <p>
+                                @{
+                                    var physicalType = Model.PhysicalDocumentType switch
+                                    {
+                                        "ORIGINAL" => "Orijinal",
+                                        "COPY" => "Kopya",
+                                        "NOTARIZED" => "Noterli",
+                                        _ => Model.PhysicalDocumentType
+                                    };
+                                }
+                                @physicalType
+                            </p>
+                        </div>
+                        <div class="col-md-6">
+                            <strong>Paket Türü:</strong>
+                            <p>
+                                @{
+                                    var packageType = Model.PackageType switch
+                                    {
+                                        "ENVELOPE" => "Zarf",
+                                        "SMALL_PACKAGE" => "Küçük Paket",
+                                        "LARGE_PACKAGE" => "Büyük Paket",
+                                        "SPECIAL" => "Özel",
+                                        _ => Model.PackageType
+                                    };
+                                }
+                                @packageType
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <strong>Gönderim Adresi:</strong>
+                        <p class="text-muted">@Model.ShippingAddress</p>
+                    </div>
+
+                    <div class="mb-3">
+                        <strong>Teslimat Adresi:</strong>
+                        <p class="text-muted">@Model.DeliveryAddress</p>
+                    </div>
+
+                    @if (!string.IsNullOrEmpty(Model.ReviewNotes))
+                    {
+                        <div class="mb-3">
+                            <strong>İnceleme Notları:</strong>
+                            <div class="alert alert-info">
+                                <i class="fas fa-comment mr-2"></i>@Model.ReviewNotes
+                                @if (Model.ReviewDate.HasValue && Model.ReviewedByUser != null)
+                                {
+                                    <br><small class="text-muted">
+                                        @Model.ReviewedByUser.FirstName @Model.ReviewedByUser.LastName - @Model.ReviewDate.Value.ToString("dd.MM.yyyy HH:mm")
+                                    </small>
+                                }
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <!-- Cargo Information Card -->
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-success">
+                        <i class="fas fa-shipping-fast mr-2"></i>Kargo Bilgileri
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><strong>Kargo Şirketi:</strong> @(Model.CargoCompany ?? "Belirtilmemiş")</p>
+                            <p><strong>Takip Numarası:</strong> 
+                                @if (!string.IsNullOrEmpty(Model.CargoTrackingNumber))
+                                {
+                                    <span class="badge badge-secondary">@Model.CargoTrackingNumber</span>
+                                }
+                                else
+                                {
+                                    <span class="text-muted">Henüz atanmamış</span>
+                                }
+                            </p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>Kargoya Verilme:</strong> @(Model.ShippingDate?.ToString("dd.MM.yyyy HH:mm") ?? "Henüz verilmemiş")</p>
+                            <p><strong>Teslimat Tarihi:</strong> @(Model.DeliveryDate?.ToString("dd.MM.yyyy HH:mm") ?? "Henüz teslim edilmemiş")</p>
+                        </div>
+                    </div>
+
+                    @if (!string.IsNullOrEmpty(Model.CargoTrackingNumber))
+                    {
+                        <div class="mt-3">
+                            <a asp-action="CargoTracking" asp-route-id="@Model.Id" class="btn btn-success btn-sm">
+                                <i class="fas fa-map-marker-alt mr-1"></i>Kargo Takibini Görüntüle
+                            </a>
+                        </div>
+                    }
+
+                    <!-- Cargo Status Update Form (for authorized users) -->
+                    <hr>
+                    <h6 class="text-warning mb-3">
+                        <i class="fas fa-edit mr-2"></i>Kargo Durumu Güncelle
+                    </h6>
+                    <form method="post" asp-action="UpdateCargoStatus" asp-route-id="@Model.Id">
+                        @Html.AntiForgeryToken()
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="cargoCompany" class="form-label">Kargo Şirketi</label>
+                                <input type="text" id="cargoCompany" name="cargoCompany" 
+                                       class="form-control" value="@Model.CargoCompany">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="trackingNumber" class="form-label">Takip Numarası</label>
+                                <input type="text" id="trackingNumber" name="trackingNumber" 
+                                       class="form-control" value="@Model.CargoTrackingNumber">
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="deliveryStatus" class="form-label">Durum</label>
+                                <select id="deliveryStatus" name="deliveryStatus" class="form-control">
+                                    <option value="PREPARING" selected="@(Model.DeliveryStatus == "PREPARING")">Hazırlanıyor</option>
+                                    <option value="SHIPPED" selected="@(Model.DeliveryStatus == "SHIPPED")">Kargoya Verildi</option>
+                                    <option value="IN_TRANSIT" selected="@(Model.DeliveryStatus == "IN_TRANSIT")">Yolda</option>
+                                    <option value="DELIVERED" selected="@(Model.DeliveryStatus == "DELIVERED")">Teslim Edildi</option>
+                                    <option value="RETURNED" selected="@(Model.DeliveryStatus == "RETURNED")">İade Edildi</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="location" class="form-label">Konum</label>
+                                <input type="text" id="location" name="location" class="form-control" placeholder="İsteğe bağlı">
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="notes" class="form-label">Notlar</label>
+                            <textarea id="notes" name="notes" class="form-control" rows="2" placeholder="İsteğe bağlı notlar"></textarea>
+                        </div>
+                        
+                        <button type="submit" class="btn btn-warning">
+                            <i class="fas fa-sync mr-1"></i>Güncelle
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+            <!-- Status Card -->
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Durum Bilgileri</h6>
+                </div>
+                <div class="card-body text-center">
+                    @{
+                        var statusClass = Model.Status switch
+                        {
+                            "DRAFT" => "badge-secondary",
+                            "SENT" => "badge-primary",
+                            "DELIVERED" => "badge-success",
+                            "RECEIVED" => "badge-success",
+                            "CANCELLED" => "badge-danger",
+                            _ => "badge-secondary"
+                        };
+                        var deliveryStatusClass = Model.DeliveryStatus switch
+                        {
+                            "PREPARING" => "badge-warning",
+                            "SHIPPED" => "badge-info",
+                            "IN_TRANSIT" => "badge-primary",
+                            "DELIVERED" => "badge-success",
+                            "RETURNED" => "badge-danger",
+                            _ => "badge-secondary"
+                        };
+                    }
+                    <div class="mb-3">
+                        <h6>Evrak Durumu</h6>
+                        <span class="badge @statusClass p-2">@Model.Status</span>
+                    </div>
+                    <div class="mb-3">
+                        <h6>Kargo Durumu</h6>
+                        <span class="badge @deliveryStatusClass p-2">@Model.DeliveryStatus</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Participants Card -->
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-info">Taraflar</h6>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <h6 class="text-success">
+                            <i class="fas fa-user-plus mr-2"></i>Gönderen
+                        </h6>
+                        @if (Model.SenderUser != null)
+                        {
+                            <p class="mb-1"><strong>@Model.SenderUser.FirstName @Model.SenderUser.LastName</strong></p>
+                            <small class="text-muted">@Model.SenderUser.Email</small>
+                        }
+                        @if (Model.SenderDepartment != null)
+                        {
+                            <p class="mb-0"><small class="text-muted">@Model.SenderDepartment.DepartmentName</small></p>
+                        }
+                    </div>
+
+                    <hr>
+
+                    <div class="mb-3">
+                        <h6 class="text-primary">
+                            <i class="fas fa-user-check mr-2"></i>Alıcı
+                        </h6>
+                        @if (Model.ReceiverUser != null)
+                        {
+                            <p class="mb-1"><strong>@Model.ReceiverUser.FirstName @Model.ReceiverUser.LastName</strong></p>
+                            <small class="text-muted">@Model.ReceiverUser.Email</small>
+                        }
+                        @if (Model.ReceiverDepartment != null)
+                        {
+                            <p class="mb-0"><small class="text-muted">@Model.ReceiverDepartment.DepartmentName</small></p>
+                        }
+                    </div>
+
+                    @if (Model.CreatedByUser != null)
+                    {
+                        <hr>
+                        <div>
+                            <h6 class="text-warning">
+                                <i class="fas fa-user-edit mr-2"></i>Oluşturan
+                            </h6>
+                            <p class="mb-1"><strong>@Model.CreatedByUser.FirstName @Model.CreatedByUser.LastName</strong></p>
+                            <small class="text-muted">@Model.CreatedDate.ToString("dd.MM.yyyy HH:mm")</small>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <!-- Quick Actions Card -->
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-warning">Hızlı İşlemler</h6>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a asp-action="History" asp-route-id="@Model.Id" class="btn btn-info btn-sm">
+                            <i class="fas fa-history mr-1"></i>Geçmişi Görüntüle
+                        </a>
+                        <a asp-action="CargoTracking" asp-route-id="@Model.Id" class="btn btn-success btn-sm">
+                            <i class="fas fa-map-marker-alt mr-1"></i>Kargo Takip
+                        </a>
+                        @if (Model.Status != "CANCELLED")
+                        {
+                            <hr>
+                            <h6 class="text-muted">İnceleme</h6>
+                            <form method="post" asp-action="Review" asp-route-id="@Model.Id" class="mb-2">
+                                @Html.AntiForgeryToken()
+                                <div class="mb-2">
+                                    <textarea name="reviewNotes" class="form-control form-control-sm" 
+                                             placeholder="İnceleme notları..." rows="2"></textarea>
+                                </div>
+                                <div class="d-grid gap-2">
+                                    <button type="submit" name="approved" value="true" class="btn btn-success btn-sm">
+                                        <i class="fas fa-check mr-1"></i>Onayla
+                                    </button>
+                                    <button type="submit" name="approved" value="false" class="btn btn-danger btn-sm">
+                                        <i class="fas fa-times mr-1"></i>Reddet
+                                    </button>
+                                </div>
+                            </form>
+                        }
+                        
+                        @if (Model.Status == "DRAFT")
+                        {
+                            <hr>
+                            <form method="post" asp-action="Delete" asp-route-id="@Model.Id">
+                                @Html.AntiForgeryToken()
+                                <button type="submit" class="btn btn-danger btn-sm w-100" 
+                                        onclick="return confirm('Bu evrağı silmek istediğinizden emin misiniz?')">
+                                    <i class="fas fa-trash mr-1"></i>Sil
+                                </button>
+                            </form>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Auto-expand textareas
+            $('textarea').on('input', function() {
+                this.style.height = 'auto';
+                this.style.height = (this.scrollHeight) + 'px';
+            });
+        });
+    </script>
+}

@@ -1,0 +1,72 @@
+  CURRENT ARCHITECTURE & DESIGN PLAN
+
+  Existing Setup:
+
+  1. Theme: Metronic 8 admin theme with professional UI components
+  2. Authentication: Session-based with AccountController (Login, Register, Profile, etc.)
+  3. Layout: Sophisticated sidebar layout with user info, navigation
+  4. Styling: Bootstrap + custom CSS + FontAwesome icons
+  5. Features: DataTables, responsive design, Turkish language support
+
+  VIEWS ARCHITECTURE PLAN:
+
+  1. Authentication Views (Account folder)
+
+  - Login.cshtml - Professional login form with company branding
+  - Register.cshtml - Employee registration (requires admin approval)
+  - Profile.cshtml - User profile with document statistics
+  - AccessDenied.cshtml - Access denied page
+
+  2. Document Management Views (Document folder)
+
+  - Index.cshtml - Document listing with advanced filtering/search
+  - Details.cshtml - Complete document view with history/cargo tracking
+  - Create.cshtml - Multi-step document creation wizard
+  - Edit.cshtml - Document editing (only DRAFT status)
+  - History.cshtml - Full audit trail for document
+  - CargoTracking.cshtml - Real-time cargo status updates
+  - MyDocuments.cshtml - Personal document dashboard
+
+  3. User Management Views (User folder)
+
+  - Index.cshtml - User listing with role/department filters
+  - Details.cshtml - User profile with document statistics
+  - Create.cshtml - Admin user creation
+  - Edit.cshtml - User editing
+  - ByDepartment.cshtml - Department-based user view
+  - ByRole.cshtml - Role-based user view
+  - Statistics.cshtml - User performance metrics
+
+  4. Administration Views
+
+  - Department/ - Department management
+  - DocumentType/ - Document type configuration
+  - Role/ - Role management
+
+  5. Dashboard (Home)
+
+  - Index.cshtml - Main dashboard with:
+    - Document statistics cards
+    - Recent documents
+    - Pending actions
+    - Cargo status overview
+    - Role-based widgets
+
+  KEY DESIGN PRINCIPLES:
+
+  1. Role-Based UI: Different views based on user permissions (Muhaberat has full access)
+  2. Financial Theme: Professional styling appropriate for financial institution
+  3. Turkish Language: All UI text in Turkish
+  4. Mobile Responsive: Works on all devices
+  5. Data-Rich: Advanced filtering, sorting, search capabilities
+  6. Status Indicators: Clear visual status for documents and cargo
+  7. Audit Trail: Complete history tracking for compliance
+
+  LOGIN PAGE DESIGN:
+
+  - Clean, professional login form
+  - Company branding/logo
+  - "Remember me" functionality
+  - Registration link for new employees
+  - Error/success message handling
+  - Corporate color scheme

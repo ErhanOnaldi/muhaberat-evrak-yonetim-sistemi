@@ -1,0 +1,349 @@
+@model muhaberat_evrak_yonetim.Entities.Document
+
+@{
+    ViewData["Title"] = "Yeni Evrak Oluştur";
+}
+
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3 mb-0 text-gray-800">
+            <i class="fas fa-plus-circle mr-2"></i>Yeni Evrak Oluştur
+        </h1>
+        <a asp-action="Index" class="btn btn-secondary">
+            <i class="fas fa-arrow-left mr-1"></i>Geri Dön
+        </a>
+    </div>
+
+    @if (!ViewData.ModelState.IsValid)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="fas fa-exclamation-triangle mr-2"></i>
+            <strong>Lütfen aşağıdaki hataları düzeltin:</strong>
+            <ul class="mb-0 mt-2">
+                @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+                {
+                    <li>@error.ErrorMessage</li>
+                }
+            </ul>
+            <button type="button" class="close" data-dismiss="alert">
+                <span>&times;</span>
+            </button>
+        </div>
+    }
+
+    <form method="post" asp-action="Create">
+        @Html.AntiForgeryToken()
+        
+        <div class="row">
+            <!-- Main Information Card -->
+            <div class="col-lg-8">
+                <div class="card shadow mb-4">
+                    <div class="card-header py-3">
+                        <h6 class="m-0 font-weight-bold text-primary">
+                            <i class="fas fa-info-circle mr-2"></i>Evrak Bilgileri
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="Title" class="form-label">
+                                    <i class="fas fa-heading mr-2"></i>Başlık <span class="text-danger">*</span>
+                                </label>
+                                <input asp-for="Title" class="form-control" placeholder="Evrak başlığını girin" required>
+                                <span asp-validation-for="Title" class="text-danger small"></span>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="DocumentTypeId" class="form-label">
+                                    <i class="fas fa-tag mr-2"></i>Evrak Türü <span class="text-danger">*</span>
+                                </label>
+                                <select asp-for="DocumentTypeId" class="form-control" required>
+                                    <option value="">Evrak türü seçin</option>
+                                    @foreach (var docType in ViewData["DocumentTypes"] as List<muhaberat_evrak_yonetim.Entities.DocumentType>)
+                                    {
+                                        <option value="@docType.Id">@docType.TypeName (@docType.TypeCode)</option>
+                                    }
+                                </select>
+                                <span asp-validation-for="DocumentTypeId" class="text-danger small"></span>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="Description" class="form-label">
+                                <i class="fas fa-align-left mr-2"></i>Açıklama
+                            </label>
+                            <textarea asp-for="Description" class="form-control" rows="3" 
+                                     placeholder="Evrak hakkında detaylı bilgi..."></textarea>
+                            <span asp-validation-for="Description" class="text-danger small"></span>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="CustomerId" class="form-label">
+                                    <i class="fas fa-user-tie mr-2"></i>Müşteri ID
+                                </label>
+                                <input asp-for="CustomerId" class="form-control" placeholder="Müşteri kimlik numarası">
+                                <span asp-validation-for="CustomerId" class="text-danger small"></span>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="CustomerName" class="form-label">
+                                    <i class="fas fa-user mr-2"></i>Müşteri Adı
+                                </label>
+                                <input asp-for="CustomerName" class="form-control" placeholder="Müşteri adı ve soyadı">
+                                <span asp-validation-for="CustomerName" class="text-danger small"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recipient Information Card -->
+                <div class="card shadow mb-4">
+                    <div class="card-header py-3">
+                        <h6 class="m-0 font-weight-bold text-success">
+                            <i class="fas fa-user-check mr-2"></i>Alıcı Bilgileri
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="ReceiverUserId" class="form-label">
+                                    <i class="fas fa-user mr-2"></i>Alıcı Kullanıcı
+                                </label>
+                                <select asp-for="ReceiverUserId" class="form-control" id="receiverUser">
+                                    <option value="">Kullanıcı seçin (opsiyonel)</option>
+                                    @foreach (var user in ViewData["Users"] as List<muhaberat_evrak_yonetim.Entities.User>)
+                                    {
+                                        <option value="@user.Id" data-department="@user.DepartmentId">
+                                            @user.FirstName @user.LastName (@user.Department?.DepartmentName)
+                                        </option>
+                                    }
+                                </select>
+                                <span asp-validation-for="ReceiverUserId" class="text-danger small"></span>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="ReceiverDepartmentId" class="form-label">
+                                    <i class="fas fa-building mr-2"></i>Alıcı Departman
+                                </label>
+                                <select asp-for="ReceiverDepartmentId" class="form-control" id="receiverDepartment">
+                                    <option value="">Departman seçin (opsiyonel)</option>
+                                    @foreach (var dept in ViewData["Departments"] as List<muhaberat_evrak_yonetim.Entities.Department>)
+                                    {
+                                        <option value="@dept.Id">@dept.DepartmentName</option>
+                                    }
+                                </select>
+                                <span asp-validation-for="ReceiverDepartmentId" class="text-danger small"></span>
+                                <small class="text-muted">En az birini seçmelisiniz: Kullanıcı veya Departman</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Physical Document Info Card -->
+                <div class="card shadow mb-4">
+                    <div class="card-header py-3">
+                        <h6 class="m-0 font-weight-bold text-warning">
+                            <i class="fas fa-box mr-2"></i>Fiziksel Evrak Bilgileri
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="PhysicalDocumentType" class="form-label">
+                                    <i class="fas fa-file mr-2"></i>Evrak Türü <span class="text-danger">*</span>
+                                </label>
+                                <select asp-for="PhysicalDocumentType" class="form-control" required>
+                                    <option value="">Seçin</option>
+                                    <option value="ORIGINAL">Orijinal</option>
+                                    <option value="COPY">Kopya</option>
+                                    <option value="NOTARIZED">Noterli</option>
+                                </select>
+                                <span asp-validation-for="PhysicalDocumentType" class="text-danger small"></span>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label asp-for="PackageType" class="form-label">
+                                    <i class="fas fa-box-open mr-2"></i>Paket Türü <span class="text-danger">*</span>
+                                </label>
+                                <select asp-for="PackageType" class="form-control" required>
+                                    <option value="">Seçin</option>
+                                    <option value="ENVELOPE">Zarf</option>
+                                    <option value="SMALL_PACKAGE">Küçük Paket</option>
+                                    <option value="LARGE_PACKAGE">Büyük Paket</option>
+                                    <option value="SPECIAL">Özel Paket</option>
+                                </select>
+                                <span asp-validation-for="PackageType" class="text-danger small"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Addresses Card -->
+                <div class="card shadow mb-4">
+                    <div class="card-header py-3">
+                        <h6 class="m-0 font-weight-bold text-info">
+                            <i class="fas fa-map-marker-alt mr-2"></i>Adres Bilgileri
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label asp-for="ShippingAddress" class="form-label">
+                                <i class="fas fa-shipping-fast mr-2"></i>Gönderim Adresi <span class="text-danger">*</span>
+                            </label>
+                            <textarea asp-for="ShippingAddress" class="form-control" rows="3" 
+                                     placeholder="Evrağın gönderileceği adres..." required></textarea>
+                            <span asp-validation-for="ShippingAddress" class="text-danger small"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="DeliveryAddress" class="form-label">
+                                <i class="fas fa-home mr-2"></i>Teslimat Adresi <span class="text-danger">*</span>
+                            </label>
+                            <textarea asp-for="DeliveryAddress" class="form-control" rows="3" 
+                                     placeholder="Evrağın teslim edileceği adres..." required></textarea>
+                            <span asp-validation-for="DeliveryAddress" class="text-danger small"></span>
+                            <div class="form-check mt-2">
+                                <input class="form-check-input" type="checkbox" id="sameAsShipping">
+                                <label class="form-check-label" for="sameAsShipping">
+                                    Gönderim adresi ile aynı
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sidebar -->
+            <div class="col-lg-4">
+                <!-- Sender Information Card -->
+                <div class="card shadow mb-4">
+                    <div class="card-header py-3">
+                        <h6 class="m-0 font-weight-bold text-primary">
+                            <i class="fas fa-user-plus mr-2"></i>Gönderen Bilgileri
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label asp-for="SenderUserId" class="form-label">
+                                <i class="fas fa-user mr-2"></i>Gönderen Kullanıcı <span class="text-danger">*</span>
+                            </label>
+                            <select asp-for="SenderUserId" class="form-control" required>
+                                <option value="">Kullanıcı seçin</option>
+                                @foreach (var user in ViewData["Users"] as List<muhaberat_evrak_yonetim.Entities.User>)
+                                {
+                                    <option value="@user.Id">@user.FirstName @user.LastName (@user.Department?.DepartmentName)</option>
+                                }
+                            </select>
+                            <span asp-validation-for="SenderUserId" class="text-danger small"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="SenderDepartmentId" class="form-label">
+                                <i class="fas fa-building mr-2"></i>Gönderen Departman <span class="text-danger">*</span>
+                            </label>
+                            <select asp-for="SenderDepartmentId" class="form-control" required>
+                                <option value="">Departman seçin</option>
+                                @foreach (var dept in ViewData["Departments"] as List<muhaberat_evrak_yonetim.Entities.Department>)
+                                {
+                                    <option value="@dept.Id">@dept.DepartmentName</option>
+                                }
+                            </select>
+                            <span asp-validation-for="SenderDepartmentId" class="text-danger small"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Action Buttons Card -->
+                <div class="card shadow mb-4">
+                    <div class="card-header py-3">
+                        <h6 class="m-0 font-weight-bold text-success">
+                            <i class="fas fa-save mr-2"></i>İşlemler
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-save mr-2"></i>Evrağı Kaydet
+                            </button>
+                            <a asp-action="Index" class="btn btn-secondary">
+                                <i class="fas fa-times mr-2"></i>İptal Et
+                            </a>
+                        </div>
+
+                        <hr>
+
+                        <div class="alert alert-info">
+                            <h6 class="alert-heading">
+                                <i class="fas fa-info-circle mr-2"></i>Bilgi
+                            </h6>
+                            <small>
+                                Evrak oluşturulduktan sonra <strong>TASLAK</strong> durumunda olacaktır. 
+                                Evrağı göndermek için detay sayfasından "Gönder" butonunu kullanabilirsiniz.
+                            </small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Required Fields Info -->
+                <div class="card shadow">
+                    <div class="card-header py-3">
+                        <h6 class="m-0 font-weight-bold text-danger">
+                            <i class="fas fa-exclamation-triangle mr-2"></i>Zorunlu Alanlar
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <small class="text-muted">
+                            <span class="text-danger">*</span> ile işaretli alanlar zorunludur.
+                            <br><br>
+                            <strong>Not:</strong> Alıcı bölümünde en az bir seçim (Kullanıcı veya Departman) yapmalısınız.
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Auto-sync receiver department when user is selected
+            $('#receiverUser').change(function() {
+                var selectedOption = $(this).find('option:selected');
+                var departmentId = selectedOption.data('department');
+                if (departmentId) {
+                    $('#receiverDepartment').val(departmentId);
+                }
+            });
+
+            // Copy shipping address to delivery address
+            $('#sameAsShipping').change(function() {
+                if ($(this).is(':checked')) {
+                    $('#DeliveryAddress').val($('#ShippingAddress').val());
+                }
+            });
+
+            // Update delivery address when shipping address changes
+            $('#ShippingAddress').on('input', function() {
+                if ($('#sameAsShipping').is(':checked')) {
+                    $('#DeliveryAddress').val($(this).val());
+                }
+            });
+
+            // Auto-expand textareas
+            $('textarea').on('input', function() {
+                this.style.height = 'auto';
+                this.style.height = (this.scrollHeight) + 'px';
+            });
+
+            // Form validation
+            $('form').on('submit', function(e) {
+                var receiverUser = $('#ReceiverUserId').val();
+                var receiverDept = $('#ReceiverDepartmentId').val();
+                
+                if (!receiverUser && !receiverDept) {
+                    e.preventDefault();
+                    alert('Lütfen alıcı kullanıcı veya departman seçin.');
+                    return false;
+                }
+            });
+        });
+    </script>
+}

@@ -1,0 +1,271 @@
+@model muhaberat_evrak_yonetim.Entities.User
+
+@{
+    ViewData["Title"] = "Kayıt Ol";
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Muhaberat Evrak Yönetim Sistemi</title>
+    
+    <!-- CSS Files -->
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link href="~/theme/assets/plugins/global/plugins.bundle.css" rel="stylesheet" type="text/css" />
+    <link href="~/theme/assets/css/style.bundle.css" rel="stylesheet" type="text/css" />
+    <link href="~/fontawesome/css/fontawesome.css" rel="stylesheet" />
+    <link href="~/fontawesome/css/solid.css" rel="stylesheet" />
+    
+    <!-- Fonts -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Poppins:300,400,500,600,700" />
+    
+    <style>
+        .register-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        .register-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border: none;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+        }
+        .company-logo {
+            max-height: 60px;
+            margin-bottom: 15px;
+        }
+        .register-title {
+            color: #5e72e4;
+            font-weight: 600;
+            margin-bottom: 20px;
+        }
+        .form-control, .form-select {
+            border-radius: 8px;
+            border: 1px solid #e3e6f0;
+            padding: 10px 12px;
+            font-size: 14px;
+        }
+        .form-control:focus, .form-select:focus {
+            border-color: #5e72e4;
+            box-shadow: 0 0 0 0.2rem rgba(94, 114, 228, 0.25);
+        }
+        .btn-register {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            border-radius: 8px;
+            padding: 12px 30px;
+            font-weight: 600;
+        }
+        .btn-register:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 5px 12px rgba(94, 114, 228, 0.4);
+        }
+        .login-link {
+            color: #5e72e4;
+            text-decoration: none;
+            font-weight: 500;
+        }
+        .login-link:hover {
+            color: #4c63d2;
+            text-decoration: underline;
+        }
+        .alert {
+            border-radius: 8px;
+            border: none;
+        }
+        .required {
+            color: #e74c3c;
+        }
+    </style>
+</head>
+
+<body class="register-bg">
+    <div class="d-flex align-items-center justify-content-center min-vh-100 py-4">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-xl-6 col-lg-7 col-md-8">
+                    <div class="card register-card">
+                        <div class="card-body p-4">
+                            <div class="text-center mb-4">
+                                <img src="~/theme/assets/media/logos/fuzulevLogo.svg" alt="Logo" class="company-logo">
+                                <h1 class="h4 register-title">Yeni Hesap Oluştur</h1>
+                                <p class="text-muted mb-3">Sisteme kayıt olmak için bilgilerinizi girin</p>
+                            </div>
+
+                            @if (TempData["Success"] != null)
+                            {
+                                <div class="alert alert-success" role="alert">
+                                    <i class="fas fa-check-circle me-2"></i>@TempData["Success"]
+                                </div>
+                            }
+
+                            @if (!ViewData.ModelState.IsValid)
+                            {
+                                <div class="alert alert-danger" role="alert">
+                                    <i class="fas fa-exclamation-triangle me-2"></i>
+                                    @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+                                    {
+                                        <div>@error.ErrorMessage</div>
+                                    }
+                                </div>
+                            }
+
+                            <form method="post" asp-action="Register">
+                                @Html.AntiForgeryToken()
+                                
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label asp-for="FirstName" class="form-label">
+                                            <i class="fas fa-user me-2"></i>Ad <span class="required">*</span>
+                                        </label>
+                                        <input asp-for="FirstName" class="form-control" placeholder="Adınız" required>
+                                        <span asp-validation-for="FirstName" class="text-danger small"></span>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label asp-for="LastName" class="form-label">
+                                            <i class="fas fa-user me-2"></i>Soyad <span class="required">*</span>
+                                        </label>
+                                        <input asp-for="LastName" class="form-control" placeholder="Soyadınız" required>
+                                        <span asp-validation-for="LastName" class="text-danger small"></span>
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label asp-for="Username" class="form-label">
+                                            <i class="fas fa-at me-2"></i>Kullanıcı Adı <span class="required">*</span>
+                                        </label>
+                                        <input asp-for="Username" class="form-control" placeholder="Kullanıcı adınız" required>
+                                        <span asp-validation-for="Username" class="text-danger small"></span>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label asp-for="Email" class="form-label">
+                                            <i class="fas fa-envelope me-2"></i>E-posta <span class="required">*</span>
+                                        </label>
+                                        <input asp-for="Email" type="email" class="form-control" placeholder="ornek@sirket.com" required>
+                                        <span asp-validation-for="Email" class="text-danger small"></span>
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label asp-for="PasswordHash" class="form-label">
+                                            <i class="fas fa-lock me-2"></i>Şifre <span class="required">*</span>
+                                        </label>
+                                        <input asp-for="PasswordHash" type="password" class="form-control" placeholder="Şifreniz" required>
+                                        <span asp-validation-for="PasswordHash" class="text-danger small"></span>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label for="confirmPassword" class="form-label">
+                                            <i class="fas fa-lock me-2"></i>Şifre Tekrar <span class="required">*</span>
+                                        </label>
+                                        <input type="password" id="confirmPassword" name="confirmPassword" class="form-control" placeholder="Şifrenizi tekrar girin" required>
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label asp-for="DepartmentId" class="form-label">
+                                            <i class="fas fa-building me-2"></i>Departman <span class="required">*</span>
+                                        </label>
+                                        <select asp-for="DepartmentId" class="form-select" required>
+                                            <option value="">Departman seçin</option>
+                                            @foreach (var dept in ViewData["Departments"] as List<muhaberat_evrak_yonetim.Entities.Department>)
+                                            {
+                                                <option value="@dept.Id">@dept.DepartmentName</option>
+                                            }
+                                        </select>
+                                        <span asp-validation-for="DepartmentId" class="text-danger small"></span>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label asp-for="RoleId" class="form-label">
+                                            <i class="fas fa-user-tag me-2"></i>Rol <span class="required">*</span>
+                                        </label>
+                                        <select asp-for="RoleId" class="form-select" required>
+                                            <option value="">Rol seçin</option>
+                                            @foreach (var role in ViewData["Roles"] as List<muhaberat_evrak_yonetim.Entities.Role>)
+                                            {
+                                                <option value="@role.Id">@role.RoleName</option>
+                                            }
+                                        </select>
+                                        <span asp-validation-for="RoleId" class="text-danger small"></span>
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label asp-for="UnitId" class="form-label">
+                                        <i class="fas fa-sitemap me-2"></i>Birim
+                                    </label>
+                                    <select asp-for="UnitId" class="form-select">
+                                        <option value="">Birim seçin (opsiyonel)</option>
+                                        @foreach (var unit in ViewData["Units"] as List<muhaberat_evrak_yonetim.Entities.Unit>)
+                                        {
+                                            <option value="@unit.Id">@unit.UnitName</option>
+                                        }
+                                    </select>
+                                    <span asp-validation-for="UnitId" class="text-danger small"></span>
+                                </div>
+
+                                <div class="alert alert-info mb-3">
+                                    <i class="fas fa-info-circle me-2"></i>
+                                    <strong>Bilgi:</strong> Hesabınız oluşturulduktan sonra sistem yöneticisi tarafından onaylanması gerekir.
+                                </div>
+
+                                <div class="d-grid mb-3">
+                                    <button type="submit" class="btn btn-primary btn-register">
+                                        <i class="fas fa-user-plus me-2"></i>Kayıt Ol
+                                    </button>
+                                </div>
+
+                                <div class="text-center">
+                                    <p class="mb-0">
+                                        Zaten hesabınız var mı? 
+                                        <a asp-action="Login" class="login-link">Giriş yapın</a>
+                                    </p>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                    <div class="text-center mt-3">
+                        <p class="text-white-50 small">
+                            © @DateTime.Now.Year Muhaberat Evrak Yönetim Sistemi. Tüm hakları saklıdır.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- JavaScript -->
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/theme/assets/plugins/global/plugins.bundle.js"></script>
+    
+    <script>
+        $(document).ready(function() {
+            // Password confirmation validation
+            $('#confirmPassword').on('blur', function() {
+                var password = $('#PasswordHash').val();
+                var confirmPassword = $(this).val();
+                
+                if (password !== confirmPassword && confirmPassword !== '') {
+                    $(this).addClass('is-invalid');
+                    if (!$(this).next('.invalid-feedback').length) {
+                        $(this).after('<div class="invalid-feedback">Şifreler eşleşmiyor.</div>');
+                    }
+                } else {
+                    $(this).removeClass('is-invalid');
+                    $(this).next('.invalid-feedback').remove();
+                }
+            });
+            
+            // Focus first field
+            $('#FirstName').focus();
+        });
+    </script>
+</body>
+</html>
