@@ -1,0 +1,416 @@
+@{
+    ViewData["Title"] = "Evraklarım";
+    var sentDocuments = ViewBag.SentDocuments as IEnumerable<muhaberat_evrak_yonetim.Entities.Document>;
+    var receivedDocuments = ViewBag.ReceivedDocuments as IEnumerable<muhaberat_evrak_yonetim.Entities.Document>;
+}
+
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3 mb-0 text-gray-800">
+            <i class="fas fa-user-circle mr-2"></i>Evraklarım
+        </h1>
+        <div>
+            <a asp-action="Create" class="btn btn-primary btn-sm mr-2">
+                <i class="fas fa-plus mr-1"></i>Yeni Evrak Ekle
+            </a>
+            <a asp-action="Index" class="btn btn-secondary btn-sm">
+                <i class="fas fa-list mr-1"></i>Tüm Evraklar
+            </a>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-primary shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                Gönderilen Evraklar</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">@(sentDocuments?.Count() ?? 0)</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-paper-plane fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-success shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                Alınan Evraklar</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">@(receivedDocuments?.Count() ?? 0)</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-inbox fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-warning shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                Bekleyen Evraklar</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                @((sentDocuments?.Count(d => d.Status == "DRAFT" || d.Status == "SENT") ?? 0) + 
+                                  (receivedDocuments?.Count(d => d.Status == "DRAFT" || d.Status == "SENT") ?? 0))
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-clock fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-info shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                                Bu Ay</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                @{
+                                    var thisMonth = DateTime.Now.Month;
+                                    var thisYear = DateTime.Now.Year;
+                                    var thisMonthCount = (sentDocuments?.Count(d => d.CreatedDate.Month == thisMonth && d.CreatedDate.Year == thisYear) ?? 0) +
+                                                        (receivedDocuments?.Count(d => d.CreatedDate.Month == thisMonth && d.CreatedDate.Year == thisYear) ?? 0);
+                                }
+                                @thisMonthCount
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-calendar-month fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tab Navigation -->
+    <ul class="nav nav-tabs" id="documentsTab" role="tablist">
+        <li class="nav-item" role="presentation">
+            <a class="nav-link active" id="sent-tab" data-toggle="tab" href="#sent" role="tab">
+                <i class="fas fa-paper-plane mr-2"></i>Gönderilen Evraklar (@(sentDocuments?.Count() ?? 0))
+            </a>
+        </li>
+        <li class="nav-item" role="presentation">
+            <a class="nav-link" id="received-tab" data-toggle="tab" href="#received" role="tab">
+                <i class="fas fa-inbox mr-2"></i>Alınan Evraklar (@(receivedDocuments?.Count() ?? 0))
+            </a>
+        </li>
+    </ul>
+
+    <!-- Tab Content -->
+    <div class="tab-content" id="documentsTabContent">
+        <!-- Sent Documents Tab -->
+        <div class="tab-pane fade show active" id="sent" role="tabpanel">
+            <div class="card shadow mt-3">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-paper-plane mr-2"></i>Gönderdiğim Evraklar
+                    </h6>
+                </div>
+                <div class="card-body">
+                    @if (sentDocuments != null && sentDocuments.Any())
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-bordered" id="sentTable" width="100%" cellspacing="0">
+                                <thead>
+                                    <tr>
+                                        <th>Evrak No</th>
+                                        <th>Başlık</th>
+                                        <th>Tür</th>
+                                        <th>Alıcı</th>
+                                        <th>Durum</th>
+                                        <th>Kargo Durumu</th>
+                                        <th>Tarih</th>
+                                        <th>İşlemler</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var document in sentDocuments)
+                                    {
+                                        <tr>
+                                            <td>
+                                                <strong class="text-primary">@document.DocumentNumber</strong>
+                                            </td>
+                                            <td>
+                                                <a asp-action="Details" asp-route-id="@document.Id" class="text-decoration-none font-weight-bold">
+                                                    @document.Title
+                                                </a>
+                                                @if (!string.IsNullOrEmpty(document.Description))
+                                                {
+                                                    <br><small class="text-muted">@document.Description.Substring(0, Math.Min(50, document.Description.Length))...</small>
+                                                }
+                                            </td>
+                                            <td>
+                                                <span class="badge badge-info badge-pill">
+                                                    @document.DocumentType?.TypeName
+                                                </span>
+                                            </td>
+                                            <td>
+                                                @if (document.ReceiverUser != null)
+                                                {
+                                                    <div><strong>@document.ReceiverUser.FirstName @document.ReceiverUser.LastName</strong></div>
+                                                }
+                                                @if (document.ReceiverDepartment != null)
+                                                {
+                                                    <small class="text-muted">@document.ReceiverDepartment.DepartmentName</small>
+                                                }
+                                            </td>
+                                            <td>
+                                                @{
+                                                    var statusClass = document.Status switch
+                                                    {
+                                                        "DRAFT" => "badge-secondary",
+                                                        "SENT" => "badge-primary",
+                                                        "DELIVERED" => "badge-success",
+                                                        "RECEIVED" => "badge-success",
+                                                        "CANCELLED" => "badge-danger",
+                                                        _ => "badge-secondary"
+                                                    };
+                                                }
+                                                <span class="badge @statusClass">@document.Status</span>
+                                            </td>
+                                            <td>
+                                                @{
+                                                    var deliveryStatusClass = document.DeliveryStatus switch
+                                                    {
+                                                        "PREPARING" => "badge-warning",
+                                                        "SHIPPED" => "badge-info",
+                                                        "IN_TRANSIT" => "badge-primary",
+                                                        "DELIVERED" => "badge-success",
+                                                        "RETURNED" => "badge-danger",
+                                                        _ => "badge-secondary"
+                                                    };
+                                                }
+                                                <span class="badge @deliveryStatusClass">@document.DeliveryStatus</span>
+                                                @if (!string.IsNullOrEmpty(document.CargoTrackingNumber))
+                                                {
+                                                    <br><small class="text-muted">@document.CargoTrackingNumber</small>
+                                                }
+                                            </td>
+                                            <td>
+                                                <div>@document.CreatedDate.ToString("dd.MM.yyyy")</div>
+                                                <small class="text-muted">@document.CreatedDate.ToString("HH:mm")</small>
+                                            </td>
+                                            <td>
+                                                <div class="btn-group" role="group">
+                                                    <a asp-action="Details" asp-route-id="@document.Id" 
+                                                       class="btn btn-sm btn-outline-primary" title="Detaylar">
+                                                        <i class="fas fa-eye"></i>
+                                                    </a>
+                                                    @if (document.Status == "DRAFT")
+                                                    {
+                                                        <a asp-action="Edit" asp-route-id="@document.Id" 
+                                                           class="btn btn-sm btn-outline-warning" title="Düzenle">
+                                                            <i class="fas fa-edit"></i>
+                                                        </a>
+                                                    }
+                                                    <a asp-action="CargoTracking" asp-route-id="@document.Id" 
+                                                       class="btn btn-sm btn-outline-success" title="Kargo Takip">
+                                                        <i class="fas fa-shipping-fast"></i>
+                                                    </a>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-center py-5">
+                            <i class="fas fa-paper-plane fa-3x text-gray-300 mb-3"></i>
+                            <h5 class="text-gray-600">Henüz Gönderilen Evrak Yok</h5>
+                            <p class="text-muted">Henüz hiç evrak göndermediniz.</p>
+                            <a asp-action="Create" class="btn btn-primary">
+                                <i class="fas fa-plus mr-2"></i>İlk Evrağınızı Oluşturun
+                            </a>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- Received Documents Tab -->
+        <div class="tab-pane fade" id="received" role="tabpanel">
+            <div class="card shadow mt-3">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-success">
+                        <i class="fas fa-inbox mr-2"></i>Aldığım Evraklar
+                    </h6>
+                </div>
+                <div class="card-body">
+                    @if (receivedDocuments != null && receivedDocuments.Any())
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-bordered" id="receivedTable" width="100%" cellspacing="0">
+                                <thead>
+                                    <tr>
+                                        <th>Evrak No</th>
+                                        <th>Başlık</th>
+                                        <th>Tür</th>
+                                        <th>Gönderen</th>
+                                        <th>Durum</th>
+                                        <th>Kargo Durumu</th>
+                                        <th>Tarih</th>
+                                        <th>İşlemler</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var document in receivedDocuments)
+                                    {
+                                        <tr>
+                                            <td>
+                                                <strong class="text-success">@document.DocumentNumber</strong>
+                                            </td>
+                                            <td>
+                                                <a asp-action="Details" asp-route-id="@document.Id" class="text-decoration-none font-weight-bold">
+                                                    @document.Title
+                                                </a>
+                                                @if (!string.IsNullOrEmpty(document.Description))
+                                                {
+                                                    <br><small class="text-muted">@document.Description.Substring(0, Math.Min(50, document.Description.Length))...</small>
+                                                }
+                                            </td>
+                                            <td>
+                                                <span class="badge badge-info badge-pill">
+                                                    @document.DocumentType?.TypeName
+                                                </span>
+                                            </td>
+                                            <td>
+                                                @if (document.SenderUser != null)
+                                                {
+                                                    <div><strong>@document.SenderUser.FirstName @document.SenderUser.LastName</strong></div>
+                                                }
+                                                @if (document.SenderDepartment != null)
+                                                {
+                                                    <small class="text-muted">@document.SenderDepartment.DepartmentName</small>
+                                                }
+                                            </td>
+                                            <td>
+                                                @{
+                                                    var statusClass = document.Status switch
+                                                    {
+                                                        "DRAFT" => "badge-secondary",
+                                                        "SENT" => "badge-primary",
+                                                        "DELIVERED" => "badge-success",
+                                                        "RECEIVED" => "badge-success",
+                                                        "CANCELLED" => "badge-danger",
+                                                        _ => "badge-secondary"
+                                                    };
+                                                }
+                                                <span class="badge @statusClass">@document.Status</span>
+                                            </td>
+                                            <td>
+                                                @{
+                                                    var deliveryStatusClass = document.DeliveryStatus switch
+                                                    {
+                                                        "PREPARING" => "badge-warning",
+                                                        "SHIPPED" => "badge-info",
+                                                        "IN_TRANSIT" => "badge-primary",
+                                                        "DELIVERED" => "badge-success",
+                                                        "RETURNED" => "badge-danger",
+                                                        _ => "badge-secondary"
+                                                    };
+                                                }
+                                                <span class="badge @deliveryStatusClass">@document.DeliveryStatus</span>
+                                                @if (!string.IsNullOrEmpty(document.CargoTrackingNumber))
+                                                {
+                                                    <br><small class="text-muted">@document.CargoTrackingNumber</small>
+                                                }
+                                            </td>
+                                            <td>
+                                                <div>@document.CreatedDate.ToString("dd.MM.yyyy")</div>
+                                                <small class="text-muted">@document.CreatedDate.ToString("HH:mm")</small>
+                                            </td>
+                                            <td>
+                                                <div class="btn-group" role="group">
+                                                    <a asp-action="Details" asp-route-id="@document.Id" 
+                                                       class="btn btn-sm btn-outline-primary" title="Detaylar">
+                                                        <i class="fas fa-eye"></i>
+                                                    </a>
+                                                    <a asp-action="History" asp-route-id="@document.Id" 
+                                                       class="btn btn-sm btn-outline-info" title="Geçmiş">
+                                                        <i class="fas fa-history"></i>
+                                                    </a>
+                                                    <a asp-action="CargoTracking" asp-route-id="@document.Id" 
+                                                       class="btn btn-sm btn-outline-success" title="Kargo Takip">
+                                                        <i class="fas fa-shipping-fast"></i>
+                                                    </a>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-center py-5">
+                            <i class="fas fa-inbox fa-3x text-gray-300 mb-3"></i>
+                            <h5 class="text-gray-600">Henüz Alınan Evrak Yok</h5>
+                            <p class="text-muted">Size henüz hiç evrak gönderilmemiş.</p>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Initialize DataTables for both tables
+            $('#sentTable').DataTable({
+                "language": {
+                    "url": "//cdn.datatables.net/plug-ins/1.10.25/i18n/Turkish.json"
+                },
+                "order": [[ 6, "desc" ]],
+                "pageLength": 10,
+                "responsive": true,
+                "columnDefs": [
+                    { "orderable": false, "targets": 7 }
+                ]
+            });
+
+            $('#receivedTable').DataTable({
+                "language": {
+                    "url": "//cdn.datatables.net/plug-ins/1.10.25/i18n/Turkish.json"
+                },
+                "order": [[ 6, "desc" ]],
+                "pageLength": 10,
+                "responsive": true,
+                "columnDefs": [
+                    { "orderable": false, "targets": 7 }
+                ]
+            });
+
+            // Handle tab switching
+            $('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
+                $.fn.dataTable.tables({visible: true, api: true}).columns.adjust();
+            });
+
+            // Auto-refresh every 60 seconds
+            setInterval(function() {
+                location.reload();
+            }, 60000);
+        });
+    </script>
+}
