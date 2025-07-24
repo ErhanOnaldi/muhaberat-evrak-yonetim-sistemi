@@ -1,0 +1,240 @@
+@model IEnumerable<muhaberat_evrak_yonetim.Entities.User>
+@{
+    ViewData["Title"] = "Kullanıcı Yönetimi";
+}
+
+<div class="container-fluid">
+    <!-- Page Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3 mb-0 text-primary">
+            <i class="fas fa-users mr-2"></i>Kullanıcı Yönetimi
+        </h1>
+        <a asp-action="Create" class="btn btn-primary">
+            <i class="fas fa-plus mr-2"></i>Yeni Kullanıcı
+        </a>
+    </div>
+
+    <!-- Success/Error Messages -->
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="fas fa-check-circle mr-2"></i>@TempData["Success"]
+            <button type="button" class="close" data-dismiss="alert">
+                <span>&times;</span>
+            </button>
+        </div>
+    }
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="fas fa-exclamation-triangle mr-2"></i>@TempData["Error"]
+            <button type="button" class="close" data-dismiss="alert">
+                <span>&times;</span>
+            </button>
+        </div>
+    }
+
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-primary shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                Toplam Kullanıcı
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">@Model.Count()</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-users fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-success shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                Aktif Kullanıcı
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">@Model.Count(u => u.IsActive)</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-user-check fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-info shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                                Departman Sayısı
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">@Model.Select(u => u.DepartmentId).Distinct().Count()</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-building fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-warning shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                Rol Sayısı
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">@Model.Select(u => u.RoleId).Distinct().Count()</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-user-tag fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Users Table -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">
+                <i class="fas fa-table mr-2"></i>Kullanıcı Listesi
+            </h6>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered" id="usersTable" width="100%" cellspacing="0">
+                    <thead>
+                        <tr>
+                            <th>Ad Soyad</th>
+                            <th>Kullanıcı Adı</th>
+                            <th>E-posta</th>
+                            <th>Departman</th>
+                            <th>Rol</th>
+                            <th>Birim</th>
+                            <th>Durum</th>
+                            <th>Oluşturma</th>
+                            <th>İşlemler</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var user in Model)
+                        {
+                            <tr>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <div class="avatar-circle mr-2">
+                                            @user.FirstName.Substring(0, 1).ToUpper()@user.LastName.Substring(0, 1).ToUpper()
+                                        </div>
+                                        <strong>@user.FirstName @user.LastName</strong>
+                                    </div>
+                                </td>
+                                <td>@user.Username</td>
+                                <td>@user.Email</td>
+                                <td>
+                                    <span class="badge badge-primary">@user.Department?.DepartmentName</span>
+                                </td>
+                                <td>
+                                    <span class="badge badge-info">@user.Role?.RoleName</span>
+                                </td>
+                                <td>
+                                    <span class="badge badge-secondary">@user.Unit?.UnitName</span>
+                                </td>
+                                <td>
+                                    @if (user.IsActive)
+                                    {
+                                        <span class="badge badge-success">
+                                            <i class="fas fa-check mr-1"></i>Aktif
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge badge-danger">
+                                            <i class="fas fa-times mr-1"></i>Pasif
+                                        </span>
+                                    }
+                                </td>
+                                <td>@user.CreatedAt.ToString("dd.MM.yyyy")</td>
+                                <td>
+                                    <div class="btn-group" role="group">
+                                        <a asp-action="Details" asp-route-id="@user.Id" 
+                                           class="btn btn-sm btn-outline-primary" title="Detaylar">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        <a asp-action="Edit" asp-route-id="@user.Id" 
+                                           class="btn btn-sm btn-outline-secondary" title="Düzenle">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        @if (user.IsActive)
+                                        {
+                                            <form asp-action="Deactivate" asp-route-id="@user.Id" method="post" class="d-inline">
+                                                <button type="submit" class="btn btn-sm btn-outline-danger" 
+                                                        title="Deaktif Et" onclick="return confirm('Bu kullanıcıyı deaktif etmek istediğinize emin misiniz?')">
+                                                    <i class="fas fa-user-slash"></i>
+                                                </button>
+                                            </form>
+                                        }
+                                        else
+                                        {
+                                            <form asp-action="Activate" asp-route-id="@user.Id" method="post" class="d-inline">
+                                                <button type="submit" class="btn btn-sm btn-outline-success" 
+                                                        title="Aktif Et" onclick="return confirm('Bu kullanıcıyı aktif etmek istediğinize emin misiniz?')">
+                                                    <i class="fas fa-user-check"></i>
+                                                </button>
+                                            </form>
+                                        }
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .avatar-circle {
+        width: 35px;
+        height: 35px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 12px;
+        font-weight: bold;
+    }
+</style>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            $('#usersTable').DataTable({
+                "language": {
+                    "url": "//cdn.datatables.net/plug-ins/1.10.25/i18n/Turkish.json"
+                },
+                "order": [[ 0, "asc" ]],
+                "pageLength": 25,
+                "responsive": true
+            });
+        });
+    </script>
+}

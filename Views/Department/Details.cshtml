@@ -1,0 +1,375 @@
+@model muhaberat_evrak_yonetim.Entities.Department
+@{
+    ViewData["Title"] = "Departman Detayları";
+    var stats = ViewBag.Statistics;
+}
+
+<div class="container-fluid">
+    <!-- Page Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3 mb-0 text-primary">
+            <i class="fas fa-building mr-2"></i>Departman Detayları
+        </h1>
+        <div>
+            <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning">
+                <i class="fas fa-edit mr-2"></i>Düzenle
+            </a>
+            <a asp-action="Index" class="btn btn-secondary">
+                <i class="fas fa-arrow-left mr-2"></i>Geri Dön
+            </a>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Department Profile Card -->
+        <div class="col-md-4">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-building mr-2"></i>Departman Profili
+                    </h6>
+                </div>
+                <div class="card-body text-center">
+                    <div class="department-avatar mb-3">
+                        <i class="fas fa-building fa-2x"></i>
+                    </div>
+                    <h4 class="mb-2">@Model.DepartmentName</h4>
+                    <p class="text-muted mb-3">
+                        <i class="fas fa-code mr-1"></i>@Model.DepartmentCode
+                    </p>
+                    
+                    @if (Model.IsActive)
+                    {
+                        <span class="badge badge-success p-2">
+                            <i class="fas fa-check mr-1"></i>Aktif Departman
+                        </span>
+                    }
+                    else
+                    {
+                        <span class="badge badge-danger p-2">
+                            <i class="fas fa-times mr-1"></i>Pasif Departman
+                        </span>
+                    }
+
+                    @if (Model.HasFullAccess)
+                    {
+                        <span class="badge badge-warning p-2 ml-2">
+                            <i class="fas fa-crown mr-1"></i>Özel Yetki
+                        </span>
+                    }
+
+                    <hr>
+
+                    <div class="row text-center">
+                        <div class="col-6">
+                            <strong class="d-block">@stats.TotalUsers</strong>
+                            <small class="text-muted">Kullanıcı</small>
+                        </div>
+                        <div class="col-6">
+                            <strong class="d-block">@stats.TotalSentDocuments</strong>
+                            <small class="text-muted">Gönderilen</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Department Information -->
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-info-circle mr-2"></i>Departman Bilgileri
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-2">
+                        <div class="col-sm-4"><strong>Birim:</strong></div>
+                        <div class="col-sm-8">
+                            <span class="badge badge-info">@Model.Unit?.UnitName</span>
+                        </div>
+                    </div>
+                    <div class="row mb-2">
+                        <div class="col-sm-4"><strong>Kod:</strong></div>
+                        <div class="col-sm-8">
+                            <code class="bg-light p-1 rounded">@Model.DepartmentCode</code>
+                        </div>
+                    </div>
+                    <div class="row mb-2">
+                        <div class="col-sm-4"><strong>Özel Yetki:</strong></div>
+                        <div class="col-sm-8">
+                            @if (Model.HasFullAccess)
+                            {
+                                <span class="badge badge-warning">
+                                    <i class="fas fa-crown mr-1"></i>Tam Yetki
+                                </span>
+                            }
+                            else
+                            {
+                                <span class="badge badge-light">Normal Yetki</span>
+                            }
+                        </div>
+                    </div>
+                    <div class="row mb-2">
+                        <div class="col-sm-4"><strong>Oluşturma:</strong></div>
+                        <div class="col-sm-8">@Model.CreatedAt.ToString("dd.MM.yyyy HH:mm")</div>
+                    </div>
+                    @if (!string.IsNullOrEmpty(Model.Description))
+                    {
+                        <div class="row">
+                            <div class="col-sm-4"><strong>Açıklama:</strong></div>
+                            <div class="col-sm-8">@Model.Description</div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- Statistics and Activities -->
+        <div class="col-md-8">
+            <!-- Statistics Cards -->
+            <div class="row mb-4">
+                <div class="col-md-6 mb-3">
+                    <div class="card border-left-primary shadow h-100 py-2">
+                        <div class="card-body">
+                            <div class="row no-gutters align-items-center">
+                                <div class="col mr-2">
+                                    <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                        Toplam Kullanıcı
+                                    </div>
+                                    <div class="h5 mb-0 font-weight-bold text-gray-800">@stats.TotalUsers</div>
+                                </div>
+                                <div class="col-auto">
+                                    <i class="fas fa-users fa-2x text-gray-300"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-6 mb-3">
+                    <div class="card border-left-success shadow h-100 py-2">
+                        <div class="card-body">
+                            <div class="row no-gutters align-items-center">
+                                <div class="col mr-2">
+                                    <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                        Gönderilen Evraklar
+                                    </div>
+                                    <div class="h5 mb-0 font-weight-bold text-gray-800">@stats.TotalSentDocuments</div>
+                                </div>
+                                <div class="col-auto">
+                                    <i class="fas fa-paper-plane fa-2x text-gray-300"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-6 mb-3">
+                    <div class="card border-left-info shadow h-100 py-2">
+                        <div class="card-body">
+                            <div class="row no-gutters align-items-center">
+                                <div class="col mr-2">
+                                    <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                                        Alınan Evraklar
+                                    </div>
+                                    <div class="h5 mb-0 font-weight-bold text-gray-800">@stats.TotalReceivedDocuments</div>
+                                </div>
+                                <div class="col-auto">
+                                    <i class="fas fa-inbox fa-2x text-gray-300"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-6 mb-3">
+                    <div class="card border-left-warning shadow h-100 py-2">
+                        <div class="card-body">
+                            <div class="row no-gutters align-items-center">
+                                <div class="col mr-2">
+                                    <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                        Bekleyen Evraklar
+                                    </div>
+                                    <div class="h5 mb-0 font-weight-bold text-gray-800">@stats.PendingDocuments</div>
+                                </div>
+                                <div class="col-auto">
+                                    <i class="fas fa-clock fa-2x text-gray-300"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Department Users -->
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-users mr-2"></i>Departman Kullanıcıları
+                    </h6>
+                    <a asp-action="Users" asp-route-id="@Model.Id" class="btn btn-sm btn-primary">
+                        <i class="fas fa-list mr-1"></i>Tümünü Gör
+                    </a>
+                </div>
+                <div class="card-body">
+                    @if (Model.Users?.Any() == true)
+                    {
+                        <div class="row">
+                            @foreach (var user in Model.Users.Where(u => u.IsActive).Take(6))
+                            {
+                                <div class="col-md-6 mb-3">
+                                    <div class="d-flex align-items-center p-2 bg-light rounded">
+                                        <div class="user-avatar-small mr-2">
+                                            @user.FirstName.Substring(0, 1).ToUpper()@user.LastName.Substring(0, 1).ToUpper()
+                                        </div>
+                                        <div class="flex-grow-1">
+                                            <strong class="small">@user.FirstName @user.LastName</strong>
+                                            <br><small class="text-muted">@user.Role?.RoleName</small>
+                                        </div>
+                                        <div>
+                                            <a asp-controller="User" asp-action="Details" asp-route-id="@user.Id" 
+                                               class="btn btn-sm btn-outline-primary">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                        
+                        @if (Model.Users.Count(u => u.IsActive) > 6)
+                        {
+                            <div class="text-center mt-3">
+                                <small class="text-muted">
+                                    +@(Model.Users.Count(u => u.IsActive) - 6) kullanıcı daha...
+                                </small>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <div class="text-center py-4">
+                            <i class="fas fa-users fa-3x text-gray-300 mb-3"></i>
+                            <p class="text-muted">Bu departmanda henüz kullanıcı bulunmamaktadır.</p>
+                            <a asp-controller="User" asp-action="Create" class="btn btn-primary">
+                                <i class="fas fa-user-plus mr-2"></i>İlk Kullanıcıyı Ekle
+                            </a>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <!-- Recent Documents -->
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 d-flex justify-content-between align-items-center">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-file-alt mr-2"></i>Son Gönderilen Evraklar
+                    </h6>
+                    <a asp-action="Documents" asp-route-id="@Model.Id" class="btn btn-sm btn-primary">
+                        <i class="fas fa-list mr-1"></i>Tümünü Gör
+                    </a>
+                </div>
+                <div class="card-body">
+                    @if (Model.SentDocuments?.Any() == true)
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Evrak No</th>
+                                        <th>Başlık</th>
+                                        <th>Gönderen</th>
+                                        <th>Durum</th>
+                                        <th>Tarih</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var doc in Model.SentDocuments.OrderByDescending(d => d.CreatedDate).Take(5))
+                                    {
+                                        <tr>
+                                            <td>
+                                                <a asp-controller="Document" asp-action="Details" asp-route-id="@doc.Id" 
+                                                   class="text-decoration-none">
+                                                    @doc.DocumentNumber
+                                                </a>
+                                            </td>
+                                            <td>@doc.Title</td>
+                                            <td>
+                                                @if (doc.SenderUser != null)
+                                                {
+                                                    <span>@doc.SenderUser.FirstName @doc.SenderUser.LastName</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="text-muted">-</span>
+                                                }
+                                            </td>
+                                            <td>
+                                                @switch (doc.Status)
+                                                {
+                                                    case "DRAFT":
+                                                        <span class="badge badge-secondary">Taslak</span>
+                                                        break;
+                                                    case "SENT":
+                                                        <span class="badge badge-primary">Gönderildi</span>
+                                                        break;
+                                                    case "DELIVERED":
+                                                        <span class="badge badge-success">Teslim Edildi</span>
+                                                        break;
+                                                    case "RECEIVED":
+                                                        <span class="badge badge-info">Alındı</span>
+                                                        break;
+                                                    case "CANCELLED":
+                                                        <span class="badge badge-danger">İptal</span>
+                                                        break;
+                                                    default:
+                                                        <span class="badge badge-light">@doc.Status</span>
+                                                        break;
+                                                }
+                                            </td>
+                                            <td>@doc.CreatedDate.ToString("dd.MM.yyyy")</td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-center py-4">
+                            <i class="fas fa-file-alt fa-3x text-gray-300 mb-3"></i>
+                            <p class="text-muted">Bu departmandan henüz evrak gönderilmemiştir.</p>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .department-avatar {
+        width: 80px;
+        height: 80px;
+        border-radius: 15px;
+        background: linear-gradient(135deg, #4e73df 0%, #224abe 100%);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto;
+        box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+
+    .user-avatar-small {
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 10px;
+        font-weight: bold;
+    }
+</style>

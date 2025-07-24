@@ -5,7 +5,7 @@ using muhaberat_evrak_yonetim.Entities;
 
 namespace muhaberat_evrak_yonetim.Controllers;
 
-public class DepartmentController : Controller
+public class DepartmentController : BaseController
 {
     private readonly DataContext _context;
     private readonly ILogger<DepartmentController> _logger;

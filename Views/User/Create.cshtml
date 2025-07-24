@@ -1,0 +1,237 @@
+@model muhaberat_evrak_yonetim.Entities.User
+@{
+    ViewData["Title"] = "Yeni Kullanıcı Oluştur";
+    var departments = ViewData["Departments"] as IEnumerable<muhaberat_evrak_yonetim.Entities.Department>;
+    var roles = ViewData["Roles"] as IEnumerable<muhaberat_evrak_yonetim.Entities.Role>;
+    var units = ViewData["Units"] as IEnumerable<muhaberat_evrak_yonetim.Entities.Unit>;
+}
+
+<div class="container-fluid">
+    <!-- Page Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3 mb-0 text-primary">
+            <i class="fas fa-user-plus mr-2"></i>Yeni Kullanıcı Oluştur
+        </h1>
+        <a asp-action="Index" class="btn btn-secondary">
+            <i class="fas fa-arrow-left mr-2"></i>Geri Dön
+        </a>
+    </div>
+
+    <!-- Form Card -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">
+                <i class="fas fa-user-edit mr-2"></i>Kullanıcı Bilgileri
+            </h6>
+        </div>
+        <div class="card-body">
+            <form asp-action="Create" method="post">
+                <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+                
+                <div class="row">
+                    <!-- Personal Information -->
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label asp-for="FirstName" class="control-label">
+                                <i class="fas fa-user mr-1"></i>Ad *
+                            </label>
+                            <input asp-for="FirstName" class="form-control" placeholder="Kullanıcının adını giriniz" />
+                            <span asp-validation-for="FirstName" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label asp-for="LastName" class="control-label">
+                                <i class="fas fa-user mr-1"></i>Soyad *
+                            </label>
+                            <input asp-for="LastName" class="form-control" placeholder="Kullanıcının soyadını giriniz" />
+                            <span asp-validation-for="LastName" class="text-danger"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label asp-for="Username" class="control-label">
+                                <i class="fas fa-at mr-1"></i>Kullanıcı Adı *
+                            </label>
+                            <input asp-for="Username" class="form-control" placeholder="Benzersiz kullanıcı adı" />
+                            <span asp-validation-for="Username" class="text-danger"></span>
+                            <small class="form-text text-muted">Kullanıcı adı benzersiz olmalıdır</small>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label asp-for="Email" class="control-label">
+                                <i class="fas fa-envelope mr-1"></i>E-posta *
+                            </label>
+                            <input asp-for="Email" type="email" class="form-control" placeholder="ornek@firma.com" />
+                            <span asp-validation-for="Email" class="text-danger"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Password Fields -->
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label asp-for="PasswordHash" class="control-label">
+                                <i class="fas fa-lock mr-1"></i>Şifre *
+                            </label>
+                            <input asp-for="PasswordHash" type="password" class="form-control" placeholder="Güçlü bir şifre oluşturun" />
+                            <span asp-validation-for="PasswordHash" class="text-danger"></span>
+                            <small class="form-text text-muted">En az 6 karakter olmalıdır</small>
+                        </div>
+                    </div>
+
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label for="confirmPassword" class="control-label">
+                                <i class="fas fa-lock mr-1"></i>Şifre Tekrar *
+                            </label>
+                            <input name="confirmPassword" type="password" class="form-control" placeholder="Şifreyi tekrar giriniz" />
+                            <small class="form-text text-muted">Şifreler eşleşmelidir</small>
+                        </div>
+                    </div>
+                </div>
+
+                <hr class="my-4">
+
+                <!-- Organization Information -->
+                <h5 class="mb-3">
+                    <i class="fas fa-building mr-2 text-primary"></i>Organizasyon Bilgileri
+                </h5>
+
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label asp-for="UnitId" class="control-label">
+                                <i class="fas fa-sitemap mr-1"></i>Birim *
+                            </label>
+                            <select asp-for="UnitId" class="form-control" id="unitSelect">
+                                <option value="">-- Birim Seçiniz --</option>
+                                @if (units != null)
+                                {
+                                    @foreach (var unit in units)
+                                    {
+                                        <option value="@unit.Id">@unit.UnitName</option>
+                                    }
+                                }
+                            </select>
+                            <span asp-validation-for="UnitId" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label asp-for="DepartmentId" class="control-label">
+                                <i class="fas fa-building mr-1"></i>Departman *
+                            </label>
+                            <select asp-for="DepartmentId" class="form-control" id="departmentSelect">
+                                <option value="">-- Departman Seçiniz --</option>
+                                @if (departments != null)
+                                {
+                                    @foreach (var dept in departments)
+                                    {
+                                        <option value="@dept.Id" data-unit="@dept.UnitId">
+                                            @dept.DepartmentName (@dept.DepartmentCode)
+                                        </option>
+                                    }
+                                }
+                            </select>
+                            <span asp-validation-for="DepartmentId" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label asp-for="RoleId" class="control-label">
+                                <i class="fas fa-user-tag mr-1"></i>Rol *
+                            </label>
+                            <select asp-for="RoleId" class="form-control">
+                                <option value="">-- Rol Seçiniz --</option>
+                                @if (roles != null)
+                                {
+                                    @foreach (var role in roles)
+                                    {
+                                        <option value="@role.Id">@role.RoleName (@role.RoleCode)</option>
+                                    }
+                                }
+                            </select>
+                            <span asp-validation-for="RoleId" class="text-danger"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Additional Information -->
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle mr-2"></i>
+                    <strong>Bilgi:</strong> Yeni kullanıcı varsayılan olarak aktif durumda oluşturulacaktır. 
+                    Gerekirse daha sonra kullanıcı listesinden deaktif edebilirsiniz.
+                </div>
+
+                <hr class="my-4">
+
+                <!-- Form Actions -->
+                <div class="form-group">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save mr-2"></i>Kullanıcı Oluştur
+                    </button>
+                    <a asp-action="Index" class="btn btn-secondary ml-2">
+                        <i class="fas fa-times mr-2"></i>İptal
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    
+    <script>
+        $(document).ready(function() {
+            // Department filtering based on unit selection
+            $('#unitSelect').change(function() {
+                var selectedUnit = $(this).val();
+                var departmentSelect = $('#departmentSelect');
+                
+                // Reset department selection
+                departmentSelect.val('');
+                
+                // Show/hide departments based on selected unit
+                departmentSelect.find('option').each(function() {
+                    var option = $(this);
+                    var optionUnit = option.data('unit');
+                    
+                    if (option.val() === '' || !selectedUnit || optionUnit == selectedUnit) {
+                        option.show();
+                    } else {
+                        option.hide();
+                    }
+                });
+            });
+
+            // Form validation
+            $('form').submit(function(e) {
+                var password = $('input[name="PasswordHash"]').val();
+                var confirmPassword = $('input[name="confirmPassword"]').val();
+                
+                if (password !== confirmPassword) {
+                    e.preventDefault();
+                    alert('Şifreler eşleşmiyor!');
+                    return false;
+                }
+                
+                if (password.length < 6) {
+                    e.preventDefault();
+                    alert('Şifre en az 6 karakter olmalıdır!');
+                    return false;
+                }
+            });
+        });
+    </script>
+}

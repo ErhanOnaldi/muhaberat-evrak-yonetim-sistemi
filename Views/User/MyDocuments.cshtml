@@ -1,0 +1,407 @@
+@{
+    ViewData["Title"] = "Evrak Listem";
+    var user = ViewBag.User as muhaberat_evrak_yonetim.Entities.User;
+    var sentDocuments = ViewBag.SentDocuments as IEnumerable<muhaberat_evrak_yonetim.Entities.Document>;
+    var receivedDocuments = ViewBag.ReceivedDocuments as IEnumerable<muhaberat_evrak_yonetim.Entities.Document>;
+}
+
+<div class="container-fluid">
+    <!-- Page Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3 mb-0 text-primary">
+            <i class="fas fa-folder-open mr-2"></i>@user.FirstName @user.LastName - Evrak Listem
+        </h1>
+        <div>
+            <a asp-controller="Document" asp-action="Create" class="btn btn-primary">
+                <i class="fas fa-plus mr-2"></i>Yeni Evrak
+            </a>
+            <a asp-action="Index" class="btn btn-secondary">
+                <i class="fas fa-arrow-left mr-2"></i>Kullanıcı Listesi
+            </a>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-primary shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                Gönderilen
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">@(sentDocuments?.Count() ?? 0)</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-paper-plane fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-success shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                Alınan
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">@(receivedDocuments?.Count() ?? 0)</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-inbox fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-warning shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                Bekleyen
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                @((sentDocuments?.Count(d => d.Status != "DELIVERED" && d.Status != "RECEIVED") ?? 0) +
+                                  (receivedDocuments?.Count(d => d.Status != "DELIVERED" && d.Status != "RECEIVED") ?? 0))
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-clock fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-info shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                                Bu Ay
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                @((sentDocuments?.Count(d => d.CreatedDate.Month == DateTime.Now.Month && d.CreatedDate.Year == DateTime.Now.Year) ?? 0) +
+                                  (receivedDocuments?.Count(d => d.CreatedDate.Month == DateTime.Now.Month && d.CreatedDate.Year == DateTime.Now.Year) ?? 0))
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-calendar fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Documents Tabs -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <ul class="nav nav-tabs card-header-tabs" id="documentsTab" role="tablist">
+                <li class="nav-item">
+                    <a class="nav-link active" id="sent-tab" data-toggle="tab" href="#sent" role="tab">
+                        <i class="fas fa-paper-plane mr-2"></i>Gönderdiğim Evraklar (@(sentDocuments?.Count() ?? 0))
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" id="received-tab" data-toggle="tab" href="#received" role="tab">
+                        <i class="fas fa-inbox mr-2"></i>Aldığım Evraklar (@(receivedDocuments?.Count() ?? 0))
+                    </a>
+                </li>
+            </ul>
+        </div>
+        <div class="card-body">
+            <div class="tab-content" id="documentsTabContent">
+                <!-- Sent Documents Tab -->
+                <div class="tab-pane fade show active" id="sent" role="tabpanel">
+                    @if (sentDocuments?.Any() == true)
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-bordered" id="sentTable" width="100%">
+                                <thead>
+                                    <tr>
+                                        <th>Evrak No</th>
+                                        <th>Başlık</th>
+                                        <th>Türü</th>
+                                        <th>Alıcı</th>
+                                        <th>Durum</th>
+                                        <th>Kargo Durumu</th>
+                                        <th>Tarih</th>
+                                        <th>İşlemler</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var doc in sentDocuments)
+                                    {
+                                        <tr>
+                                            <td>
+                                                <a asp-controller="Document" asp-action="Details" asp-route-id="@doc.Id" 
+                                                   class="text-decoration-none font-weight-bold">
+                                                    @doc.DocumentNumber
+                                                </a>
+                                            </td>
+                                            <td>@doc.Title</td>
+                                            <td>
+                                                <span class="badge badge-info">@doc.DocumentType?.TypeName</span>
+                                            </td>
+                                            <td>
+                                                @if (doc.ReceiverUser != null)
+                                                {
+                                                    <span>@doc.ReceiverUser.FirstName @doc.ReceiverUser.LastName</span>
+                                                    <br><small class="text-muted">@doc.ReceiverDepartment?.DepartmentName</small>
+                                                }
+                                                else
+                                                {
+                                                    <span class="badge badge-secondary">@doc.ReceiverDepartment?.DepartmentName</span>
+                                                }
+                                            </td>
+                                            <td>
+                                                @switch (doc.Status)
+                                                {
+                                                    case "DRAFT":
+                                                        <span class="badge badge-secondary">Taslak</span>
+                                                        break;
+                                                    case "SENT":
+                                                        <span class="badge badge-primary">Gönderildi</span>
+                                                        break;
+                                                    case "DELIVERED":
+                                                        <span class="badge badge-success">Teslim Edildi</span>
+                                                        break;
+                                                    case "RECEIVED":
+                                                        <span class="badge badge-info">Alındı</span>
+                                                        break;
+                                                    case "CANCELLED":
+                                                        <span class="badge badge-danger">İptal</span>
+                                                        break;
+                                                    default:
+                                                        <span class="badge badge-light">@doc.Status</span>
+                                                        break;
+                                                }
+                                            </td>
+                                            <td>
+                                                @switch (doc.DeliveryStatus)
+                                                {
+                                                    case "PREPARING":
+                                                        <span class="badge badge-warning">Hazırlanıyor</span>
+                                                        break;
+                                                    case "SHIPPED":
+                                                        <span class="badge badge-primary">Kargoya Verildi</span>
+                                                        break;
+                                                    case "IN_TRANSIT":
+                                                        <span class="badge badge-info">Yolda</span>
+                                                        break;
+                                                    case "DELIVERED":
+                                                        <span class="badge badge-success">Teslim Edildi</span>
+                                                        break;
+                                                    case "RETURNED":
+                                                        <span class="badge badge-danger">İade</span>
+                                                        break;
+                                                    default:
+                                                        <span class="badge badge-light">@doc.DeliveryStatus</span>
+                                                        break;
+                                                }
+                                            </td>
+                                            <td>@doc.CreatedDate.ToString("dd.MM.yyyy")</td>
+                                            <td>
+                                                <div class="btn-group" role="group">
+                                                    <a asp-controller="Document" asp-action="Details" asp-route-id="@doc.Id" 
+                                                       class="btn btn-sm btn-outline-primary" title="Detaylar">
+                                                        <i class="fas fa-eye"></i>
+                                                    </a>
+                                                    @if (doc.Status == "DRAFT")
+                                                    {
+                                                        <a asp-controller="Document" asp-action="Edit" asp-route-id="@doc.Id" 
+                                                           class="btn btn-sm btn-outline-secondary" title="Düzenle">
+                                                            <i class="fas fa-edit"></i>
+                                                        </a>
+                                                    }
+                                                    @if (!string.IsNullOrEmpty(doc.CargoTrackingNumber))
+                                                    {
+                                                        <a asp-controller="Document" asp-action="CargoTracking" asp-route-id="@doc.Id" 
+                                                           class="btn btn-sm btn-outline-info" title="Kargo Takip">
+                                                            <i class="fas fa-truck"></i>
+                                                        </a>
+                                                    }
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-center py-5">
+                            <i class="fas fa-paper-plane fa-3x text-gray-300 mb-3"></i>
+                            <h5 class="text-muted">Henüz gönderimiş evrak bulunmamaktadır</h5>
+                            <a asp-controller="Document" asp-action="Create" class="btn btn-primary mt-3">
+                                <i class="fas fa-plus mr-2"></i>İlk Evrağınızı Oluşturun
+                            </a>
+                        </div>
+                    }
+                </div>
+
+                <!-- Received Documents Tab -->
+                <div class="tab-pane fade" id="received" role="tabpanel">
+                    @if (receivedDocuments?.Any() == true)
+                    {
+                        <div class="table-responsive">
+                            <table class="table table-bordered" id="receivedTable" width="100%">
+                                <thead>
+                                    <tr>
+                                        <th>Evrak No</th>
+                                        <th>Başlık</th>
+                                        <th>Türü</th>
+                                        <th>Gönderen</th>
+                                        <th>Durum</th>
+                                        <th>Kargo Durumu</th>
+                                        <th>Tarih</th>
+                                        <th>İşlemler</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var doc in receivedDocuments)
+                                    {
+                                        <tr>
+                                            <td>
+                                                <a asp-controller="Document" asp-action="Details" asp-route-id="@doc.Id" 
+                                                   class="text-decoration-none font-weight-bold">
+                                                    @doc.DocumentNumber
+                                                </a>
+                                            </td>
+                                            <td>@doc.Title</td>
+                                            <td>
+                                                <span class="badge badge-info">@doc.DocumentType?.TypeName</span>
+                                            </td>
+                                            <td>
+                                                @if (doc.SenderUser != null)
+                                                {
+                                                    <span>@doc.SenderUser.FirstName @doc.SenderUser.LastName</span>
+                                                    <br><small class="text-muted">@doc.SenderDepartment?.DepartmentName</small>
+                                                }
+                                                else
+                                                {
+                                                    <span class="badge badge-secondary">@doc.SenderDepartment?.DepartmentName</span>
+                                                }
+                                            </td>
+                                            <td>
+                                                @switch (doc.Status)
+                                                {
+                                                    case "DRAFT":
+                                                        <span class="badge badge-secondary">Taslak</span>
+                                                        break;
+                                                    case "SENT":
+                                                        <span class="badge badge-primary">Gönderildi</span>
+                                                        break;
+                                                    case "DELIVERED":
+                                                        <span class="badge badge-success">Teslim Edildi</span>
+                                                        break;
+                                                    case "RECEIVED":
+                                                        <span class="badge badge-info">Alındı</span>
+                                                        break;
+                                                    case "CANCELLED":
+                                                        <span class="badge badge-danger">İptal</span>
+                                                        break;
+                                                    default:
+                                                        <span class="badge badge-light">@doc.Status</span>
+                                                        break;
+                                                }
+                                            </td>
+                                            <td>
+                                                @switch (doc.DeliveryStatus)
+                                                {
+                                                    case "PREPARING":
+                                                        <span class="badge badge-warning">Hazırlanıyor</span>
+                                                        break;
+                                                    case "SHIPPED":
+                                                        <span class="badge badge-primary">Kargoya Verildi</span>
+                                                        break;
+                                                    case "IN_TRANSIT":
+                                                        <span class="badge badge-info">Yolda</span>
+                                                        break;
+                                                    case "DELIVERED":
+                                                        <span class="badge badge-success">Teslim Edildi</span>
+                                                        break;
+                                                    case "RETURNED":
+                                                        <span class="badge badge-danger">İade</span>
+                                                        break;
+                                                    default:
+                                                        <span class="badge badge-light">@doc.DeliveryStatus</span>
+                                                        break;
+                                                }
+                                            </td>
+                                            <td>@doc.CreatedDate.ToString("dd.MM.yyyy")</td>
+                                            <td>
+                                                <div class="btn-group" role="group">
+                                                    <a asp-controller="Document" asp-action="Details" asp-route-id="@doc.Id" 
+                                                       class="btn btn-sm btn-outline-primary" title="Detaylar">
+                                                        <i class="fas fa-eye"></i>
+                                                    </a>
+                                                    @if (!string.IsNullOrEmpty(doc.CargoTrackingNumber))
+                                                    {
+                                                        <a asp-controller="Document" asp-action="CargoTracking" asp-route-id="@doc.Id" 
+                                                           class="btn btn-sm btn-outline-info" title="Kargo Takip">
+                                                            <i class="fas fa-truck"></i>
+                                                        </a>
+                                                    }
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-center py-5">
+                            <i class="fas fa-inbox fa-3x text-gray-300 mb-3"></i>
+                            <h5 class="text-muted">Henüz alınmış evrak bulunmamaktadır</h5>
+                            <p class="text-muted">Size gönderilen evraklar burada görünecektir.</p>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Initialize DataTables for both tabs
+            $('#sentTable').DataTable({
+                "language": {
+                    "url": "//cdn.datatables.net/plug-ins/1.10.25/i18n/Turkish.json"
+                },
+                "order": [[ 6, "desc" ]],
+                "pageLength": 25,
+                "responsive": true
+            });
+
+            $('#receivedTable').DataTable({
+                "language": {
+                    "url": "//cdn.datatables.net/plug-ins/1.10.25/i18n/Turkish.json"
+                },
+                "order": [[ 6, "desc" ]],
+                "pageLength": 25,
+                "responsive": true
+            });
+
+            // Handle tab switching
+            $('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
+                // Adjust DataTables columns when tab is shown
+                $.fn.dataTable.tables({ visible: true, api: true }).columns.adjust();
+            });
+        });
+    </script>
+}

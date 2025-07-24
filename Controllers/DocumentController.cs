@@ -5,7 +5,7 @@ using muhaberat_evrak_yonetim.Entities;
 
 namespace muhaberat_evrak_yonetim.Controllers;
 
-public class DocumentController : Controller
+public class DocumentController : BaseController
 {
     private readonly DataContext _context;
     private readonly ILogger<DocumentController> _logger;
@@ -410,8 +410,8 @@ public class DocumentController : Controller
 
     public async Task<IActionResult> MyDocuments()
     {
-        // This should use current user from session
-        int currentUserId = 1; // Placeholder - implement session management
+        // Get current user from session
+        int currentUserId = GetCurrentUserIdRequired();
 
         var sentDocuments = await _context.Documents
             .Include(d => d.DocumentType)

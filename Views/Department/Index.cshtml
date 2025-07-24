@@ -1,0 +1,345 @@
+@model IEnumerable<muhaberat_evrak_yonetim.Entities.Department>
+@{
+    ViewData["Title"] = "Departman Yönetimi";
+}
+
+<div class="container-fluid">
+    <!-- Page Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3 mb-0 text-primary">
+            <i class="fas fa-building mr-2"></i>Departman Yönetimi
+        </h1>
+        <a asp-action="Create" class="btn btn-primary">
+            <i class="fas fa-plus mr-2"></i>Yeni Departman
+        </a>
+    </div>
+
+    <!-- Success/Error Messages -->
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="fas fa-check-circle mr-2"></i>@TempData["Success"]
+            <button type="button" class="close" data-dismiss="alert">
+                <span>&times;</span>
+            </button>
+        </div>
+    }
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="fas fa-exclamation-triangle mr-2"></i>@TempData["Error"]
+            <button type="button" class="close" data-dismiss="alert">
+                <span>&times;</span>
+            </button>
+        </div>
+    }
+
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-primary shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                Toplam Departman
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">@Model.Count()</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-building fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-success shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                Aktif Departman
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">@Model.Count(d => d.IsActive)</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-check-circle fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-warning shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                Özel Yetkili
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">@Model.Count(d => d.HasFullAccess)</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-crown fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-info shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                                Farklı Birim
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">@Model.Select(d => d.UnitId).Distinct().Count()</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-sitemap fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Departments by Unit -->
+    @{
+        var departmentsByUnit = Model.GroupBy(d => d.Unit?.UnitName ?? "Bilinmeyen Birim");
+    }
+
+    <div class="row mb-4">
+        @foreach (var unitGroup in departmentsByUnit)
+        {
+            <div class="col-lg-4 mb-4">
+                <div class="card shadow h-100">
+                    <div class="card-header py-3">
+                        <h6 class="m-0 font-weight-bold text-primary">
+                            <i class="fas fa-sitemap mr-2"></i>@unitGroup.Key
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        @foreach (var dept in unitGroup.OrderBy(d => d.DepartmentName))
+                        {
+                            <div class="d-flex align-items-center justify-content-between mb-2 p-2 @(dept.IsActive ? "bg-light" : "bg-secondary") rounded">
+                                <div class="d-flex align-items-center">
+                                    <div class="department-icon-small mr-2">
+                                        <i class="fas fa-building"></i>
+                                    </div>
+                                    <div>
+                                        <strong class="small">@dept.DepartmentName</strong>
+                                        <br><small class="text-muted">@dept.DepartmentCode</small>
+                                    </div>
+                                </div>
+                                <div class="text-right">
+                                    @if (dept.HasFullAccess)
+                                    {
+                                        <span class="badge badge-warning badge-sm">
+                                            <i class="fas fa-crown"></i>
+                                        </span>
+                                    }
+                                    @if (dept.IsActive)
+                                    {
+                                        <span class="badge badge-success badge-sm">Aktif</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge badge-danger badge-sm">Pasif</span>
+                                    }
+                                </div>
+                            </div>
+                        }
+                    </div>
+                    <div class="card-footer py-2">
+                        <small class="text-muted">
+                            @unitGroup.Count() departman · 
+                            @unitGroup.Count(d => d.IsActive) aktif
+                        </small>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+
+    <!-- Departments Table -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">
+                <i class="fas fa-table mr-2"></i>Departman Listesi
+            </h6>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered" id="departmentsTable" width="100%" cellspacing="0">
+                    <thead>
+                        <tr>
+                            <th>Departman Adı</th>
+                            <th>Departman Kodu</th>
+                            <th>Birim</th>
+                            <th>Açıklama</th>
+                            <th>Özel Yetki</th>
+                            <th>Durum</th>
+                            <th>Oluşturma</th>
+                            <th>İşlemler</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var dept in Model)
+                        {
+                            <tr class="@(dept.IsActive ? "" : "table-secondary")">
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <div class="department-icon mr-2">
+                                            <i class="fas fa-building"></i>
+                                        </div>
+                                        <strong>@dept.DepartmentName</strong>
+                                    </div>
+                                </td>
+                                <td>
+                                    <code class="bg-light p-1 rounded">@dept.DepartmentCode</code>
+                                </td>
+                                <td>
+                                    <span class="badge badge-info">@dept.Unit?.UnitName</span>
+                                </td>
+                                <td>
+                                    @if (!string.IsNullOrEmpty(dept.Description))
+                                    {
+                                        <span>@(dept.Description.Length > 50 ? dept.Description.Substring(0, 50) + "..." : dept.Description)</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">-</span>
+                                    }
+                                </td>
+                                <td>
+                                    @if (dept.HasFullAccess)
+                                    {
+                                        <span class="badge badge-warning">
+                                            <i class="fas fa-crown mr-1"></i>Tam Yetki
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge badge-light">
+                                            <i class="fas fa-minus mr-1"></i>Normal
+                                        </span>
+                                    }
+                                </td>
+                                <td>
+                                    @if (dept.IsActive)
+                                    {
+                                        <span class="badge badge-success">
+                                            <i class="fas fa-check mr-1"></i>Aktif
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge badge-danger">
+                                            <i class="fas fa-times mr-1"></i>Pasif
+                                        </span>
+                                    }
+                                </td>
+                                <td>@dept.CreatedAt.ToString("dd.MM.yyyy")</td>
+                                <td>
+                                    <div class="btn-group" role="group">
+                                        <a asp-action="Details" asp-route-id="@dept.Id" 
+                                           class="btn btn-sm btn-outline-primary" title="Detaylar">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        <a asp-action="Edit" asp-route-id="@dept.Id" 
+                                           class="btn btn-sm btn-outline-secondary" title="Düzenle">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <a asp-action="Users" asp-route-id="@dept.Id" 
+                                           class="btn btn-sm btn-outline-info" title="Kullanıcılar">
+                                            <i class="fas fa-users"></i>
+                                        </a>
+                                        @if (dept.IsActive)
+                                        {
+                                            <form asp-action="Deactivate" asp-route-id="@dept.Id" method="post" class="d-inline">
+                                                <button type="submit" class="btn btn-sm btn-outline-danger" 
+                                                        title="Deaktif Et" onclick="return confirm('Bu departmanı deaktif etmek istediğinize emin misiniz?')">
+                                                    <i class="fas fa-ban"></i>
+                                                </button>
+                                            </form>
+                                        }
+                                        else
+                                        {
+                                            <form asp-action="Activate" asp-route-id="@dept.Id" method="post" class="d-inline">
+                                                <button type="submit" class="btn btn-sm btn-outline-success" 
+                                                        title="Aktif Et" onclick="return confirm('Bu departmanı aktif etmek istediğinize emin misiniz?')">
+                                                    <i class="fas fa-check"></i>
+                                                </button>
+                                            </form>
+                                        }
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .department-icon {
+        width: 35px;
+        height: 35px;
+        border-radius: 8px;
+        background: linear-gradient(135deg, #4e73df 0%, #224abe 100%);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 14px;
+    }
+
+    .department-icon-small {
+        width: 25px;
+        height: 25px;
+        border-radius: 6px;
+        background: linear-gradient(135deg, #4e73df 0%, #224abe 100%);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 10px;
+    }
+
+    .badge-sm {
+        font-size: 0.65em;
+    }
+
+    .table-secondary {
+        opacity: 0.7;
+    }
+</style>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            $('#departmentsTable').DataTable({
+                "language": {
+                    "url": "//cdn.datatables.net/plug-ins/1.10.25/i18n/Turkish.json"
+                },
+                "order": [[ 0, "asc" ]],
+                "pageLength": 25,
+                "responsive": true,
+                "columnDefs": [
+                    { "orderable": false, "targets": 7 } // Actions column
+                ]
+            });
+
+            // Add tooltips
+            $('[title]').tooltip();
+        });
+    </script>
+}

@@ -1,0 +1,406 @@
+@{
+    ViewData["Title"] = "Kullanıcı İstatistikleri";
+    var user = ViewBag.User as muhaberat_evrak_yonetim.Entities.User;
+    var stats = ViewBag.Statistics;
+}
+
+<div class="container-fluid">
+    <!-- Page Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3 mb-0 text-primary">
+            <i class="fas fa-chart-bar mr-2"></i>@user.FirstName @user.LastName - İstatistikler
+        </h1>
+        <div>
+            <a asp-action="Details" asp-route-id="@user.Id" class="btn btn-info">
+                <i class="fas fa-user mr-2"></i>Profil
+            </a>
+            <a asp-action="MyDocuments" asp-route-userId="@user.Id" class="btn btn-primary">
+                <i class="fas fa-folder-open mr-2"></i>Evraklar
+            </a>
+            <a asp-action="Index" class="btn btn-secondary">
+                <i class="fas fa-arrow-left mr-2"></i>Geri Dön
+            </a>
+        </div>
+    </div>
+
+    <!-- User Info Card -->
+    <div class="card shadow mb-4">
+        <div class="card-body">
+            <div class="row align-items-center">
+                <div class="col-auto">
+                    <div class="profile-avatar-small mr-3">
+                        @user.FirstName.Substring(0, 1).ToUpper()@user.LastName.Substring(0, 1).ToUpper()
+                    </div>
+                </div>
+                <div class="col">
+                    <h4 class="mb-1">@user.FirstName @user.LastName</h4>
+                    <p class="mb-0 text-muted">
+                        <i class="fas fa-building mr-1"></i>@user.Department?.DepartmentName · 
+                        <i class="fas fa-user-tag mr-1"></i>@user.Role?.RoleName ·
+                        <i class="fas fa-sitemap mr-1"></i>@user.Unit?.UnitName
+                    </p>
+                </div>
+                <div class="col-auto">
+                    @if (user.IsActive)
+                    {
+                        <span class="badge badge-success p-2">
+                            <i class="fas fa-check mr-1"></i>Aktif Kullanıcı
+                        </span>
+                    }
+                    else
+                    {
+                        <span class="badge badge-danger p-2">
+                            <i class="fas fa-times mr-1"></i>Pasif Kullanıcı
+                        </span>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+        <div class="col-xl-2 col-md-6 mb-4">
+            <div class="card border-left-primary shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                Toplam Gönderilen
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">@stats.TotalSent</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-paper-plane fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-2 col-md-6 mb-4">
+            <div class="card border-left-success shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                Toplam Alınan
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">@stats.TotalReceived</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-inbox fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-2 col-md-6 mb-4">
+            <div class="card border-left-warning shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                Bekleyen
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">@stats.PendingDocuments</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-clock fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-2 col-md-6 mb-4">
+            <div class="card border-left-info shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                                Teslim Edilen
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">@stats.DeliveredDocuments</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-check-circle fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-2 col-md-6 mb-4">
+            <div class="card border-left-secondary shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-secondary text-uppercase mb-1">
+                                Bu Ay
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">@stats.ThisMonthDocuments</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-calendar fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-2 col-md-6 mb-4">
+            <div class="card border-left-dark shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-dark text-uppercase mb-1">
+                                Taslak
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">@stats.DraftDocuments</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-edit fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Activity Progress Chart -->
+        <div class="col-xl-8 col-lg-7">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-chart-line mr-2"></i>Evrak Aktivite Dağılımı
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <div class="progress-item mb-3">
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span class="small font-weight-bold">Gönderilen Evraklar</span>
+                                    <span class="small text-primary">@stats.TotalSent</span>
+                                </div>
+                                <div class="progress" style="height: 10px;">
+                                    <div class="progress-bar bg-primary" style="width: @(stats.TotalSent + stats.TotalReceived > 0 ? (stats.TotalSent * 100 / (stats.TotalSent + stats.TotalReceived)) : 0)%"></div>
+                                </div>
+                            </div>
+
+                            <div class="progress-item mb-3">
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span class="small font-weight-bold">Alınan Evraklar</span>
+                                    <span class="small text-success">@stats.TotalReceived</span>
+                                </div>
+                                <div class="progress" style="height: 10px;">
+                                    <div class="progress-bar bg-success" style="width: @(stats.TotalSent + stats.TotalReceived > 0 ? (stats.TotalReceived * 100 / (stats.TotalSent + stats.TotalReceived)) : 0)%"></div>
+                                </div>
+                            </div>
+
+                            <div class="progress-item mb-3">
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span class="small font-weight-bold">Bekleyen Evraklar</span>
+                                    <span class="small text-warning">@stats.PendingDocuments</span>
+                                </div>
+                                <div class="progress" style="height: 10px;">
+                                    <div class="progress-bar bg-warning" style="width: @(stats.TotalSent > 0 ? (stats.PendingDocuments * 100 / stats.TotalSent) : 0)%"></div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="progress-item mb-3">
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span class="small font-weight-bold">Teslim Edilen Evraklar</span>
+                                    <span class="small text-info">@stats.DeliveredDocuments</span>
+                                </div>
+                                <div class="progress" style="height: 10px;">
+                                    <div class="progress-bar bg-info" style="width: @(stats.TotalSent > 0 ? (stats.DeliveredDocuments * 100 / stats.TotalSent) : 0)%"></div>
+                                </div>
+                            </div>
+
+                            <div class="progress-item mb-3">
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span class="small font-weight-bold">Bu Ay</span>
+                                    <span class="small text-secondary">@stats.ThisMonthDocuments</span>
+                                </div>
+                                <div class="progress" style="height: 10px;">
+                                    <div class="progress-bar bg-secondary" style="width: @(stats.TotalSent + stats.TotalReceived > 0 ? (stats.ThisMonthDocuments * 100 / (stats.TotalSent + stats.TotalReceived)) : 0)%"></div>
+                                </div>
+                            </div>
+
+                            <div class="progress-item mb-3">
+                                <div class="d-flex justify-content-between mb-2">
+                                    <span class="small font-weight-bold">Taslak Evraklar</span>
+                                    <span class="small text-dark">@stats.DraftDocuments</span>
+                                </div>
+                                <div class="progress" style="height: 10px;">
+                                    <div class="progress-bar bg-dark" style="width: @(stats.TotalSent > 0 ? (stats.DraftDocuments * 100 / stats.TotalSent) : 0)%"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Performance Indicators -->
+                    <hr>
+                    <div class="row text-center">
+                        <div class="col-md-4">
+                            <div class="border-right">
+                                <h6 class="text-primary">
+                                    @(stats.TotalSent > 0 ? Math.Round((double)stats.DeliveredDocuments / stats.TotalSent * 100, 1) : 0)%
+                                </h6>
+                                <small class="text-muted">Başari Oranı</small>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="border-right">
+                                <h6 class="text-warning">
+                                    @(stats.TotalSent > 0 ? Math.Round((double)stats.PendingDocuments / stats.TotalSent * 100, 1) : 0)%
+                                </h6>
+                                <small class="text-muted">Bekleyen Oran</small>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <h6 class="text-info">
+                                @(DateTime.Now.Day > 0 ? Math.Round((double)stats.ThisMonthDocuments / DateTime.Now.Day, 1) : 0)
+                            </h6>
+                            <small class="text-muted">Günlük Ortalama</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Performance Summary -->
+        <div class="col-xl-4 col-lg-5">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-trophy mr-2"></i>Performans Özeti
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="performance-item mb-4">
+                        <div class="d-flex align-items-center mb-2">
+                            <i class="fas fa-star text-warning mr-2"></i>
+                            <strong>Genel Değerlendirme</strong>
+                        </div>
+                        <div class="performance-rating">
+                            @{
+                                var totalActivity = stats.TotalSent + stats.TotalReceived;
+                                var rating = totalActivity switch
+                                {
+                                    var n when n >= 50 => "Çok Aktif",
+                                    var n when n >= 20 => "Aktif", 
+                                    var n when n >= 10 => "Orta",
+                                    var n when n >= 5 => "Düşük",
+                                    _ => "Yeni Kullanıcı"
+                                };
+                                var ratingClass = totalActivity switch
+                                {
+                                    var n when n >= 50 => "success",
+                                    var n when n >= 20 => "info", 
+                                    var n when n >= 10 => "warning",
+                                    var n when n >= 5 => "secondary",
+                                    _ => "light"
+                                };
+                            }
+                            <span class="badge badge-@ratingClass p-2">@rating</span>
+                        </div>
+                    </div>
+
+                    <div class="performance-item mb-4">
+                        <div class="d-flex align-items-center mb-2">
+                            <i class="fas fa-chart-line text-primary mr-2"></i>
+                            <strong>Aktivite Seviyesi</strong>
+                        </div>
+                        <div class="progress" style="height: 20px;">
+                            <div class="progress-bar @(totalActivity >= 50 ? "bg-success" : totalActivity >= 20 ? "bg-info" : totalActivity >= 10 ? "bg-warning" : "bg-secondary")" 
+                                 style="width: @Math.Min(100, totalActivity * 2)%">
+                                @totalActivity Toplam Evrak
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="performance-item mb-4">
+                        <div class="d-flex align-items-center mb-2">
+                            <i class="fas fa-clock text-info mr-2"></i>
+                            <strong>Son Aktivite</strong>
+                        </div>
+                        <p class="text-muted mb-0">
+                            @if (stats.ThisMonthDocuments > 0)
+                            {
+                                <span>Bu ay @stats.ThisMonthDocuments evrak ile aktif</span>
+                            }
+                            else
+                            {
+                                <span>Bu ay henüz aktivite yok</span>
+                            }
+                        </p>
+                    </div>
+
+                    <hr>
+
+                    <!-- Quick Actions -->
+                    <h6 class="mb-3">
+                        <i class="fas fa-bolt mr-1"></i>Hızlı İşlemler
+                    </h6>
+                    <div class="d-grid gap-2">
+                        <a asp-controller="Document" asp-action="Create" class="btn btn-primary btn-sm">
+                            <i class="fas fa-plus mr-1"></i>Yeni Evrak Oluştur
+                        </a>
+                        <a asp-action="MyDocuments" asp-route-userId="@user.Id" class="btn btn-outline-primary btn-sm">
+                            <i class="fas fa-folder mr-1"></i>Evrak Listem
+                        </a>
+                        @if (stats.DraftDocuments > 0)
+                        {
+                            <a asp-controller="Document" asp-action="Index" class="btn btn-outline-warning btn-sm">
+                                <i class="fas fa-edit mr-1"></i>@stats.DraftDocuments Taslak Tamamla
+                            </a>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .profile-avatar-small {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 16px;
+        font-weight: bold;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .performance-rating {
+        text-align: center;
+    }
+
+    .performance-item {
+        padding: 10px 0;
+    }
+
+    .border-right {
+        border-right: 1px solid #e3e6f0;
+    }
+
+    .d-grid {
+        display: grid;
+    }
+
+    .gap-2 {
+        gap: 0.5rem;
+    }
+</style>

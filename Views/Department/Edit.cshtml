@@ -1,0 +1,299 @@
+@model muhaberat_evrak_yonetim.Entities.Department
+@{
+    ViewData["Title"] = "Departman Düzenle";
+    var units = ViewData["Units"] as IEnumerable<muhaberat_evrak_yonetim.Entities.Unit>;
+}
+
+<div class="container-fluid">
+    <!-- Page Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3 mb-0 text-primary">
+            <i class="fas fa-edit mr-2"></i>Departman Düzenle
+        </h1>
+        <div>
+            <a asp-action="Details" asp-route-id="@Model.Id" class="btn btn-info">
+                <i class="fas fa-eye mr-2"></i>Detaylar
+            </a>
+            <a asp-action="Index" class="btn btn-secondary">
+                <i class="fas fa-arrow-left mr-2"></i>Geri Dön
+            </a>
+        </div>
+    </div>
+
+    <!-- Department Info Header -->
+    <div class="alert alert-primary">
+        <i class="fas fa-building mr-2"></i>
+        <strong>Düzenlenen Departman:</strong> @Model.DepartmentName (@Model.DepartmentCode)
+    </div>
+
+    <!-- Form Card -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">
+                <i class="fas fa-edit mr-2"></i>Departman Bilgileri
+            </h6>
+        </div>
+        <div class="card-body">
+            <form asp-action="Edit" method="post">
+                <input type="hidden" asp-for="Id" />
+                <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+                
+                <div class="row">
+                    <!-- Department Name -->
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label asp-for="DepartmentName" class="control-label">
+                                <i class="fas fa-building mr-1"></i>Departman Adı *
+                            </label>
+                            <input asp-for="DepartmentName" class="form-control" placeholder="Departman adını giriniz" />
+                            <span asp-validation-for="DepartmentName" class="text-danger"></span>
+                            <small class="form-text text-muted">Departmanın tam adını giriniz</small>
+                        </div>
+                    </div>
+
+                    <!-- Department Code -->
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label asp-for="DepartmentCode" class="control-label">
+                                <i class="fas fa-code mr-1"></i>Departman Kodu *
+                            </label>
+                            <input asp-for="DepartmentCode" class="form-control" placeholder="Benzersiz departman kodu" />
+                            <span asp-validation-for="DepartmentCode" class="text-danger"></span>
+                            <small class="form-text text-muted">Departman kodu benzersiz olmalıdır</small>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <!-- Unit Selection -->
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label asp-for="UnitId" class="control-label">
+                                <i class="fas fa-sitemap mr-1"></i>Bağlı Birim *
+                            </label>
+                            <select asp-for="UnitId" class="form-control">
+                                <option value="">-- Birim Seçiniz --</option>
+                                @if (units != null)
+                                {
+                                    @foreach (var unit in units)
+                                    {
+                                        <option value="@unit.Id" selected="@(unit.Id == Model.UnitId)">@unit.UnitName</option>
+                                    }
+                                }
+                            </select>
+                            <span asp-validation-for="UnitId" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <!-- Status -->
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="control-label">
+                                <i class="fas fa-toggle-on mr-1"></i>Departman Durumu
+                            </label>
+                            <div class="custom-control custom-switch">
+                                <input type="checkbox" class="custom-control-input" asp-for="IsActive" id="isActiveSwitch">
+                                <label class="custom-control-label" for="isActiveSwitch">
+                                    Departman Aktif
+                                </label>
+                            </div>
+                            <small class="form-text text-muted">Pasif departmanlar kullanılamaz</small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Special Access -->
+                <div class="form-group">
+                    <label class="control-label">
+                        <i class="fas fa-crown mr-1"></i>Özel Yetkiler
+                    </label>
+                    <div class="custom-control custom-switch">
+                        <input type="checkbox" class="custom-control-input" asp-for="HasFullAccess" id="hasFullAccessSwitch">
+                        <label class="custom-control-label" for="hasFullAccessSwitch">
+                            Tam Erişim Yetkisi
+                        </label>
+                    </div>
+                    <small class="form-text text-muted">
+                        Bu departman tüm evrakları görüp yönetebilir (Sadece özel departmanlar için)
+                    </small>
+                </div>
+
+                <!-- Description -->
+                <div class="form-group">
+                    <label asp-for="Description" class="control-label">
+                        <i class="fas fa-align-left mr-1"></i>Açıklama
+                    </label>
+                    <textarea asp-for="Description" class="form-control" rows="3" 
+                              placeholder="Departmanın görev ve sorumluluklarını kısaca açıklayın"></textarea>
+                    <span asp-validation-for="Description" class="text-danger"></span>
+                </div>
+
+                <hr class="my-4">
+
+                <!-- Warning Cards -->
+                @if (Model.HasFullAccess)
+                {
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle mr-2"></i>
+                        <strong>Dikkat:</strong> Bu departman şu anda tam erişim yetkisine sahiptir. 
+                        Bu yetkiyi kaldırmak tüm evrak erişimlerini etkileyecektir.
+                    </div>
+                }
+
+                @if (!Model.IsActive)
+                {
+                    <div class="alert alert-danger">
+                        <i class="fas fa-ban mr-2"></i>
+                        <strong>Uyarı:</strong> Bu departman şu anda pasif durumda. 
+                        Pasif departmanlar yeni işlemler yapamaz.
+                    </div>
+                }
+
+                <!-- Current Status Info -->
+                <div class="card bg-light mb-4">
+                    <div class="card-body">
+                        <h6 class="card-title">
+                            <i class="fas fa-info-circle mr-2"></i>Mevcut Durum
+                        </h6>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <p class="mb-1">
+                                    <strong>Durum:</strong> 
+                                    @if (Model.IsActive)
+                                    {
+                                        <span class="badge badge-success">Aktif</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge badge-danger">Pasif</span>
+                                    }
+                                </p>
+                                <p class="mb-1">
+                                    <strong>Özel Yetki:</strong> 
+                                    @if (Model.HasFullAccess)
+                                    {
+                                        <span class="badge badge-warning">Var</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge badge-light">Yok</span>
+                                    }
+                                </p>
+                            </div>
+                            <div class="col-md-6">
+                                <p class="mb-1">
+                                    <strong>Oluşturma:</strong> @Model.CreatedAt.ToString("dd.MM.yyyy HH:mm")
+                                </p>
+                                <p class="mb-1">
+                                    <strong>Birim:</strong> 
+                                    <span class="badge badge-info">@Model.Unit?.UnitName</span>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Form Actions -->
+                <div class="form-group">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save mr-2"></i>Değişiklikleri Kaydet
+                    </button>
+                    <a asp-action="Details" asp-route-id="@Model.Id" class="btn btn-info ml-2">
+                        <i class="fas fa-eye mr-2"></i>Detayları Görüntüle
+                    </a>
+                    <a asp-action="Index" class="btn btn-secondary ml-2">
+                        <i class="fas fa-list mr-2"></i>Departman Listesi
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    
+    <script>
+        $(document).ready(function() {
+            // Status switch styling
+            function updateSwitchStyling() {
+                var isActiveLabel = $('#isActiveSwitch').next('label');
+                var hasFullAccessLabel = $('#hasFullAccessSwitch').next('label');
+                
+                if ($('#isActiveSwitch').is(':checked')) {
+                    isActiveLabel.removeClass('text-danger').addClass('text-success');
+                } else {
+                    isActiveLabel.removeClass('text-success').addClass('text-danger');
+                }
+
+                if ($('#hasFullAccessSwitch').is(':checked')) {
+                    hasFullAccessLabel.removeClass('text-muted').addClass('text-warning');
+                } else {
+                    hasFullAccessLabel.removeClass('text-warning').addClass('text-muted');
+                }
+            }
+
+            // Initialize switch styling
+            updateSwitchStyling();
+
+            // Update styling on change
+            $('#isActiveSwitch, #hasFullAccessSwitch').change(function() {
+                updateSwitchStyling();
+            });
+
+            // Form validation
+            $('form').submit(function(e) {
+                var name = $('#DepartmentName').val().trim();
+                var code = $('#DepartmentCode').val().trim();
+                
+                if (name.length < 2) {
+                    e.preventDefault();
+                    alert('Departman adı en az 2 karakter olmalıdır!');
+                    return false;
+                }
+                
+                if (code.length < 2) {
+                    e.preventDefault();
+                    alert('Departman kodu en az 2 karakter olmalıdır!');
+                    return false;
+                }
+
+                if ($('#UnitId').val() === '') {
+                    e.preventDefault();
+                    alert('Lütfen bir birim seçiniz!');
+                    return false;
+                }
+
+                // Confirm if making department inactive
+                if (!$('#isActiveSwitch').is(':checked')) {
+                    if (!confirm('Departmanı pasif duruma getirmek istediğinize emin misiniz? Bu işlem kullanıcıları etkileyebilir.')) {
+                        e.preventDefault();
+                        return false;
+                    }
+                }
+
+                // Confirm if giving full access
+                if ($('#hasFullAccessSwitch').is(':checked') && !@Model.HasFullAccess.ToString().ToLower()) {
+                    if (!confirm('Bu departmana tam erişim yetkisi vermek istediğinize emin misiniz? Bu kritik bir yetkidir.')) {
+                        e.preventDefault();
+                        return false;
+                    }
+                }
+            });
+
+            // Character limits and formatting
+            $('#DepartmentCode').on('input', function() {
+                $(this).val($(this).val().toUpperCase().replace(/[^A-Z0-9_]/g, ''));
+            });
+
+            // Warning for full access changes
+            $('#hasFullAccessSwitch').change(function() {
+                if ($(this).is(':checked') && !@Model.HasFullAccess.ToString().ToLower()) {
+                    $('#fullAccessWarning').show();
+                } else {
+                    $('#fullAccessWarning').hide();
+                }
+            });
+        });
+    </script>
+}

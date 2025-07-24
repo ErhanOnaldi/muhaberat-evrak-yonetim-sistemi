@@ -1,0 +1,264 @@
+@model IEnumerable<muhaberat_evrak_yonetim.Entities.Role>
+@{
+    ViewData["Title"] = "Rol Yönetimi";
+}
+
+<div class="container-fluid">
+    <!-- Page Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3 mb-0 text-primary">
+            <i class="fas fa-user-tag mr-2"></i>Rol Yönetimi
+        </h1>
+        <a asp-action="Create" class="btn btn-primary">
+            <i class="fas fa-plus mr-2"></i>Yeni Rol
+        </a>
+    </div>
+
+    <!-- Success/Error Messages -->
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="fas fa-check-circle mr-2"></i>@TempData["Success"]
+            <button type="button" class="close" data-dismiss="alert">
+                <span>&times;</span>
+            </button>
+        </div>
+    }
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="fas fa-exclamation-triangle mr-2"></i>@TempData["Error"]
+            <button type="button" class="close" data-dismiss="alert">
+                <span>&times;</span>
+            </button>
+        </div>
+    }
+
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-primary shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                Toplam Rol
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">@Model.Count()</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-user-tag fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-success shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                Aktif Roller
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">@Model.Count(r => r.IsActive)</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-check-circle fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-info shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                                Toplam Kullanıcı
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">@Model.Sum(r => r.Users?.Count ?? 0)</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-users fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-warning shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                Özel Roller
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">@Model.Count(r => r.RoleCode == "MUHABERAT" || r.RoleCode == "SYS_ADM")</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-crown fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Roles Table -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">
+                <i class="fas fa-table mr-2"></i>Rol Listesi
+            </h6>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-bordered" id="rolesTable" width="100%" cellspacing="0">
+                    <thead>
+                        <tr>
+                            <th>Rol Adı</th>
+                            <th>Rol Kodu</th>
+                            <th>Açıklama</th>
+                            <th>Kullanıcı Sayısı</th>
+                            <th>Durum</th>
+                            <th>Oluşturma</th>
+                            <th>İşlemler</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var role in Model)
+                        {
+                            <tr class="@(role.IsActive ? "" : "table-secondary")">
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <div class="role-icon mr-2 @(role.RoleCode == "MUHABERAT" || role.RoleCode == "SYS_ADM" ? "bg-warning" : "")">
+                                            <i class="fas @(role.RoleCode == "MUHABERAT" || role.RoleCode == "SYS_ADM" ? "fa-crown" : "fa-user-tag")"></i>
+                                        </div>
+                                        <strong>@role.RoleName</strong>
+                                    </div>
+                                </td>
+                                <td>
+                                    <code class="bg-light p-1 rounded">@role.RoleCode</code>
+                                </td>
+                                <td>
+                                    @if (!string.IsNullOrEmpty(role.Description))
+                                    {
+                                        <span>@(role.Description.Length > 50 ? role.Description.Substring(0, 50) + "..." : role.Description)</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">-</span>
+                                    }
+                                </td>
+                                <td>
+                                    <span class="badge badge-info">@(role.Users?.Count ?? 0) kullanıcı</span>
+                                </td>
+                                <td>
+                                    @if (role.IsActive)
+                                    {
+                                        <span class="badge badge-success">
+                                            <i class="fas fa-check mr-1"></i>Aktif
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge badge-danger">
+                                            <i class="fas fa-times mr-1"></i>Pasif
+                                        </span>
+                                    }
+                                </td>
+                                <td>@role.CreatedAt.ToString("dd.MM.yyyy")</td>
+                                <td>
+                                    <div class="btn-group" role="group">
+                                        <a asp-action="Details" asp-route-id="@role.Id" 
+                                           class="btn btn-sm btn-outline-primary" title="Detaylar">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        <a asp-action="Edit" asp-route-id="@role.Id" 
+                                           class="btn btn-sm btn-outline-secondary" title="Düzenle">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <a asp-action="Permissions" asp-route-id="@role.Id" 
+                                           class="btn btn-sm btn-outline-info" title="Yetkiler">
+                                            <i class="fas fa-key"></i>
+                                        </a>
+                                        <a asp-action="Users" asp-route-id="@role.Id" 
+                                           class="btn btn-sm btn-outline-success" title="Kullanıcılar">
+                                            <i class="fas fa-users"></i>
+                                        </a>
+                                        @if (role.IsActive)
+                                        {
+                                            <form asp-action="Deactivate" asp-route-id="@role.Id" method="post" class="d-inline">
+                                                <button type="submit" class="btn btn-sm btn-outline-danger" 
+                                                        title="Deaktif Et" onclick="return confirm('Bu rolü deaktif etmek istediğinize emin misiniz?')">
+                                                    <i class="fas fa-ban"></i>
+                                                </button>
+                                            </form>
+                                        }
+                                        else
+                                        {
+                                            <form asp-action="Activate" asp-route-id="@role.Id" method="post" class="d-inline">
+                                                <button type="submit" class="btn btn-sm btn-outline-success" 
+                                                        title="Aktif Et" onclick="return confirm('Bu rolü aktif etmek istediğinize emin misiniz?')">
+                                                    <i class="fas fa-check"></i>
+                                                </button>
+                                            </form>
+                                        }
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .role-icon {
+        width: 35px;
+        height: 35px;
+        border-radius: 8px;
+        background: linear-gradient(135deg, #36b9cc 0%, #258391 100%);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 14px;
+    }
+
+    .role-icon.bg-warning {
+        background: linear-gradient(135deg, #f6c23e 0%, #dda20a 100%);
+    }
+
+    .table-secondary {
+        opacity: 0.7;
+    }
+</style>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            $('#rolesTable').DataTable({
+                "language": {
+                    "url": "//cdn.datatables.net/plug-ins/1.10.25/i18n/Turkish.json"
+                },
+                "order": [[ 0, "asc" ]],
+                "pageLength": 25,
+                "responsive": true,
+                "columnDefs": [
+                    { "orderable": false, "targets": 6 } // Actions column
+                ]
+            });
+
+            // Add tooltips
+            $('[title]').tooltip();
+        });
+    </script>
+}

@@ -5,7 +5,7 @@ using muhaberat_evrak_yonetim.Entities;
 
 namespace muhaberat_evrak_yonetim.Controllers;
 
-public class UserController : Controller
+public class UserController : BaseController
 {
     private readonly DataContext _context;
     private readonly ILogger<UserController> _logger;
@@ -316,7 +316,7 @@ public class UserController : Controller
     {
         if (userId == null)
         {
-            userId = 1; // This should come from session/authentication
+            userId = GetCurrentUserIdRequired();
         }
 
         var user = await _context.Users
@@ -357,7 +357,7 @@ public class UserController : Controller
     {
         if (userId == null)
         {
-            userId = 1; // This should come from session/authentication
+            userId = GetCurrentUserIdRequired();
         }
 
         var user = await _context.Users

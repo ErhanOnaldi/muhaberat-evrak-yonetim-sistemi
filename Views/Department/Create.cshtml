@@ -1,0 +1,267 @@
+@model muhaberat_evrak_yonetim.Entities.Department
+@{
+    ViewData["Title"] = "Yeni Departman Oluştur";
+    var units = ViewData["Units"] as IEnumerable<muhaberat_evrak_yonetim.Entities.Unit>;
+}
+
+<div class="container-fluid">
+    <!-- Page Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3 mb-0 text-primary">
+            <i class="fas fa-building mr-2"></i>Yeni Departman Oluştur
+        </h1>
+        <a asp-action="Index" class="btn btn-secondary">
+            <i class="fas fa-arrow-left mr-2"></i>Geri Dön
+        </a>
+    </div>
+
+    <!-- Form Card -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">
+                <i class="fas fa-edit mr-2"></i>Departman Bilgileri
+            </h6>
+        </div>
+        <div class="card-body">
+            <form asp-action="Create" method="post">
+                <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+                
+                <div class="row">
+                    <!-- Department Name -->
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label asp-for="DepartmentName" class="control-label">
+                                <i class="fas fa-building mr-1"></i>Departman Adı *
+                            </label>
+                            <input asp-for="DepartmentName" class="form-control" placeholder="Departman adını giriniz" />
+                            <span asp-validation-for="DepartmentName" class="text-danger"></span>
+                            <small class="form-text text-muted">Örnek: Muhasebe, İnsan Kaynakları</small>
+                        </div>
+                    </div>
+
+                    <!-- Department Code -->
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label asp-for="DepartmentCode" class="control-label">
+                                <i class="fas fa-code mr-1"></i>Departman Kodu *
+                            </label>
+                            <input asp-for="DepartmentCode" class="form-control" placeholder="Benzersiz departman kodu" />
+                            <span asp-validation-for="DepartmentCode" class="text-danger"></span>
+                            <small class="form-text text-muted">Örnek: MUH, IK, OPR (Benzersiz olmalıdır)</small>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <!-- Unit Selection -->
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label asp-for="UnitId" class="control-label">
+                                <i class="fas fa-sitemap mr-1"></i>Bağlı Birim *
+                            </label>
+                            <select asp-for="UnitId" class="form-control">
+                                <option value="">-- Birim Seçiniz --</option>
+                                @if (units != null)
+                                {
+                                    @foreach (var unit in units)
+                                    {
+                                        <option value="@unit.Id">@unit.UnitName</option>
+                                    }
+                                }
+                            </select>
+                            <span asp-validation-for="UnitId" class="text-danger"></span>
+                            <small class="form-text text-muted">Departmanın bağlı olduğu üst birimi seçiniz</small>
+                        </div>
+                    </div>
+
+                    <!-- Special Access -->
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label class="control-label">
+                                <i class="fas fa-crown mr-1"></i>Özel Yetkiler
+                            </label>
+                            <div class="custom-control custom-switch">
+                                <input type="checkbox" class="custom-control-input" asp-for="HasFullAccess" id="hasFullAccessSwitch">
+                                <label class="custom-control-label" for="hasFullAccessSwitch">
+                                    Tam Erişim Yetkisi
+                                </label>
+                            </div>
+                            <small class="form-text text-muted">
+                                Bu departman tüm evrakları görüp yönetebilir (Muhaberat birimi için)
+                            </small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Description -->
+                <div class="form-group">
+                    <label asp-for="Description" class="control-label">
+                        <i class="fas fa-align-left mr-1"></i>Açıklama
+                    </label>
+                    <textarea asp-for="Description" class="form-control" rows="3" 
+                              placeholder="Departmanın görev ve sorumluluklarını kısaca açıklayın"></textarea>
+                    <span asp-validation-for="Description" class="text-danger"></span>
+                    <small class="form-text text-muted">Departmanın amacı ve işlevleri hakkında kısa bilgi</small>
+                </div>
+
+                <hr class="my-4">
+
+                <!-- Information Cards -->
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle mr-2"></i>
+                            <strong>Bilgi:</strong> Yeni departman varsayılan olarak aktif durumda oluşturulacaktır.
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="alert alert-warning">
+                            <i class="fas fa-crown mr-2"></i>
+                            <strong>Önemli:</strong> Tam erişim yetkisi sadece özel departmanlar için kullanılmalıdır.
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Preview Card -->
+                <div class="card bg-light mb-4" id="previewCard" style="display: none;">
+                    <div class="card-header">
+                        <h6 class="m-0 font-weight-bold text-secondary">
+                            <i class="fas fa-eye mr-2"></i>Departman Önizleme
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-auto">
+                                <div class="department-preview-icon">
+                                    <i class="fas fa-building"></i>
+                                </div>
+                            </div>
+                            <div class="col">
+                                <h5 id="previewName" class="mb-1">-</h5>
+                                <p class="mb-1">
+                                    <i class="fas fa-code mr-1"></i><span id="previewCode">-</span> ·
+                                    <i class="fas fa-sitemap mr-1"></i><span id="previewUnit">-</span>
+                                </p>
+                                <p class="mb-0 text-muted"><span id="previewDescription">-</span></p>
+                                <div id="previewAccess" style="display: none;">
+                                    <span class="badge badge-warning mt-1">
+                                        <i class="fas fa-crown mr-1"></i>Tam Erişim Yetkisi
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Form Actions -->
+                <div class="form-group">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save mr-2"></i>Departman Oluştur
+                    </button>
+                    <a asp-action="Index" class="btn btn-secondary ml-2">
+                        <i class="fas fa-times mr-2"></i>İptal
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+    .department-preview-icon {
+        width: 50px;
+        height: 50px;
+        border-radius: 10px;
+        background: linear-gradient(135deg, #4e73df 0%, #224abe 100%);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 18px;
+    }
+</style>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    
+    <script>
+        $(document).ready(function() {
+            // Auto-generate department code from name
+            $('#DepartmentName').on('input', function() {
+                var name = $(this).val();
+                if (name && $('#DepartmentCode').val() === '') {
+                    var code = name
+                        .toUpperCase()
+                        .replace(/[^A-Z\s]/g, '')
+                        .split(' ')
+                        .map(word => word.substring(0, 3))
+                        .join('')
+                        .substring(0, 10);
+                    $('#DepartmentCode').val(code);
+                }
+                updatePreview();
+            });
+
+            // Update preview on any input change
+            $('#DepartmentName, #DepartmentCode, #Description, #UnitId, #HasFullAccess').on('input change', function() {
+                updatePreview();
+            });
+
+            function updatePreview() {
+                var name = $('#DepartmentName').val() || '-';
+                var code = $('#DepartmentCode').val() || '-';
+                var description = $('#Description').val() || 'Açıklama girilmemiş';
+                var unitId = $('#UnitId').val();
+                var unitName = unitId ? $('#UnitId option:selected').text() : '-';
+                var hasFullAccess = $('#HasFullAccess').is(':checked');
+
+                $('#previewName').text(name);
+                $('#previewCode').text(code);
+                $('#previewUnit').text(unitName);
+                $('#previewDescription').text(description);
+
+                if (hasFullAccess) {
+                    $('#previewAccess').show();
+                } else {
+                    $('#previewAccess').hide();
+                }
+
+                // Show preview card if any field has content
+                if (name !== '-' || code !== '-') {
+                    $('#previewCard').show();
+                } else {
+                    $('#previewCard').hide();
+                }
+            }
+
+            // Form validation
+            $('form').submit(function(e) {
+                var name = $('#DepartmentName').val().trim();
+                var code = $('#DepartmentCode').val().trim();
+                
+                if (name.length < 2) {
+                    e.preventDefault();
+                    alert('Departman adı en az 2 karakter olmalıdır!');
+                    return false;
+                }
+                
+                if (code.length < 2) {
+                    e.preventDefault();
+                    alert('Departman kodu en az 2 karakter olmalıdır!');
+                    return false;
+                }
+
+                if ($('#UnitId').val() === '') {
+                    e.preventDefault();
+                    alert('Lütfen bir birim seçiniz!');
+                    return false;
+                }
+            });
+
+            // Character limits
+            $('#DepartmentCode').on('input', function() {
+                $(this).val($(this).val().toUpperCase().replace(/[^A-Z0-9_]/g, ''));
+            });
+        });
+    </script>
+}
