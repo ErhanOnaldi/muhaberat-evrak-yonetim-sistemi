@@ -17,7 +17,6 @@ namespace muhaberat_evrak_yonetim.Entities
 
         public string? Description { get; set; }
 
-        // Special permission for Muhaberat department
         public bool HasFullAccess { get; set; } = false;
 
         public bool IsActive { get; set; } = true;
@@ -26,7 +25,6 @@ namespace muhaberat_evrak_yonetim.Entities
         public int UnitId { get; set; }
         public Unit Unit { get; set; } = null!;
 
-        // Navigation properties
         public ICollection<User> Users { get; set; } = new List<User>();
         public ICollection<Document> SentDocuments { get; set; } = new List<Document>();
         public ICollection<Document> ReceivedDocuments { get; set; } = new List<Document>();

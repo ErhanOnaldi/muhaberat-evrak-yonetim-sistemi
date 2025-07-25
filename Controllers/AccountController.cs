@@ -19,7 +19,6 @@ public class AccountController : Controller
 
     public IActionResult Login()
     {
-        // Check if user is already logged in
         if (IsUserLoggedIn())
         {
             return RedirectToAction("Index", "Home");
@@ -49,7 +48,6 @@ public class AccountController : Controller
             return View();
         }
 
-        // Set session data
         HttpContext.Session.SetInt32("UserId", user.Id);
         HttpContext.Session.SetString("Username", user.Username);
         HttpContext.Session.SetString("UserFullName", $"{user.FirstName} {user.LastName}");
@@ -76,7 +74,6 @@ public class AccountController : Controller
             HttpContext.Session.SetString("UnitName", user.Unit?.UnitName ?? "");
         }
 
-        // Set remember me cookie if requested
         if (rememberMe)
         {
             var cookieOptions = new CookieOptions
@@ -101,7 +98,6 @@ public class AccountController : Controller
         
         HttpContext.Session.Clear();
         
-        // Remove remember me cookie
         Response.Cookies.Delete("RememberUser");
         
         _logger.LogInformation($"User {username} logged out");
@@ -134,19 +130,16 @@ public class AccountController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Register(User user, string confirmPassword)
     {
-        // Validate password confirmation
         if (string.IsNullOrEmpty(user.PasswordHash) || user.PasswordHash != confirmPassword)
         {
             ModelState.AddModelError("", "Şifreler eşleşmiyor.");
         }
 
-        // Check for duplicate username
         if (await _context.Users.AnyAsync(u => u.Username == user.Username))
         {
             ModelState.AddModelError("", "Bu kullanıcı adı zaten kullanımda.");
         }
 
-        // Check for duplicate email
         if (await _context.Users.AnyAsync(u => u.Email == user.Email))
         {
             ModelState.AddModelError("", "Bu e-posta adresi zaten kayıtlı.");
@@ -157,7 +150,7 @@ public class AccountController : Controller
             user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(user.PasswordHash);
             user.CreatedAt = DateTime.Now;
             user.UpdatedAt = DateTime.Now;
-            user.IsActive = false; // Admin approval required
+            user.IsActive = false; 
 
             _context.Add(user);
             await _context.SaveChangesAsync();
@@ -166,7 +159,6 @@ public class AccountController : Controller
             return RedirectToAction("Login");
         }
 
-        // Reload ViewData if model is invalid
         ViewData["Departments"] = _context.Departments
             .Where(d => d.IsActive)
             .OrderBy(d => d.DepartmentName)
@@ -204,7 +196,6 @@ public class AccountController : Controller
             return RedirectToAction("Login");
         }
 
-        // Get user document statistics
         var stats = new
         {
             TotalSent = await _context.Documents.CountAsync(d => d.SenderUserId == userId && d.IsActive),
@@ -239,7 +230,6 @@ public class AccountController : Controller
             return RedirectToAction("Login");
         }
 
-        // Check for duplicate email (excluding current user)
         if (await _context.Users.AnyAsync(u => u.Email == userModel.Email && u.Id != userId))
         {
             ModelState.AddModelError("Email", "Bu e-posta adresi zaten kayıtlı.");
@@ -255,7 +245,6 @@ public class AccountController : Controller
             _context.Update(user);
             await _context.SaveChangesAsync();
 
-            // Update session data
             HttpContext.Session.SetString("UserFullName", $"{user.FirstName} {user.LastName}");
             HttpContext.Session.SetString("UserEmail", user.Email);
 
@@ -263,7 +252,6 @@ public class AccountController : Controller
             return RedirectToAction("Profile");
         }
 
-        // Reload user data
         user = await _context.Users
             .Include(u => u.Department)
             .Include(u => u.Role)
@@ -312,19 +300,16 @@ public class AccountController : Controller
         return View();
     }
 
-    // Helper method to check if user is logged in
     private bool IsUserLoggedIn()
     {
         return HttpContext.Session.GetInt32("UserId").HasValue;
     }
 
-    // Helper method to get current user ID
     public static int? GetCurrentUserId(HttpContext httpContext)
     {
         return httpContext.Session.GetInt32("UserId");
     }
 
-    // Helper method to check if current user has full access (Muhaberat)
     public static bool HasFullAccess(HttpContext httpContext)
     {
         var hasFullAccess = httpContext.Session.GetString("HasFullAccess");

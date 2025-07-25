@@ -1,0 +1,42 @@
+html {
+  font-size: 14px;
+}
+html {
+  position: relative;
+  min-height: 100%;
+}
+
+body {
+  margin-bottom: 60px;
+}
+
+@media screen and (min-width: 768px) {
+    body {
+        font-size: 16px;
+    }
+}
+
+@media screen and (max-width: 767px) {
+    body {
+        font-size: 14px;
+    }
+    .main-menu {
+        top: 11.45%;
+    }
+}
+* {
+    font-style: normal !important;
+}
+
+h2{
+    padding-top:30px;
+}
+.jst-right {
+    justify-content: right !important;
+    width: 170px;
+}
+.directionf {
+    display: flex;
+    justify-content: right;
+    width: fit-content;
+}

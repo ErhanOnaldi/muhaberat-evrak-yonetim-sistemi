@@ -7,18 +7,20 @@ public class BaseController : Controller
 {
     public override void OnActionExecuting(ActionExecutingContext context)
     {
-        // Check if user is logged in (except for AccountController actions)
         if (!IsUserLoggedIn() && !IsPublicAction(context))
         {
             context.Result = RedirectToAction("Login", "Account");
             return;
         }
 
-        // Set current user info in ViewBag for all authenticated requests
         if (IsUserLoggedIn())
         {
             ViewBag.CurrentUserId = GetCurrentUserId();
             ViewBag.CurrentUserInfo = GetCurrentUserInfo();
+            ViewBag.CurrentUserFullName = HttpContext.Session.GetString("UserFullName");
+            ViewBag.CurrentUserEmail = HttpContext.Session.GetString("UserEmail");
+            ViewBag.CurrentDepartmentName = HttpContext.Session.GetString("DepartmentName");
+            ViewBag.CurrentRoleName = HttpContext.Session.GetString("RoleName");
         }
 
         base.OnActionExecuting(context);
@@ -87,13 +89,11 @@ public class BaseController : Controller
         var controllerName = context.RouteData.Values["controller"]?.ToString();
         var actionName = context.RouteData.Values["action"]?.ToString();
 
-        // Allow access to Account controller and specific public actions
         if (controllerName?.Equals("Account", StringComparison.OrdinalIgnoreCase) == true)
         {
             return true;
         }
 
-        // Allow access to Error action
         if (actionName?.Equals("Error", StringComparison.OrdinalIgnoreCase) == true)
         {
             return true;

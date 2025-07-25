@@ -34,7 +34,6 @@ namespace muhaberat_evrak_yonetim.Entities
         public int? RoleId { get; set; }
         public Role? Role { get; set; }
 
-        // A user can belong to one unit
         public int? UnitId { get; set; }
         public Unit? Unit { get; set; }
 

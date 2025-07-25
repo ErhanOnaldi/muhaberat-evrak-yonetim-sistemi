@@ -45,7 +45,6 @@ public class RoleController : Controller
             return NotFound();
         }
 
-        // Get role statistics
         var stats = new
         {
             TotalUsers = role.Users.Count,
@@ -68,13 +67,11 @@ public class RoleController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Create(Role role)
     {
-        // Check for duplicate role code
         if (await _context.Roles.AnyAsync(r => r.RoleCode == role.RoleCode))
         {
             ModelState.AddModelError("RoleCode", "Bu rol kodu zaten kullanımda.");
         }
 
-        // Check for duplicate role name
         if (await _context.Roles.AnyAsync(r => r.RoleName == role.RoleName))
         {
             ModelState.AddModelError("RoleName", "Bu rol adı zaten kullanımda.");
@@ -120,13 +117,11 @@ public class RoleController : Controller
             return NotFound();
         }
 
-        // Check for duplicate role code (excluding current role)
         if (await _context.Roles.AnyAsync(r => r.RoleCode == role.RoleCode && r.Id != id))
         {
             ModelState.AddModelError("RoleCode", "Bu rol kodu zaten kullanımda.");
         }
 
-        // Check for duplicate role name (excluding current role)
         if (await _context.Roles.AnyAsync(r => r.RoleName == role.RoleName && r.Id != id))
         {
             ModelState.AddModelError("RoleName", "Bu rol adı zaten kullanımda.");
@@ -179,7 +174,6 @@ public class RoleController : Controller
             return NotFound();
         }
 
-        // Check if role has active users
         var hasActiveUsers = await _context.Users.AnyAsync(u => u.RoleId == id && u.IsActive);
         if (hasActiveUsers)
         {

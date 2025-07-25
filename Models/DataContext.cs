@@ -23,7 +23,6 @@ public class DataContext : DbContext
     {
         base.OnModelCreating(modelBuilder);
 
-        // Document relationships
         modelBuilder.Entity<Document>()
             .HasOne(d => d.SenderUser)
             .WithMany(u => u.SentDocuments)
@@ -66,7 +65,6 @@ public class DataContext : DbContext
             .HasForeignKey(d => d.DocumentTypeId)
             .OnDelete(DeleteBehavior.SetNull);
 
-        // DocumentHistory relationships
         modelBuilder.Entity<DocumentHistory>()
             .HasOne(dh => dh.User)
             .WithMany(u => u.DocumentHistories)
@@ -79,7 +77,6 @@ public class DataContext : DbContext
             .HasForeignKey(dh => dh.DocumentId)
             .OnDelete(DeleteBehavior.Cascade);
 
-        // CargoTrackingLog relationships
         modelBuilder.Entity<CargoTrackingLog>()
             .HasOne(ct => ct.Document)
             .WithMany(d => d.CargoTrackingLogs)
@@ -92,7 +89,6 @@ public class DataContext : DbContext
             .HasForeignKey(ct => ct.UpdatedBy)
             .OnDelete(DeleteBehavior.SetNull);
 
-        // User relationships
         modelBuilder.Entity<User>()
             .HasOne(u => u.Department)
             .WithMany(d => d.Users)
@@ -111,14 +107,12 @@ public class DataContext : DbContext
             .HasForeignKey(u => u.UnitId)
             .OnDelete(DeleteBehavior.SetNull);
 
-        // Department relationships
         modelBuilder.Entity<Department>()
             .HasOne(d => d.Unit)
             .WithMany(u => u.Departments)
             .HasForeignKey(d => d.UnitId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        // DocumentPermission relationships
         modelBuilder.Entity<DocumentPermission>()
             .HasOne(dp => dp.DocumentType)
             .WithMany(dt => dt.DocumentPermissions)

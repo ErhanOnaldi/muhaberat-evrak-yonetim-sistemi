@@ -47,7 +47,6 @@ public class DocumentTypeController : Controller
             return NotFound();
         }
 
-        // Get document type statistics
         var stats = new
         {
             TotalDocuments = documentType.Documents.Count,
@@ -72,7 +71,6 @@ public class DocumentTypeController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Create(DocumentType documentType)
     {
-        // Check for duplicate type code
         if (await _context.DocumentTypes.AnyAsync(dt => dt.TypeCode == documentType.TypeCode))
         {
             ModelState.AddModelError("TypeCode", "Bu evrak türü kodu zaten kullanımda.");
@@ -282,7 +280,6 @@ public class DocumentTypeController : Controller
             return RedirectToAction(nameof(Permissions), new { id = documentTypeId });
         }
 
-        // Check if permission already exists
         var existingPermission = await _context.DocumentPermissions
             .FirstOrDefaultAsync(dp => dp.DocumentTypeId == documentTypeId && 
                                      dp.RoleId == roleId && dp.DepartmentId == departmentId);

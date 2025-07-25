@@ -19,13 +19,8 @@
         <div class="alert alert-danger alert-dismissible fade show" role="alert">
             <i class="fas fa-exclamation-triangle mr-2"></i>
             <strong>Lütfen aşağıdaki hataları düzeltin:</strong>
-            <ul class="mb-0 mt-2">
-                @foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
-                {
-                    <li>@error.ErrorMessage</li>
-                }
-            </ul>
-            <button type="button" class="close" data-dismiss="alert">
+            <div asp-validation-summary="All" class="mb-0 mt-2"></div>
+            <button type="button" class="close" data-bs-dismiss="alert">
                 <span>&times;</span>
             </button>
         </div>
@@ -228,7 +223,15 @@
                                 <option value="">Kullanıcı seçin</option>
                                 @foreach (var user in ViewData["Users"] as List<muhaberat_evrak_yonetim.Entities.User>)
                                 {
-                                    <option value="@user.Id">@user.FirstName @user.LastName (@user.Department?.DepartmentName)</option>
+                                    var isSelected = ViewData["CurrentUserId"] != null && user.Id == (int)ViewData["CurrentUserId"];
+                                    if (isSelected)
+                                    {
+                                        <option value="@user.Id" data-department="@user.DepartmentId" selected>@user.FirstName @user.LastName (@user.Department?.DepartmentName)</option>
+                                    }
+                                    else
+                                    {
+                                        <option value="@user.Id" data-department="@user.DepartmentId">@user.FirstName @user.LastName (@user.Department?.DepartmentName)</option>
+                                    }
                                 }
                             </select>
                             <span asp-validation-for="SenderUserId" class="text-danger small"></span>
@@ -242,7 +245,15 @@
                                 <option value="">Departman seçin</option>
                                 @foreach (var dept in ViewData["Departments"] as List<muhaberat_evrak_yonetim.Entities.Department>)
                                 {
-                                    <option value="@dept.Id">@dept.DepartmentName</option>
+                                    var isSelected = ViewData["CurrentUserDepartmentId"] != null && dept.Id == (int)ViewData["CurrentUserDepartmentId"];
+                                    if (isSelected)
+                                    {
+                                        <option value="@dept.Id" selected>@dept.DepartmentName</option>
+                                    }
+                                    else
+                                    {
+                                        <option value="@dept.Id">@dept.DepartmentName</option>
+                                    }
                                 }
                             </select>
                             <span asp-validation-for="SenderDepartmentId" class="text-danger small"></span>
@@ -302,8 +313,29 @@
 </div>
 
 @section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
     <script>
         $(document).ready(function() {
+            // Auto-select current user as sender
+            var currentUserId = @(ViewData["CurrentUserId"] ?? 0);
+            var currentUserDepartmentId = @(ViewData["CurrentUserDepartmentId"] ?? 0);
+            
+            if (currentUserId > 0) {
+                $('#SenderUserId').val(currentUserId);
+            }
+            if (currentUserDepartmentId > 0) {
+                $('#SenderDepartmentId').val(currentUserDepartmentId);
+            }
+
+            // Auto-sync sender department when sender user is selected
+            $('#SenderUserId').change(function() {
+                var selectedOption = $(this).find('option:selected');
+                var departmentId = selectedOption.data('department');
+                if (departmentId) {
+                    $('#SenderDepartmentId').val(departmentId);
+                }
+            });
+
             // Auto-sync receiver department when user is selected
             $('#receiverUser').change(function() {
                 var selectedOption = $(this).find('option:selected');
@@ -335,9 +367,19 @@
 
             // Form validation
             $('form').on('submit', function(e) {
+                var senderUser = $('#SenderUserId').val();
                 var receiverUser = $('#ReceiverUserId').val();
                 var receiverDept = $('#ReceiverDepartmentId').val();
                 
+                // Check sender user selection
+                if (!senderUser || senderUser === '' || senderUser === '0') {
+                    e.preventDefault();
+                    alert('Lütfen gönderen kullanıcı seçin.');
+                    $('#SenderUserId').focus();
+                    return false;
+                }
+                
+                // Check receiver selection
                 if (!receiverUser && !receiverDept) {
                     e.preventDefault();
                     alert('Lütfen alıcı kullanıcı veya departman seçin.');

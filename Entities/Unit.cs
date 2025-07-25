@@ -17,7 +17,6 @@ namespace muhaberat_evrak_yonetim.Entities
         
         public DateTime CreatedAt { get; set; }
 
-        // Navigation properties
         public ICollection<User> Users { get; set; } = new List<User>();
         public ICollection<Department> Departments { get; set; } = new List<Department>();
     }

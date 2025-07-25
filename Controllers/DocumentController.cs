@@ -18,14 +18,29 @@ public class DocumentController : BaseController
 
     public async Task<IActionResult> Index()
     {
-        var documents = await _context.Documents
+        var currentUserId = GetCurrentUserId();
+        var currentUserDepartmentId = GetCurrentUserDepartmentId();
+        var hasFullAccess = HasFullAccess();
+
+        var documentsQuery = _context.Documents
             .Include(d => d.DocumentType)
             .Include(d => d.SenderUser)
             .Include(d => d.ReceiverUser)
             .Include(d => d.SenderDepartment)
             .Include(d => d.ReceiverDepartment)
             .Include(d => d.CreatedByUser)
-            .Where(d => d.IsActive)
+            .Where(d => d.IsActive);
+
+        if (!hasFullAccess)
+        {
+            documentsQuery = documentsQuery.Where(d =>
+                d.SenderUserId == currentUserId ||
+                d.ReceiverUserId == currentUserId ||
+                d.SenderDepartmentId == currentUserDepartmentId ||
+                d.ReceiverDepartmentId == currentUserDepartmentId);
+        }
+
+        var documents = await documentsQuery
             .OrderByDescending(d => d.CreatedDate)
             .ToListAsync();
 
@@ -76,6 +91,16 @@ public class DocumentController : BaseController
             .Where(d => d.IsActive)
             .ToListAsync();
 
+        // Get current user info for pre-filling sender information
+        var currentUserId = GetCurrentUserId();
+        var currentUserDepartmentId = GetCurrentUserDepartmentId();
+        
+        if (currentUserId.HasValue)
+        {
+            ViewData["CurrentUserId"] = currentUserId;
+            ViewData["CurrentUserDepartmentId"] = currentUserDepartmentId;
+        }
+
         return View();
     }
 
@@ -83,9 +108,37 @@ public class DocumentController : BaseController
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Create(Document document)
     {
+        // Custom validation for SenderUserId
+        if (document.SenderUserId <= 0)
+        {
+            ModelState.AddModelError("SenderUserId", "Lütfen gönderen kullanıcı seçin.");
+        }
+
+        // Custom validation for receiver (at least one required)
+        if (document.ReceiverUserId == null && document.ReceiverDepartmentId == null)
+        {
+            ModelState.AddModelError("ReceiverUserId", "En az bir alıcı seçmelisiniz: Kullanıcı veya Departman.");
+            ModelState.AddModelError("ReceiverDepartmentId", "En az bir alıcı seçmelisiniz: Kullanıcı veya Departman.");
+        }
+
+        // Log validation errors for debugging
+        if (!ModelState.IsValid)
+        {
+            foreach (var key in ModelState.Keys)
+            {
+                var state = ModelState[key];
+                if (state.Errors.Count > 0)
+                {
+                    foreach (var error in state.Errors)
+                    {
+                        _logger.LogWarning($"Validation Error - Field: {key}, Message: {error.ErrorMessage}");
+                    }
+                }
+            }
+        }
+
         if (ModelState.IsValid)
         {
-            // Generate document number
             document.DocumentNumber = await GenerateDocumentNumberAsync();
             document.CreatedDate = DateTime.Now;
             document.CreatedAt = DateTime.Now;
@@ -94,8 +147,6 @@ public class DocumentController : BaseController
             document.Status = "DRAFT";
             document.DeliveryStatus = "PREPARING";
 
-            // Set created by from session (you'll need to implement session management)
-            // For now, using a default value
             document.CreatedBy = document.SenderUserId;
 
             _context.Add(document);
@@ -108,7 +159,6 @@ public class DocumentController : BaseController
             return RedirectToAction(nameof(Details), new { id = document.Id });
         }
 
-        // Reload ViewData if model is invalid
         ViewData["DocumentTypes"] = await _context.DocumentTypes
             .Where(dt => dt.IsActive)
             .ToListAsync();
@@ -121,6 +171,16 @@ public class DocumentController : BaseController
         ViewData["Departments"] = await _context.Departments
             .Where(d => d.IsActive)
             .ToListAsync();
+
+        // Reload current user info for pre-filling sender information on error
+        var currentUserId = GetCurrentUserId();
+        var currentUserDepartmentId = GetCurrentUserDepartmentId();
+        
+        if (currentUserId.HasValue)
+        {
+            ViewData["CurrentUserId"] = currentUserId;
+            ViewData["CurrentUserDepartmentId"] = currentUserDepartmentId;
+        }
 
         return View(document);
     }
@@ -163,6 +223,8 @@ public class DocumentController : BaseController
             return NotFound();
         }
 
+        var currentUserId = GetCurrentUserIdRequired();
+
         if (ModelState.IsValid)
         {
             try
@@ -173,7 +235,6 @@ public class DocumentController : BaseController
                     return NotFound();
                 }
 
-                // Store old values for history logging
                 var oldValues = new
                 {
                     Title = existingDocument.Title,
@@ -182,7 +243,6 @@ public class DocumentController : BaseController
                     DeliveryStatus = existingDocument.DeliveryStatus
                 };
 
-                // Update fields
                 existingDocument.Title = document.Title;
                 existingDocument.Description = document.Description;
                 existingDocument.DocumentTypeId = document.DocumentTypeId;
@@ -199,8 +259,7 @@ public class DocumentController : BaseController
                 _context.Update(existingDocument);
                 await _context.SaveChangesAsync();
 
-                // Log the update
-                await LogDocumentHistoryAsync(id, "UPDATED", existingDocument.SenderUserId, "Evrak bilgileri güncellendi", oldValues, document);
+                await LogDocumentHistoryAsync(id, "UPDATED", currentUserId, "Evrak bilgileri güncellendi", oldValues, document);
 
                 TempData["Success"] = "Evrak başarıyla güncellendi.";
             }
@@ -238,6 +297,7 @@ public class DocumentController : BaseController
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Send(int id)
     {
+        var currentUserId = GetCurrentUserIdRequired();
         var document = await _context.Documents.FindAsync(id);
         if (document == null)
         {
@@ -252,7 +312,7 @@ public class DocumentController : BaseController
             _context.Update(document);
             await _context.SaveChangesAsync();
 
-            await LogDocumentHistoryAsync(id, "SENT", document.SenderUserId, "Evrak gönderildi");
+            await LogDocumentHistoryAsync(id, "SENT", currentUserId, "Evrak gönderildi");
 
             TempData["Success"] = "Evrak başarıyla gönderildi.";
         }
@@ -264,6 +324,7 @@ public class DocumentController : BaseController
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> UpdateCargoStatus(int id, string cargoCompany, string trackingNumber, string deliveryStatus, string location = null, string notes = null)
     {
+        var currentUserId = GetCurrentUserIdRequired();
         var document = await _context.Documents.FindAsync(id);
         if (document == null)
         {
@@ -290,7 +351,6 @@ public class DocumentController : BaseController
 
         _context.Update(document);
         
-        // Create cargo tracking log
         var cargoLog = new CargoTrackingLog
         {
             DocumentId = id,
@@ -298,7 +358,7 @@ public class DocumentController : BaseController
             NewStatus = deliveryStatus,
             StatusChangeDate = DateTime.Now,
             Location = location,
-            UpdatedBy = document.SenderUserId, // This should be current user from session
+            UpdatedBy = currentUserId, 
             Notes = notes ?? $"Kargo şirketi: {cargoCompany}, Takip No: {trackingNumber}",
             CreatedAt = DateTime.Now
         };
@@ -306,7 +366,7 @@ public class DocumentController : BaseController
         _context.CargoTrackingLogs.Add(cargoLog);
         await _context.SaveChangesAsync();
 
-        await LogDocumentHistoryAsync(id, "CARGO_UPDATED", document.SenderUserId, $"Kargo durumu güncellendi: {deliveryStatus}");
+        await LogDocumentHistoryAsync(id, "CARGO_UPDATED", currentUserId, $"Kargo durumu güncellendi: {deliveryStatus}");
 
         TempData["Success"] = "Kargo durumu başarıyla güncellendi.";
         return RedirectToAction(nameof(Details), new { id });
@@ -364,13 +424,14 @@ public class DocumentController : BaseController
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Review(int id, bool approved, string reviewNotes)
     {
+        var currentUserId = GetCurrentUserIdRequired();
         var document = await _context.Documents.FindAsync(id);
         if (document == null)
         {
             return NotFound();
         }
 
-        document.ReviewedBy = document.SenderUserId; // This should be current user from session
+        document.ReviewedBy = currentUserId;
         document.ReviewDate = DateTime.Now;
         document.ReviewNotes = reviewNotes;
         document.Status = approved ? "APPROVED" : "REJECTED";
@@ -379,8 +440,8 @@ public class DocumentController : BaseController
         _context.Update(document);
         await _context.SaveChangesAsync();
 
-        await LogDocumentHistoryAsync(id, approved ? "APPROVED" : "REJECTED", document.ReviewedBy.Value, 
-            $"Evrak {(approved ? "onaylandı" : "reddedildi")}: {reviewNotes}");
+        await LogDocumentHistoryAsync(id, approved ? "APPROVED" : "REJECTED", currentUserId, 
+            $"Evrak {(approved ? "onaylandı" : "reddedildi")}: {(string.IsNullOrEmpty(reviewNotes) ? "" : reviewNotes)}");
 
         TempData["Success"] = $"Evrak başarıyla {(approved ? "onaylandı" : "reddedildi")}.";
         return RedirectToAction(nameof(Details), new { id });
@@ -390,6 +451,7 @@ public class DocumentController : BaseController
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Delete(int id)
     {
+        var currentUserId = GetCurrentUserIdRequired();
         var document = await _context.Documents.FindAsync(id);
         if (document == null)
         {
@@ -402,7 +464,7 @@ public class DocumentController : BaseController
         _context.Update(document);
         await _context.SaveChangesAsync();
 
-        await LogDocumentHistoryAsync(id, "DELETED", document.SenderUserId, "Evrak silindi");
+        await LogDocumentHistoryAsync(id, "DELETED", currentUserId, "Evrak silindi");
 
         TempData["Success"] = "Evrak başarıyla silindi.";
         return RedirectToAction(nameof(Index));

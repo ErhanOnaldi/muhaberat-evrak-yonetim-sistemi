@@ -16,7 +16,6 @@ namespace muhaberat_evrak_yonetim.Entities
         public int? DepartmentId { get; set; }
         public Department? Department { get; set; }
 
-        // Permissions
         public bool CanView { get; set; } = false;
         public bool CanUpload { get; set; } = false;
         public bool CanDownload { get; set; } = false;

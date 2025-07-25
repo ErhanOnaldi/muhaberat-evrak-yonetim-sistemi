@@ -6,7 +6,7 @@
     <title>@ViewData["Title"] - Erehin</title>
     
     <!-- CSS Files -->
-    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <!-- Bootstrap included in Metronic bundle -->
     <link rel="stylesheet" href="~/css/siteL1.css" asp-append-version="true" />
     <link href="~/theme/assets/plugins/custom/datatables/datatables.bundle.css" rel="stylesheet" type="text/css" />
     <link href="~/theme/assets/plugins/global/plugins.bundle.css" rel="stylesheet" type="text/css" />
@@ -15,8 +15,6 @@
     <link href="~/css/navbarstyle.css" rel="stylesheet" />
     <link href="~/css/sidebarstyle.css" rel="stylesheet" />
     <link href="~/css/Loading.css" type="text/css" rel="stylesheet" />
-    <link href="https://cdn.datatables.net/1.11.4/css/jquery.dataTables.min.css" rel="stylesheet" />
-    <link rel="stylesheet" href="https://www.w3schools.com/w3css/4/w3.css">
     <link href="~/fontawesome/css/fontawesome.css" rel="stylesheet" />
     <link href="~/fontawesome/css/fontawesome.min.css" rel="stylesheet" />
     <link href="~/fontawesome/css/solid.css" rel="stylesheet" />
@@ -29,11 +27,11 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     
     <!-- Other Meta Tags -->
-    <base href="~/theme" />
+    <base href="~/" />
     <meta property="og:locale" content="en_US" />
     <meta property="og:type" content="article" />
     <link rel="canonical" href="https://preview.keenthemes.com/metronic8" />
-    <link rel="icon" type="image/x-icon" href="/theme/assets/media/ico/tab.svg">
+    <link rel="icon" type="image/x-icon" href="~/theme/assets/media/ico/tab.svg">
 </head>
 
 <body id="kt_body"
@@ -112,6 +110,50 @@
                                     <!--begin::Menu-->
                                     <div class="menu menu-sub menu-sub-dropdown menu-column menu-rounded menu-gray-800 menu-state-bg menu-state-primary fw-bold py-4 fs-6 w-275px"
                                          data-kt-menu="true">
+                                        <!--begin::Menu item-->
+                                        <div class="menu-item px-3">
+                                            <div class="menu-content d-flex align-items-center px-3">
+                                                <!--begin::Avatar-->
+                                                <div class="symbol symbol-50px me-5">
+                                                    <img alt="Logo" src="~/theme/assets/media/avatars/blank.png" />
+                                                </div>
+                                                <!--end::Avatar-->
+                                                <!--begin::Username-->
+                                                <div class="d-flex flex-column">
+                                                    <div id="userMenuName" class="fw-bold d-flex align-items-center fs-5">
+                                                        <!-- Name will be filled by JavaScript -->
+                                                    </div>
+                                                    <div id="userMenuDepartment" class="fw-semibold text-muted fs-7">
+                                                        <!-- Department will be filled by JavaScript -->
+                                                    </div>
+                                                </div>
+                                                <!--end::Username-->
+                                            </div>
+                                        </div>
+                                        <!--end::Menu item-->
+                                        
+                                        <!--begin::Menu separator-->
+                                        <div class="separator my-2"></div>
+                                        <!--end::Menu separator-->
+                                        
+                                        <!--begin::Menu item-->
+                                        <div class="menu-item px-5">
+                                            <a asp-controller="Account" asp-action="Profile" class="menu-link px-5">
+                                                <i class="fas fa-user me-2"></i>Profilim
+                                            </a>
+                                        </div>
+                                        <!--end::Menu item-->
+                                        
+                                        <!--begin::Menu separator-->
+                                        <div class="separator my-2"></div>
+                                        <!--end::Menu separator-->
+                                        
+                                        <!--begin::Menu item-->
+                                        <div class="menu-item px-5">
+                                            <a href="javascript:void(0);" id="headerLogoutButton" class="menu-link px-5">
+                                                <i class="fas fa-sign-out-alt me-2"></i>Çıkış Yap
+                                            </a>
+                                        </div>
                                         <!--end::Menu item-->
                                     </div>
                                     <!--end::Menu-->
@@ -259,84 +301,36 @@
                                         </span>
                                         <!--end::Svg Icon-->
                                     </span>
-                                    <span class="menu-title">Araç İşlemleri</span>
+                                    <span class="menu-title">Evrak İşlemleri</span>
                                     <span class="menu-arrow"></span>
                                 </span>
                                 <div class="menu-sub menu-sub-accordion menu-active-bg">
                                     <div class="menu-item">
-                                        <a class="menu-link" href="/Vehicle/VehicleCard">
+                                        <a class="menu-link" href="@Url.Action("Index", "Document")">
                                             <span class="menu-icon">
-                                                <!--begin::Svg Icon | path: icons/duotune/communication/com001.svg-->
-                                                <span class="svg-icon svg-icon-2">
-                                                    <svg xmlns="http://www.w3.org/2000/svg"
-                                                         width="24"
-                                                         height="24"
-                                                         viewBox="0 0 24 24"
-                                                         fill="none">
-                                                        <path opacity="0.3"
-                                                              d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z"
-                                                              fill="black" />
-                                                        <path d="M19 10.4C19 10.3 19 10.2 19 10C19 8.9 18.1 8 17 8H16.9C15.6 6.2 14.6 4.29995 13.9 2.19995C13.3 2.09995 12.6 2 12 2C11.9 2 11.8 2 11.7 2C12.4 4.6 13.5 7.10005 15.1 9.30005C15 9.50005 15 9.7 15 10C15 11.1 15.9 12 17 12C17.1 12 17.3 12 17.4 11.9C18.6 13 19.9 14 21.4 14.8C21.4 14.8 21.5 14.8 21.5 14.9C21.7 14.2 21.8 13.5 21.9 12.7C20.9 12.1 19.9 11.3 19 10.4Z"
-                                                              fill="black" />
-                                                        <path d="M12 15C11 13.1 10.2 11.2 9.60001 9.19995C9.90001 8.89995 10 8.4 10 8C10 7.1 9.40001 6.39998 8.70001 6.09998C8.40001 4.99998 8.20001 3.90005 8.00001 2.80005C7.30001 3.10005 6.70001 3.40002 6.20001 3.90002C6.40001 4.80002 6.50001 5.6 6.80001 6.5C6.40001 6.9 6.10001 7.4 6.10001 8C6.10001 9 6.80001 9.8 7.80001 10C8.30001 11.6 9.00001 13.2 9.70001 14.7C7.10001 13.2 4.70001 11.5 2.40001 9.5C2.20001 10.3 2.10001 11.1 2.10001 11.9C4.60001 13.9 7.30001 15.7 10.1 17.2C10.2 18.2 11 19 12 19C12.6 20 13.2 20.9 13.9 21.8C14.6 21.7 15.3 21.5 15.9 21.2C15.4 20.5 14.9 19.8 14.4 19.1C15.5 19.5 16.5 19.9 17.6 20.2C18.3 19.8 18.9 19.2 19.4 18.6C17.6 18.1 15.7 17.5 14 16.7C13.9 15.8 13.1 15 12 15Z"
-                                                              fill="black" />
-                                                    </svg>
-                                                </span>
-                                                <!--end::Svg Icon-->
+                                                <i class="fas fa-file-alt text-primary"></i>
                                             </span>
-                                            <span class="menu-title">Araç Kartı</span>
+                                            <span class="menu-title">Evrak Listesi</span>
                                         </a>
                                     </div>
                                     <div class="menu-item">
-                                        <a class="menu-link" href="/Report/VehicleReport">
+                                        <a class="menu-link" href="@Url.Action("Create", "Document")">
                                             <span class="menu-icon">
-                                                <!--begin::Svg Icon | path: icons/duotune/communication/com001.svg-->
-                                                <span class="svg-icon svg-icon-2">
-                                                    <svg xmlns="http://www.w3.org/2000/svg"
-                                                         width="24"
-                                                         height="24"
-                                                         viewBox="0 0 24 24"
-                                                         fill="none">
-                                                        <path opacity="0.3"
-                                                              d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z"
-                                                              fill="black" />
-                                                        <path d="M19 10.4C19 10.3 19 10.2 19 10C19 8.9 18.1 8 17 8H16.9C15.6 6.2 14.6 4.29995 13.9 2.19995C13.3 2.09995 12.6 2 12 2C11.9 2 11.8 2 11.7 2C12.4 4.6 13.5 7.10005 15.1 9.30005C15 9.50005 15 9.7 15 10C15 11.1 15.9 12 17 12C17.1 12 17.3 12 17.4 11.9C18.6 13 19.9 14 21.4 14.8C21.4 14.8 21.5 14.8 21.5 14.9C21.7 14.2 21.8 13.5 21.9 12.7C20.9 12.1 19.9 11.3 19 10.4Z"
-                                                              fill="black" />
-                                                        <path d="M12 15C11 13.1 10.2 11.2 9.60001 9.19995C9.90001 8.89995 10 8.4 10 8C10 7.1 9.40001 6.39998 8.70001 6.09998C8.40001 4.99998 8.20001 3.90005 8.00001 2.80005C7.30001 3.10005 6.70001 3.40002 6.20001 3.90002C6.40001 4.80002 6.50001 5.6 6.80001 6.5C6.40001 6.9 6.10001 7.4 6.10001 8C6.10001 9 6.80001 9.8 7.80001 10C8.30001 11.6 9.00001 13.2 9.70001 14.7C7.10001 13.2 4.70001 11.5 2.40001 9.5C2.20001 10.3 2.10001 11.1 2.10001 11.9C4.60001 13.9 7.30001 15.7 10.1 17.2C10.2 18.2 11 19 12 19C12.6 20 13.2 20.9 13.9 21.8C14.6 21.7 15.3 21.5 15.9 21.2C15.4 20.5 14.9 19.8 14.4 19.1C15.5 19.5 16.5 19.9 17.6 20.2C18.3 19.8 18.9 19.2 19.4 18.6C17.6 18.1 15.7 17.5 14 16.7C13.9 15.8 13.1 15 12 15Z"
-                                                              fill="black" />
-                                                    </svg>
-                                                </span>
-                                                <!--end::Svg Icon-->
+                                                <i class="fas fa-plus-circle text-success"></i>
                                             </span>
-                                            <span class="menu-title">Araç listesi</span>
+                                            <span class="menu-title">Yeni Evrak</span>
                                         </a>
                                     </div>
                                     <div class="menu-item">
-                                        <a class="menu-link" href="/Vehicle/PrePledgeCard">
+                                        <a class="menu-link" href="@Url.Action("MyDocuments", "Document")">
                                             <span class="menu-icon">
-                                                <!--begin::Svg Icon | path: icons/duotune/communication/com001.svg-->
-                                                <span class="svg-icon svg-icon-2">
-                                                    <svg xmlns="http://www.w3.org/2000/svg"
-                                                         width="24"
-                                                         height="24"
-                                                         viewBox="0 0 24 24"
-                                                         fill="none">
-                                                        <path opacity="0.3"
-                                                              d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z"
-                                                              fill="black" />
-                                                        <path d="M19 10.4C19 10.3 19 10.2 19 10C19 8.9 18.1 8 17 8H16.9C15.6 6.2 14.6 4.29995 13.9 2.19995C13.3 2.09995 12.6 2 12 2C11.9 2 11.8 2 11.7 2C12.4 4.6 13.5 7.10005 15.1 9.30005C15 9.50005 15 9.7 15 10C15 11.1 15.9 12 17 12C17.1 12 17.3 12 17.4 11.9C18.6 13 19.9 14 21.4 14.8C21.4 14.8 21.5 14.8 21.5 14.9C21.7 14.2 21.8 13.5 21.9 12.7C20.9 12.1 19.9 11.3 19 10.4Z"
-                                                              fill="black" />
-                                                        <path d="M12 15C11 13.1 10.2 11.2 9.60001 9.19995C9.90001 8.89995 10 8.4 10 8C10 7.1 9.40001 6.39998 8.70001 6.09998C8.40001 4.99998 8.20001 3.90005 8.00001 2.80005C7.30001 3.10005 6.70001 3.40002 6.20001 3.90002C6.40001 4.80002 6.50001 5.6 6.80001 6.5C6.40001 6.9 6.10001 7.4 6.10001 8C6.10001 9 6.80001 9.8 7.80001 10C8.30001 11.6 9.00001 13.2 9.70001 14.7C7.10001 13.2 4.70001 11.5 2.40001 9.5C2.20001 10.3 2.10001 11.1 2.10001 11.9C4.60001 13.9 7.30001 15.7 10.1 17.2C10.2 18.2 11 19 12 19C12.6 20 13.2 20.9 13.9 21.8C14.6 21.7 15.3 21.5 15.9 21.2C15.4 20.5 14.9 19.8 14.4 19.1C15.5 19.5 16.5 19.9 17.6 20.2C18.3 19.8 18.9 19.2 19.4 18.6C17.6 18.1 15.7 17.5 14 16.7C13.9 15.8 13.1 15 12 15Z"
-                                                              fill="black" />
-                                                    </svg>
-                                                </span>
-                                                <!--end::Svg Icon-->
+                                                <i class="fas fa-folder-open text-info"></i>
                                             </span>
-                                            <span class="menu-title">Ön Rehin</span>
+                                            <span class="menu-title">Evraklarım</span>
                                         </a>
                                     </div>
                                     <div class="menu-item">
-                                        <a class="menu-link" href="/Report/PrePledgeConvertReport">
+                                        <a class="menu-link" href="@Url.Action("Index", "User")">
                                             <span class="menu-icon">
                                                 <!--begin::Svg Icon | path: icons/duotune/communication/com001.svg-->
                                                 <span class="svg-icon svg-icon-2">
@@ -356,7 +350,7 @@
                                                 </span>
                                                 <!--end::Svg Icon-->
                                             </span>
-                                            <span class="menu-title">Ön Rehin Değişen</span>
+                                            <span class="menu-title">Kullanıcılar</span>
                                         </a>
                                     </div>
                                 </div>
@@ -584,7 +578,7 @@
                     <!--begin::Brand-->
                     <div class="header-brand">
                         <!--begin::Logo-->
-                        <a href="Dashboard/Home">
+                        <a href="@Url.Action("Index", "Home")">
                             <img alt="Logo"
                                  src="~/theme/assets/media/logos/fuzulevLogo.svg"
                                  class="h-25px h-lg-25px" />
@@ -941,31 +935,31 @@
 
     <script>
                 $(document).ready(function() {
-            // LocalStorage'dan kullanıcı bilgilerini al
-            const userData = localStorage.getItem('userInfo');
-            if (userData) {
-                const user = JSON.parse(userData);
-                // Kullanıcı adı ve soyadını birleştir
-                const fullName = `${user.Name || ''} ${user.LastName || ''}`.trim() || '-';
+            // Get user data from server-side ViewBag
+            const fullName = '@ViewBag.CurrentUserFullName' || 'Kullanıcı';
+            const departmentName = '@ViewBag.CurrentDepartmentName' || '';
+            const roleName = '@ViewBag.CurrentRoleName' || '';
+            const displayDepartment = departmentName + (roleName ? ` (${roleName})` : '');
 
-                // UI elementlerini güncelle
-                $("#userName").text(fullName);
-                $("#userTitle").text(user.Title || '-');
-            }
+            // UI elementlerini güncelle (sidebar)
+            $("#userName").text(fullName);
+            $("#userTitle").text(displayDepartment);
+            
+            // Header user menu güncelle
+            $("#userMenuName").text(fullName);
+            $("#userMenuDepartment").text(displayDepartment);
         });
         $(document).ready(function () {
+            // Sidebar logout button
             $("#logoutButton").click(function () {
-                $.ajax({
-                    type: "POST",
-                    url: "/Login/Logout", 
-                    success: function (data) {
-                         localStorage.removeItem('userInfo');
-                        window.location.href = "/Login";
-                    },
-                    error: function (error) {
-                        console.error("Logout işlemi sırasında bir hata oluştu: " + error);
-                    }
-                });
+                // Simple form submission to logout
+                window.location.href = "@Url.Action("Logout", "Account")";
+            });
+            
+            // Header logout button
+            $("#headerLogoutButton").click(function () {
+                // Simple form submission to logout
+                window.location.href = "@Url.Action("Logout", "Account")";
             });
         });
                 // Aside search kısmına eklenecek event listener

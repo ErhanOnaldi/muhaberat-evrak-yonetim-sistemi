@@ -11,6 +11,7 @@ namespace muhaberat_evrak_yonetim.Entities
         [StringLength(50)]
         public string DocumentNumber { get; set; } = null!;
 
+        [Required(ErrorMessage = "Evrak türü seçimi zorunludur.")]
         public int? DocumentTypeId { get; set; }
         public DocumentType? DocumentType { get; set; }
 
@@ -20,11 +21,12 @@ namespace muhaberat_evrak_yonetim.Entities
 
         public string? Description { get; set; }
 
-        // Sender and Receiver Information (BIDIRECTIONAL)
+        [Required(ErrorMessage = "Gönderen kullanıcı seçimi zorunludur.")]
         public int SenderUserId { get; set; }
         public User SenderUser { get; set; } = null!;
 
-        public int? SenderDepartmentId { get; set; }
+        [Required(ErrorMessage = "Gönderen departman seçimi zorunludur.")]
+        public int SenderDepartmentId { get; set; }
         public Department? SenderDepartment { get; set; }
 
         public int? ReceiverUserId { get; set; }
@@ -33,31 +35,31 @@ namespace muhaberat_evrak_yonetim.Entities
         public int? ReceiverDepartmentId { get; set; }
         public Department? ReceiverDepartment { get; set; }
 
-        // Customer information (optional)
         [StringLength(100)]
         public string? CustomerId { get; set; }
 
         [StringLength(200)]
         public string? CustomerName { get; set; }
 
-        // Upload information
         public int CreatedBy { get; set; }
         public User CreatedByUser { get; set; } = null!;
 
         public DateTime CreatedDate { get; set; }
 
-        // Physical document information
+        [Required(ErrorMessage = "Fiziksel evrak türü seçimi zorunludur.")]
         [StringLength(50)]
-        public string? PhysicalDocumentType { get; set; } // ORIGINAL, COPY, NOTARIZED
+        public string PhysicalDocumentType { get; set; } = null!;
 
+        [Required(ErrorMessage = "Paket türü seçimi zorunludur.")]
         [StringLength(50)]
-        public string? PackageType { get; set; } // ENVELOPE, SMALL_PACKAGE, LARGE_PACKAGE, SPECIAL
+        public string PackageType { get; set; } = null!;
 
-        // Address information
+        [Required(ErrorMessage = "Gönderim adresi zorunludur.")]
         public string ShippingAddress { get; set; } = null!;
+        
+        [Required(ErrorMessage = "Teslimat adresi zorunludur.")]
         public string DeliveryAddress { get; set; } = null!;
 
-        // Cargo information (manual update)
         [StringLength(100)]
         public string? CargoCompany { get; set; }
 
@@ -69,34 +71,29 @@ namespace muhaberat_evrak_yonetim.Entities
         public DateTime? EstimatedDeliveryDate { get; set; }
 
         [StringLength(20)]
-        public string DeliveryStatus { get; set; } = "PREPARING"; // PREPARING, SHIPPED, IN_TRANSIT, DELIVERED, RETURNED
+        public string DeliveryStatus { get; set; } = "PREPARING"; 
 
         [StringLength(100)]
         public string? ReceivedBy { get; set; }
 
         public string? DeliveryNotes { get; set; }
 
-        // Status information
         public bool IsActive { get; set; } = true;
 
         [StringLength(20)]
-        public string Status { get; set; } = "DRAFT"; // DRAFT, SENT, DELIVERED, RECEIVED, CANCELLED
+        public string Status { get; set; } = "DRAFT"; 
 
-        // Approval process
         public int? ReviewedBy { get; set; }
         public User? ReviewedByUser { get; set; }
 
         public DateTime? ReviewDate { get; set; }
         public string? ReviewNotes { get; set; }
 
-        // File information
         public string? FilePath { get; set; }
 
-        // Metadata
         public DateTime CreatedAt { get; set; }
         public DateTime UpdatedAt { get; set; }
 
-        // Navigation properties
         public ICollection<DocumentHistory> DocumentHistories { get; set; } = new List<DocumentHistory>();
         public ICollection<CargoTrackingLog> CargoTrackingLogs { get; set; } = new List<CargoTrackingLog>();
     }

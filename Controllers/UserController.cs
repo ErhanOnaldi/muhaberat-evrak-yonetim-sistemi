@@ -90,19 +90,16 @@ public class UserController : BaseController
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Create(User user, string confirmPassword)
     {
-        // Validate password confirmation
         if (string.IsNullOrEmpty(user.PasswordHash) || user.PasswordHash != confirmPassword)
         {
             ModelState.AddModelError("", "Şifreler eşleşmiyor.");
         }
 
-        // Check for duplicate username
         if (await _context.Users.AnyAsync(u => u.Username == user.Username))
         {
             ModelState.AddModelError("Username", "Bu kullanıcı adı zaten kullanımda.");
         }
 
-        // Check for duplicate email
         if (await _context.Users.AnyAsync(u => u.Email == user.Email))
         {
             ModelState.AddModelError("Email", "Bu e-posta adresi zaten kayıtlı.");
@@ -122,7 +119,6 @@ public class UserController : BaseController
             return RedirectToAction(nameof(Index));
         }
 
-        // Reload ViewData if model is invalid
         ViewData["Departments"] = await _context.Departments
             .Where(d => d.IsActive)
             .OrderBy(d => d.DepartmentName)
@@ -169,7 +165,6 @@ public class UserController : BaseController
             .OrderBy(u => u.UnitName)
             .ToListAsync();
 
-        // Clear password for security
         var userToEdit = new User
         {
             Id = user.Id,
@@ -181,7 +176,7 @@ public class UserController : BaseController
             RoleId = user.RoleId,
             UnitId = user.UnitId,
             IsActive = user.IsActive,
-            PasswordHash = "" // Don't show password in edit form
+            PasswordHash = ""
         };
 
         return View(userToEdit);
@@ -196,13 +191,11 @@ public class UserController : BaseController
             return NotFound();
         }
 
-        // Check for duplicate username (excluding current user)
         if (await _context.Users.AnyAsync(u => u.Username == user.Username && u.Id != id))
         {
             ModelState.AddModelError("Username", "Bu kullanıcı adı zaten kullanımda.");
         }
 
-        // Check for duplicate email (excluding current user)
         if (await _context.Users.AnyAsync(u => u.Email == user.Email && u.Id != id))
         {
             ModelState.AddModelError("Email", "Bu e-posta adresi zaten kayıtlı.");
@@ -228,7 +221,6 @@ public class UserController : BaseController
                 existingUser.IsActive = user.IsActive;
                 existingUser.UpdatedAt = DateTime.Now;
 
-                // Only update password if a new one is provided
                 if (!string.IsNullOrEmpty(user.PasswordHash))
                 {
                     existingUser.PasswordHash = BCrypt.Net.BCrypt.HashPassword(user.PasswordHash);
@@ -253,7 +245,6 @@ public class UserController : BaseController
             return RedirectToAction(nameof(Index));
         }
 
-        // Reload ViewData if model is invalid
         ViewData["Departments"] = await _context.Departments
             .Where(d => d.IsActive)
             .OrderBy(d => d.DepartmentName)

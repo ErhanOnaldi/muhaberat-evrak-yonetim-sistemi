@@ -49,7 +49,6 @@ public class DepartmentController : BaseController
             return NotFound();
         }
 
-        // Get department statistics
         var stats = new
         {
             TotalUsers = department.Users.Count(u => u.IsActive),
@@ -79,13 +78,11 @@ public class DepartmentController : BaseController
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Create(Department department)
     {
-        // Check for duplicate department code
         if (await _context.Departments.AnyAsync(d => d.DepartmentCode == department.DepartmentCode))
         {
             ModelState.AddModelError("DepartmentCode", "Bu departman kodu zaten kullanımda.");
         }
 
-        // Check for duplicate department name within the same unit
         if (await _context.Departments.AnyAsync(d => d.DepartmentName == department.DepartmentName && d.UnitId == department.UnitId))
         {
             ModelState.AddModelError("DepartmentName", "Bu birimde aynı isimde bir departman zaten mevcut.");
@@ -141,13 +138,11 @@ public class DepartmentController : BaseController
             return NotFound();
         }
 
-        // Check for duplicate department code (excluding current department)
         if (await _context.Departments.AnyAsync(d => d.DepartmentCode == department.DepartmentCode && d.Id != id))
         {
             ModelState.AddModelError("DepartmentCode", "Bu departman kodu zaten kullanımda.");
         }
 
-        // Check for duplicate department name within the same unit (excluding current department)
         if (await _context.Departments.AnyAsync(d => d.DepartmentName == department.DepartmentName && 
             d.UnitId == department.UnitId && d.Id != id))
         {
@@ -208,7 +203,6 @@ public class DepartmentController : BaseController
             return NotFound();
         }
 
-        // Check if department has active users
         var hasActiveUsers = await _context.Users.AnyAsync(u => u.DepartmentId == id && u.IsActive);
         if (hasActiveUsers)
         {

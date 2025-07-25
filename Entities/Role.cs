@@ -20,7 +20,6 @@ namespace muhaberat_evrak_yonetim.Entities
         public bool IsActive { get; set; } = true;
         public DateTime CreatedAt { get; set; }
 
-        // Navigation properties
         public ICollection<User> Users { get; set; } = new List<User>();
         public ICollection<DocumentPermission> DocumentPermissions { get; set; } = new List<DocumentPermission>();
     }

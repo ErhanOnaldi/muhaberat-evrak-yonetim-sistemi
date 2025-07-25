@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using muhaberat_evrak_yonetim.Entities;
 using muhaberat_evrak_yonetim.Models;
 
 namespace muhaberat_evrak_yonetim.Controllers;
@@ -18,33 +19,42 @@ public class HomeController : BaseController
 
     public async Task<IActionResult> Index()
     {
-        // Get comprehensive dashboard statistics
+        var currentUserId = GetCurrentUserId();
+        var currentUserDepartmentId = GetCurrentUserDepartmentId();
+        var hasFullAccess = HasFullAccess();
+
+        IQueryable<Document> documentsQuery = _context.Documents.Where(d => d.IsActive);
+
+        if (!hasFullAccess)
+        {
+            documentsQuery = documentsQuery.Where(d =>
+                d.SenderUserId == currentUserId ||
+                d.ReceiverUserId == currentUserId ||
+                d.SenderDepartmentId == currentUserDepartmentId ||
+                d.ReceiverDepartmentId == currentUserDepartmentId);
+        }
+
         var dashboardStats = new
         {
-            // Document Statistics
-            TotalDocuments = await _context.Documents.CountAsync(d => d.IsActive),
-            TotalDocumentsThisMonth = await _context.Documents.CountAsync(d => d.IsActive && 
+            TotalDocuments = await documentsQuery.CountAsync(),
+            TotalDocumentsThisMonth = await documentsQuery.CountAsync(d =>
                 d.CreatedDate.Month == DateTime.Now.Month && d.CreatedDate.Year == DateTime.Now.Year),
-            PendingDocuments = await _context.Documents.CountAsync(d => d.IsActive && 
+            PendingDocuments = await documentsQuery.CountAsync(d =>
                 d.Status != "DELIVERED" && d.Status != "RECEIVED"),
-            DeliveredDocuments = await _context.Documents.CountAsync(d => d.IsActive && 
+            DeliveredDocuments = await documentsQuery.CountAsync(d =>
                 (d.Status == "DELIVERED" || d.Status == "RECEIVED")),
-            
-            // Cargo Statistics
-            InTransitCargo = await _context.Documents.CountAsync(d => d.IsActive && 
+
+            InTransitCargo = await documentsQuery.CountAsync(d =>
                 (d.DeliveryStatus == "SHIPPED" || d.DeliveryStatus == "IN_TRANSIT")),
-            DeliveredCargo = await _context.Documents.CountAsync(d => d.IsActive && 
+            DeliveredCargo = await documentsQuery.CountAsync(d =>
                 d.DeliveryStatus == "DELIVERED"),
-            
-            // User Statistics
+
             TotalUsers = await _context.Users.CountAsync(u => u.IsActive),
             TotalDepartments = await _context.Departments.CountAsync(d => d.IsActive),
             TotalRoles = await _context.Roles.CountAsync(r => r.IsActive),
             TotalDocumentTypes = await _context.DocumentTypes.CountAsync(dt => dt.IsActive),
-            
-            // Recent Activity
-            RecentDocuments = await _context.Documents
-                .Where(d => d.IsActive)
+
+            RecentDocuments = await documentsQuery
                 .Include(d => d.DocumentType)
                 .Include(d => d.SenderUser)
                 .Include(d => d.SenderDepartment)
@@ -53,54 +63,58 @@ public class HomeController : BaseController
                 .OrderByDescending(d => d.CreatedDate)
                 .Take(5)
                 .ToListAsync(),
-                
-            // Department Activity
+
             DepartmentActivity = await _context.Departments
                 .Where(d => d.IsActive)
-                .Include(d => d.SentDocuments.Where(doc => doc.IsActive))
-                .OrderByDescending(d => d.SentDocuments.Count)
+                .Select(d => new
+                {
+                    Department = d,
+                    SentCount = d.SentDocuments.AsQueryable().Count(doc => doc.IsActive)
+                })
+                .OrderByDescending(d => d.SentCount)
                 .Take(5)
                 .ToListAsync(),
-                
-            // Document Type Usage
+
             DocumentTypeUsage = await _context.DocumentTypes
                 .Where(dt => dt.IsActive)
-                .Include(dt => dt.Documents.Where(d => d.IsActive))
-                .OrderByDescending(dt => dt.Documents.Count)
+                .Select(dt => new {
+                    DocumentType = dt,
+                    DocumentCount = dt.Documents.AsQueryable().Count(d => d.IsActive)
+                })
+                .OrderByDescending(dt => dt.DocumentCount)
                 .Take(6)
                 .ToListAsync(),
-                
-            // Monthly Statistics (Last 6 months)
-            MonthlyStats = await GetMonthlyStatistics()
+
+            MonthlyStats = await GetMonthlyStatistics(documentsQuery)
         };
 
         ViewBag.DashboardStats = dashboardStats;
         return View();
     }
 
-    private async Task<object> GetMonthlyStatistics()
+    private async Task<object> GetMonthlyStatistics(IQueryable<Document> documentsQuery)
     {
         var monthlyData = new List<object>();
-        
+
         for (int i = 5; i >= 0; i--)
         {
             var targetDate = DateTime.Now.AddMonths(-i);
             var monthStart = new DateTime(targetDate.Year, targetDate.Month, 1);
             var monthEnd = monthStart.AddMonths(1).AddDays(-1);
-            
+
             var monthStats = new
             {
                 Month = targetDate.ToString("MMM yyyy"),
-                DocumentCount = await _context.Documents.CountAsync(d => d.IsActive && 
+                DocumentCount = await documentsQuery.CountAsync(d =>
                     d.CreatedDate >= monthStart && d.CreatedDate <= monthEnd),
-                DeliveredCount = await _context.Documents.CountAsync(d => d.IsActive && 
+                DeliveredCount = await documentsQuery.CountAsync(d =>
                     d.CreatedDate >= monthStart && d.CreatedDate <= monthEnd &&
                     (d.Status == "DELIVERED" || d.Status == "RECEIVED"))
             };
-            
+
             monthlyData.Add(monthStats);
         }
-        
+
         return monthlyData;
     }
 
