@@ -7,6 +7,7 @@ public class BaseController : Controller
 {
     public override void OnActionExecuting(ActionExecutingContext context)
     {
+
         if (!IsUserLoggedIn() && !IsPublicAction(context))
         {
             context.Result = RedirectToAction("Login", "Account");
@@ -28,7 +29,28 @@ public class BaseController : Controller
 
     protected bool IsUserLoggedIn()
     {
-        return HttpContext.Session.GetInt32("UserId").HasValue;
+        var userId = HttpContext.Session.GetInt32("UserId");
+        if (!userId.HasValue)
+            return false;
+
+        // Check session expiry
+        var lastActivity = HttpContext.Session.GetString("LastActivity");
+        if (!string.IsNullOrEmpty(lastActivity))
+        {
+            if (DateTime.TryParse(lastActivity, out DateTime lastActiveTime))
+            {
+                // Session timeout after 30 minutes of inactivity
+                if (DateTime.Now.Subtract(lastActiveTime).TotalMinutes > 30)
+                {
+                    HttpContext.Session.Clear();
+                    return false;
+                }
+            }
+        }
+
+        // Update last activity
+        HttpContext.Session.SetString("LastActivity", DateTime.Now.ToString());
+        return true;
     }
 
     protected int? GetCurrentUserId()
@@ -61,7 +83,8 @@ public class BaseController : Controller
 
     protected bool HasFullAccess()
     {
-        return HttpContext.Session.GetString("HasFullAccess") == "true";
+        var hasFullAccessStr = HttpContext.Session.GetString("HasFullAccess");
+        return bool.TryParse(hasFullAccessStr, out bool hasFullAccess) && hasFullAccess;
     }
 
     protected string? GetCurrentUserDepartment()

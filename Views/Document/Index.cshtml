@@ -1,4 +1,6 @@
 @model IEnumerable<muhaberat_evrak_yonetim.Entities.Document>
+@using muhaberat_evrak_yonetim.Enums
+@using muhaberat_evrak_yonetim.Extensions
 
 @{
     ViewData["Title"] = "Evrak Listesi";
@@ -89,6 +91,96 @@
                     </div>
                 </div>
             </div>
+        </div>
+    </div>
+
+    <!-- Search Form -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">
+                <i class="fas fa-search mr-2"></i>Evrak Arama ve Filtreleme
+            </h6>
+        </div>
+        <div class="card-body">
+            <form method="get" asp-action="Index">
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label for="searchQuery" class="form-label">
+                            <i class="fas fa-search mr-1"></i>Arama Terimi
+                        </label>
+                        <input type="text" class="form-control" name="searchQuery" id="searchQuery" 
+                               value="@ViewData["SearchQuery"]" placeholder="Başlık, evrak no, müşteri adı...">
+                    </div>
+                    <div class="col-md-2 mb-3">
+                        <label for="documentTypeId" class="form-label">
+                            <i class="fas fa-tag mr-1"></i>Evrak Türü
+                        </label>
+                        <select class="form-control" name="documentTypeId" id="documentTypeId">
+                            <option value="">Tüm Türler</option>
+                            @foreach (var docType in ViewData["DocumentTypes"] as List<muhaberat_evrak_yonetim.Entities.DocumentType>)
+                            {
+                                var isSelected = ViewData["SelectedDocumentTypeId"]?.ToString() == docType.Id.ToString();
+                                <option value="@docType.Id" selected="@isSelected">
+                                    @docType.TypeName
+                                </option>
+                            }
+                        </select>
+                    </div>
+                    <div class="col-md-2 mb-3">
+                        <label for="status" class="form-label">
+                            <i class="fas fa-flag mr-1"></i>Durum
+                        </label>
+                        <select class="form-control" name="status" id="status">
+                            <option value="">Tüm Durumlar</option>
+                            @{
+                                var selectedStatus = ViewData["SelectedStatus"]?.ToString();
+                            }
+                            <option value="@DocumentStatus.DRAFT" selected="@(selectedStatus == DocumentStatus.DRAFT.ToString())">@DocumentStatus.DRAFT.ToDisplayString()</option>
+                            <option value="@DocumentStatus.SENT" selected="@(selectedStatus == DocumentStatus.SENT.ToString())">@DocumentStatus.SENT.ToDisplayString()</option>
+                            <option value="@DocumentStatus.DELIVERED" selected="@(selectedStatus == DocumentStatus.DELIVERED.ToString())">@DocumentStatus.DELIVERED.ToDisplayString()</option>
+                            <option value="@DocumentStatus.RECEIVED" selected="@(selectedStatus == DocumentStatus.RECEIVED.ToString())">@DocumentStatus.RECEIVED.ToDisplayString()</option>
+                            <option value="@DocumentStatus.CANCELLED" selected="@(selectedStatus == DocumentStatus.CANCELLED.ToString())">@DocumentStatus.CANCELLED.ToDisplayString()</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2 mb-3">
+                        <label for="deliveryStatus" class="form-label">
+                            <i class="fas fa-truck mr-1"></i>Kargo Durumu
+                        </label>
+                        <select class="form-control" name="deliveryStatus" id="deliveryStatus">
+                            <option value="">Tüm Durumlar</option>
+                            @{
+                                var selectedDeliveryStatus = ViewData["SelectedDeliveryStatus"]?.ToString();
+                            }
+                            <option value="@DeliveryStatus.PREPARING" selected="@(selectedDeliveryStatus == DeliveryStatus.PREPARING.ToString())">@DeliveryStatus.PREPARING.ToDisplayString()</option>
+                            <option value="@DeliveryStatus.SHIPPED" selected="@(selectedDeliveryStatus == DeliveryStatus.SHIPPED.ToString())">@DeliveryStatus.SHIPPED.ToDisplayString()</option>
+                            <option value="@DeliveryStatus.IN_TRANSIT" selected="@(selectedDeliveryStatus == DeliveryStatus.IN_TRANSIT.ToString())">@DeliveryStatus.IN_TRANSIT.ToDisplayString()</option>
+                            <option value="@DeliveryStatus.DELIVERED" selected="@(selectedDeliveryStatus == DeliveryStatus.DELIVERED.ToString())">@DeliveryStatus.DELIVERED.ToDisplayString()</option>
+                            <option value="@DeliveryStatus.RETURNED" selected="@(selectedDeliveryStatus == DeliveryStatus.RETURNED.ToString())">@DeliveryStatus.RETURNED.ToDisplayString()</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2 mb-3">
+                        <label class="form-label">
+                            <i class="fas fa-calendar mr-1"></i>Tarih Aralığı
+                        </label>
+                        <div class="input-group">
+                            <input type="date" class="form-control" name="fromDate" value="@ViewData["FromDate"]" 
+                                   title="Başlangıç Tarihi">
+                            <input type="date" class="form-control" name="toDate" value="@ViewData["ToDate"]" 
+                                   title="Bitiş Tarihi">
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-12">
+                        <button type="submit" class="btn btn-primary mr-2">
+                            <i class="fas fa-search mr-1"></i>Ara
+                        </button>
+                        <a href="@Url.Action("Index")" class="btn btn-secondary">
+                            <i class="fas fa-times mr-1"></i>Temizle
+                        </a>
+                    </div>
+                </div>
+            </form>
         </div>
     </div>
 
@@ -189,7 +281,7 @@
                                         };
                                     }
                                     <span class="badge @statusClass">
-                                        <i class="@statusIcon mr-1"></i>@item.Status
+                                        <i class="@statusIcon mr-1"></i>@(EnumExtensions.ParseDocumentStatus(item.Status).ToDisplayString())
                                     </span>
                                 </td>
                                 <td>
@@ -214,7 +306,7 @@
                                         };
                                     }
                                     <span class="badge @deliveryStatusClass">
-                                        <i class="@deliveryIcon mr-1"></i>@item.DeliveryStatus
+                                        <i class="@deliveryIcon mr-1"></i>@(EnumExtensions.ParseDeliveryStatus(item.DeliveryStatus).ToDisplayString())
                                     </span>
                                     @if (!string.IsNullOrEmpty(item.CargoTrackingNumber))
                                     {
@@ -233,7 +325,7 @@
                                            class="btn btn-sm btn-outline-primary" title="Detaylar">
                                             <i class="fas fa-eye"></i>
                                         </a>
-                                        @if (item.Status == "DRAFT")
+                                        @if (item.Status == DocumentStatus.DRAFT.ToString())
                                         {
                                             <a asp-action="Edit" asp-route-id="@item.Id" 
                                                class="btn btn-sm btn-outline-warning" title="Düzenle">
@@ -248,6 +340,16 @@
                                            class="btn btn-sm btn-outline-success" title="Kargo Takip">
                                             <i class="fas fa-shipping-fast"></i>
                                         </a>
+                                        @if (item.Status == DocumentStatus.DELIVERED.ToString() && item.DeliveryStatus == DeliveryStatus.DELIVERED.ToString())
+                                        {
+                                            <form method="post" asp-action="ReceiveDocument" asp-route-id="@item.Id" class="d-inline">
+                                                @Html.AntiForgeryToken()
+                                                <button type="submit" class="btn btn-sm btn-outline-primary" title="Teslim Al"
+                                                        onclick="return confirm('Bu evrağı teslim almak istediğinizden emin misiniz?')">
+                                                    <i class="fas fa-inbox"></i>
+                                                </button>
+                                            </form>
+                                        }
                                     </div>
                                 </td>
                             </tr>

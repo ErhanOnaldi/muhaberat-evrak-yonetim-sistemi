@@ -1,3 +1,6 @@
+@using muhaberat_evrak_yonetim.Enums
+@using muhaberat_evrak_yonetim.Extensions
+
 @{
     ViewData["Title"] = "Evraklarım";
     var sentDocuments = ViewBag.SentDocuments as IEnumerable<muhaberat_evrak_yonetim.Entities.Document>;
@@ -101,12 +104,12 @@
     <!-- Tab Navigation -->
     <ul class="nav nav-tabs" id="documentsTab" role="tablist">
         <li class="nav-item" role="presentation">
-            <a class="nav-link active" id="sent-tab" data-toggle="tab" href="#sent" role="tab">
+            <a class="nav-link active" id="sent-tab" data-bs-toggle="tab" href="#sent" role="tab" aria-controls="sent" aria-selected="true">
                 <i class="fas fa-paper-plane mr-2"></i>Gönderilen Evraklar (@(sentDocuments?.Count() ?? 0))
             </a>
         </li>
         <li class="nav-item" role="presentation">
-            <a class="nav-link" id="received-tab" data-toggle="tab" href="#received" role="tab">
+            <a class="nav-link" id="received-tab" data-bs-toggle="tab" href="#received" role="tab" aria-controls="received" aria-selected="false">
                 <i class="fas fa-inbox mr-2"></i>Alınan Evraklar (@(receivedDocuments?.Count() ?? 0))
             </a>
         </li>
@@ -115,7 +118,7 @@
     <!-- Tab Content -->
     <div class="tab-content" id="documentsTabContent">
         <!-- Sent Documents Tab -->
-        <div class="tab-pane fade show active" id="sent" role="tabpanel">
+        <div class="tab-pane fade show active" id="sent" role="tabpanel" aria-labelledby="sent-tab">
             <div class="card shadow mt-3">
                 <div class="card-header py-3">
                     <h6 class="m-0 font-weight-bold text-primary">
@@ -247,7 +250,7 @@
         </div>
 
         <!-- Received Documents Tab -->
-        <div class="tab-pane fade" id="received" role="tabpanel">
+        <div class="tab-pane fade" id="received" role="tabpanel" aria-labelledby="received-tab">
             <div class="card shadow mt-3">
                 <div class="card-header py-3">
                     <h6 class="m-0 font-weight-bold text-success">
@@ -403,14 +406,14 @@
             });
 
             // Handle tab switching
-            $('a[data-toggle="tab"]').on('shown.bs.tab', function (e) {
+            $('a[data-bs-toggle="tab"]').on('shown.bs.tab', function (e) {
                 $.fn.dataTable.tables({visible: true, api: true}).columns.adjust();
             });
 
             // Auto-refresh every 60 seconds
-            setInterval(function() {
-                location.reload();
-            }, 60000);
+            // setInterval(function() {
+            //     location.reload();
+            // }, 60000);
         });
     </script>
 }

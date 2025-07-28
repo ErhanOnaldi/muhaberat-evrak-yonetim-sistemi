@@ -166,99 +166,6 @@
                         <!--end::Wrapper-->
                     </div>
                     <!--end::User-->
-                    <!--begin::Aside search-->
-                    <div class="aside-search py-5">
-                        <!--begin::Search-->
-                        <div id="kt_header_search"
-                             class="d-flex align-items-center"
-                             data-kt-search-keypress="true"
-                             data-kt-search-min-length="2"
-                             data-kt-search-enter="enter"
-                             data-kt-search-layout="menu"
-                             data-kt-menu-trigger="auto"
-                             data-kt-menu-permanent="true"
-                             data-kt-menu-placement="bottom-start"
-                             data-kt-menu-flip="bottom">
-                            <!--begin::Form-->
-                            <form data-kt-search-element="form"
-                                  class="w-100 position-relative"
-                                  autocomplete="off">
-                                <!--begin::Hidden input(Added to disable form autocomplete)-->
-                                <input type="hidden" />
-                                <!--end::Hidden input-->
-                                <!--begin::Icon-->
-                                <!--begin::Svg Icon | path: icons/duotune/general/gen021.svg-->
-                                <span class="svg-icon svg-icon-2 search-icon position-absolute top-50 translate-middle-y ms-4">
-                                    <svg xmlns="http://www.w3.org/2000/svg"
-                                         width="24"
-                                         height="24"
-                                         viewBox="0 0 24 24"
-                                         fill="none">
-                                        <rect opacity="0.5"
-                                              x="17.0365"
-                                              y="15.1223"
-                                              width="8.15546"
-                                              height="2"
-                                              rx="1"
-                                              transform="rotate(45 17.0365 15.1223)"
-                                              fill="black" />
-                                        <path d="M11 19C6.55556 19 3 15.4444 3 11C3 6.55556 6.55556 3 11 3C15.4444 3 19 6.55556 19 11C19 15.4444 15.4444 19 11 19ZM11 5C7.53333 5 5 7.53333 5 11C5 14.4667 7.53333 17 11 17C14.4667 17 17 14.4667 17 11C17 7.53333 14.4667 5 11 5Z"
-                                              fill="black" />
-                                    </svg>
-                                </span>
-                                <!--end::Svg Icon-->
-                                <!--end::Icon-->
-                                <!--begin::Input-->
-                                <input type="text"
-                                       class="form-control ps-13 fs-7 h-40px"
-                                       name="search"
-                                       value=""
-                                       placeholder="Veri Tabanında Ara"
-                                       data-kt-search-element="input" />
-                                <!--end::Input-->
-                                <!--begin::Spinner-->
-                                @* <span class="position-absolute top-50 end-0 translate-middle-y lh-0 d-none me-5"
-                                      data-kt-search-element="spinner">
-                                    <span class="spinner-border h-15px w-15px align-middle text-gray-400"></span>
-                                </span> *@
-                                <!--end::Spinner-->
-                                <!--begin::Reset-->
-                                <span class="btn btn-flush btn-active-color-primary position-absolute top-50 end-0 translate-middle-y lh-0 d-none me-4"
-                                      data-kt-search-element="clear">
-                                    <!--begin::Svg Icon | path: icons/duotune/arrows/arr061.svg-->
-                                    <span class="svg-icon svg-icon-2 svg-icon-lg-1 me-0">
-                                        <svg xmlns="http://www.w3.org/2000/svg"
-                                             width="24"
-                                             height="24"
-                                             viewBox="0 0 24 24"
-                                             fill="none">
-                                            <rect opacity="0.5"
-                                                  x="6"
-                                                  y="17.3137"
-                                                  width="16"
-                                                  height="2"
-                                                  rx="1"
-                                                  transform="rotate(-45 6 17.3137)"
-                                                  fill="black" />
-                                            <rect x="7.41422"
-                                                  y="6"
-                                                  width="16"
-                                                  height="2"
-                                                  rx="1"
-                                                  transform="rotate(45 7.41422 6)"
-                                                  fill="black" />
-                                        </svg>
-                                    </span>
-                                    <!--end::Svg Icon-->
-                                </span>
-                                <!--end::Reset-->
-                            </form>
-                            <!--end::Form-->
-                            <!--end::Menu-->
-                        </div>
-                        <!--end::Search-->
-                    </div>
-                    <!--end::Aside search-->
                     <!--end::Aside user-->
                 </div>
                 <!--end::Aside Toolbarl-->
@@ -330,7 +237,7 @@
                                         </a>
                                     </div>
                                     <div class="menu-item">
-                                        <a class="menu-link" href="@Url.Action("Index", "User")">
+                                        <a class="menu-link" href="@(ViewBag.CurrentUserRole == "Admin" ? Url.Action("Index", "Role") : Url.Action("Index", "User"))">
                                             <span class="menu-icon">
                                                 <!--begin::Svg Icon | path: icons/duotune/communication/com001.svg-->
                                                 <span class="svg-icon svg-icon-2">
@@ -463,30 +370,6 @@
                                     <span class="menu-arrow"></span>
                                 </span>
                                 <div class="menu-sub menu-sub-accordion menu-active-bg">
-                                    <div class="menu-item">
-                                        <a class="menu-link" href="/User/UserList">
-                                            <span class="menu-icon">
-                                                <!--begin::Svg Icon | path: icons/duotune/communication/com001.svg-->
-                                                <span class="svg-icon svg-icon-2">
-                                                    <svg xmlns="http://www.w3.org/2000/svg"
-                                                         width="24"
-                                                         height="24"
-                                                         viewBox="0 0 24 24"
-                                                         fill="none">
-                                                        <path opacity="0.3"
-                                                              d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z"
-                                                              fill="black" />
-                                                        <path d="M19 10.4C19 10.3 19 10.2 19 10C19 8.9 18.1 8 17 8H16.9C15.6 6.2 14.6 4.29995 13.9 2.19995C13.3 2.09995 12.6 2 12 2C11.9 2 11.8 2 11.7 2C12.4 4.6 13.5 7.10005 15.1 9.30005C15 9.50005 15 9.7 15 10C15 11.1 15.9 12 17 12C17.1 12 17.3 12 17.4 11.9C18.6 13 19.9 14 21.4 14.8C21.4 14.8 21.5 14.8 21.5 14.9C21.7 14.2 21.8 13.5 21.9 12.7C20.9 12.1 19.9 11.3 19 10.4Z"
-                                                              fill="black" />
-                                                        <path d="M12 15C11 13.1 10.2 11.2 9.60001 9.19995C9.90001 8.89995 10 8.4 10 8C10 7.1 9.40001 6.39998 8.70001 6.09998C8.40001 4.99998 8.20001 3.90005 8.00001 2.80005C7.30001 3.10005 6.70001 3.40002 6.20001 3.90002C6.40001 4.80002 6.50001 5.6 6.80001 6.5C6.40001 6.9 6.10001 7.4 6.10001 8C6.10001 9 6.80001 9.8 7.80001 10C8.30001 11.6 9.00001 13.2 9.70001 14.7C7.10001 13.2 4.70001 11.5 2.40001 9.5C2.20001 10.3 2.10001 11.1 2.10001 11.9C4.60001 13.9 7.30001 15.7 10.1 17.2C10.2 18.2 11 19 12 19C12.6 20 13.2 20.9 13.9 21.8C14.6 21.7 15.3 21.5 15.9 21.2C15.4 20.5 14.9 19.8 14.4 19.1C15.5 19.5 16.5 19.9 17.6 20.2C18.3 19.8 18.9 19.2 19.4 18.6C17.6 18.1 15.7 17.5 14 16.7C13.9 15.8 13.1 15 12 15Z"
-                                                              fill="black" />
-                                                    </svg>
-                                                </span>
-                                                <!--end::Svg Icon-->
-                                            </span>
-                                            <span class="menu-title">Kullanıcı Listesi</span>
-                                        </a>
-                                    </div>
                                     <div class="menu-item">
                                         <a class="menu-link" href="/Settings/TnbSetting">
                                             <span class="menu-icon">
@@ -667,18 +550,9 @@
                             <div class="page-title d-flex flex-column me-5">
                                 <!--begin::Title-->
                                 <h1 class="d-flex flex-column text-dark fw-bolder fs-3 mb-0">
-                                    Erehin
+                                    Evrak Yönetim Sistemi
                                 </h1>
                                 <!--end::Title-->
-                                <!--begin::Breadcrumb-->
-                                <ul class="breadcrumb breadcrumb-separatorless fw-bold fs-7 pt-1">
-                                    <!--begin::Item-->
-                                    <li class="breadcrumb-item text-muted">
-                                        <label class="text-muted text-hover-primary" id="currentPage">Dashboard</label>
-                                    </li>
-                                    <!--end::Item-->
-                                </ul>
-                                <!--end::Breadcrumb-->
                             </div>
                             <!--end::Page title-->
                             <!--begin::Action group-->
@@ -688,10 +562,9 @@
                                     <!--begin::Actions-->
                                     <div class="d-flex">
                                         <!--begin::Action-->
-                                        <a href="#"
+                                        <a href="@Url.Action("Profile", "Account")"
                                            class="btn btn-sm btn-icon btn-icon-muted btn-active-icon-primary"
-                                           data-bs-toggle="modal"
-                                           data-bs-target="#kt_modal_invite_friends">
+                                           title="Profil">
                                             <!--begin::Svg Icon | path: icons/duotune/communication/com006.svg-->
                                             <span class="svg-icon svg-icon-1">
                                                 <svg xmlns="http://www.w3.org/2000/svg"
@@ -936,9 +809,9 @@
     <script>
                 $(document).ready(function() {
             // Get user data from server-side ViewBag
-            const fullName = '@ViewBag.CurrentUserFullName' || 'Kullanıcı';
-            const departmentName = '@ViewBag.CurrentDepartmentName' || '';
-            const roleName = '@ViewBag.CurrentRoleName' || '';
+            const fullName = '@Html.Raw(ViewBag.CurrentUserFullName)' || 'Kullanıcı';
+            const departmentName = '@Html.Raw(ViewBag.CurrentDepartmentName)' || '';
+            const roleName = '@Html.Raw(ViewBag.CurrentRoleName)' || '';
             const displayDepartment = departmentName + (roleName ? ` (${roleName})` : '');
 
             // UI elementlerini güncelle (sidebar)
@@ -960,28 +833,6 @@
             $("#headerLogoutButton").click(function () {
                 // Simple form submission to logout
                 window.location.href = "@Url.Action("Logout", "Account")";
-            });
-        });
-                // Aside search kısmına eklenecek event listener
-        $(document).ready(function () {
-            $('form[data-kt-search-element="form"]').on('submit', function(e) {
-                e.preventDefault();
-                const searchValue = $('input[name="search"]').val().trim();
-
-                if (searchValue.length >= 3) {
-                 
-                    window.location.href = `/Report/SearchReport?searchTerm=${encodeURIComponent(searchValue)}`;
-                } else {
-                    toastr.warning("Lütfen en az 3 karakter giriniz");
-                }
-            });
-
-            // Enter tuşuna basıldığında da çalışsın
-            $('input[name="search"]').on('keypress', function(e) {
-                if (e.which === 13) {  // Enter tuşu
-                    e.preventDefault();
-                    $(this).closest('form').submit();
-                }
             });
         });
     </script>

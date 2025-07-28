@@ -2,6 +2,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using muhaberat_evrak_yonetim.Models;
 using muhaberat_evrak_yonetim.Entities;
+using muhaberat_evrak_yonetim.Enums;
+using muhaberat_evrak_yonetim.Extensions;
 
 namespace muhaberat_evrak_yonetim.Controllers;
 
@@ -16,7 +18,7 @@ public class DocumentController : BaseController
         _logger = logger;
     }
 
-    public async Task<IActionResult> Index()
+    public async Task<IActionResult> Index(string searchQuery, int? documentTypeId, string status, string deliveryStatus, DateTime? fromDate, DateTime? toDate)
     {
         var currentUserId = GetCurrentUserId();
         var currentUserDepartmentId = GetCurrentUserDepartmentId();
@@ -31,7 +33,9 @@ public class DocumentController : BaseController
             .Include(d => d.CreatedByUser)
             .Where(d => d.IsActive);
 
-        if (!hasFullAccess)
+        var currentUserDepartment = GetCurrentUserDepartment();
+
+        if (!hasFullAccess && currentUserDepartment != "Muhaberat")
         {
             documentsQuery = documentsQuery.Where(d =>
                 d.SenderUserId == currentUserId ||
@@ -40,9 +44,59 @@ public class DocumentController : BaseController
                 d.ReceiverDepartmentId == currentUserDepartmentId);
         }
 
+        // Apply search filters
+        if (!string.IsNullOrEmpty(searchQuery))
+        {
+            documentsQuery = documentsQuery.Where(d =>
+                d.Title.Contains(searchQuery) ||
+                d.DocumentNumber.Contains(searchQuery) ||
+                (d.Description != null && d.Description.Contains(searchQuery)) ||
+                (d.CustomerName != null && d.CustomerName.Contains(searchQuery)) ||
+                (d.CustomerId != null && d.CustomerId.Contains(searchQuery)));
+                // TODO: Add Tags search after migration
+                // (d.Tags != null && d.Tags.Contains(searchQuery)));
+        }
+
+        if (documentTypeId.HasValue)
+        {
+            documentsQuery = documentsQuery.Where(d => d.DocumentTypeId == documentTypeId.Value);
+        }
+
+        if (!string.IsNullOrEmpty(status))
+        {
+            documentsQuery = documentsQuery.Where(d => d.Status == status);
+        }
+
+        if (!string.IsNullOrEmpty(deliveryStatus))
+        {
+            documentsQuery = documentsQuery.Where(d => d.DeliveryStatus == deliveryStatus);
+        }
+
+        if (fromDate.HasValue)
+        {
+            documentsQuery = documentsQuery.Where(d => d.CreatedDate >= fromDate.Value);
+        }
+
+        if (toDate.HasValue)
+        {
+            documentsQuery = documentsQuery.Where(d => d.CreatedDate <= toDate.Value.AddDays(1));
+        }
+
         var documents = await documentsQuery
             .OrderByDescending(d => d.CreatedDate)
             .ToListAsync();
+
+        // Prepare ViewData for search form
+        ViewData["DocumentTypes"] = await _context.DocumentTypes
+            .Where(dt => dt.IsActive)
+            .ToListAsync();
+
+        ViewData["SearchQuery"] = searchQuery;
+        ViewData["SelectedDocumentTypeId"] = documentTypeId;
+        ViewData["SelectedStatus"] = status;
+        ViewData["SelectedDeliveryStatus"] = deliveryStatus;
+        ViewData["FromDate"] = fromDate?.ToString("yyyy-MM-dd");
+        ViewData["ToDate"] = toDate?.ToString("yyyy-MM-dd");
 
         return View(documents);
     }
@@ -108,10 +162,32 @@ public class DocumentController : BaseController
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Create(Document document)
     {
+        // Remove validation for auto-generated fields
+        ModelState.Remove(nameof(Document.DocumentNumber));
+        ModelState.Remove(nameof(Document.SenderUser));
+        ModelState.Remove(nameof(Document.CreatedByUser));
+        ModelState.Remove(nameof(Document.CreatedDate));
+        
+        // Set automatic fields before validation
+        document.DocumentNumber = await GenerateDocumentNumberAsync();
+        document.CreatedDate = DateTime.Now;
+        document.CreatedAt = DateTime.Now;
+        document.UpdatedAt = DateTime.Now;
+        document.CreatedBy = document.SenderUserId;
+        document.IsActive = true;
+        document.Status = DocumentStatus.DRAFT.ToString();
+        document.DeliveryStatus = DeliveryStatus.PREPARING.ToString();
+
         // Custom validation for SenderUserId
         if (document.SenderUserId <= 0)
         {
             ModelState.AddModelError("SenderUserId", "Lütfen gönderen kullanıcı seçin.");
+        }
+
+        // Custom validation for SenderDepartmentId
+        if (document.SenderDepartmentId <= 0)
+        {
+            ModelState.AddModelError("SenderDepartmentId", "Lütfen gönderen departman seçin.");
         }
 
         // Custom validation for receiver (at least one required)
@@ -119,6 +195,37 @@ public class DocumentController : BaseController
         {
             ModelState.AddModelError("ReceiverUserId", "En az bir alıcı seçmelisiniz: Kullanıcı veya Departman.");
             ModelState.AddModelError("ReceiverDepartmentId", "En az bir alıcı seçmelisiniz: Kullanıcı veya Departman.");
+        }
+
+        // Custom validation for required string fields
+        if (string.IsNullOrWhiteSpace(document.Title))
+        {
+            ModelState.AddModelError("Title", "Başlık alanı zorunludur.");
+        }
+
+        if (string.IsNullOrWhiteSpace(document.PhysicalDocumentType))
+        {
+            ModelState.AddModelError("PhysicalDocumentType", "Fiziksel evrak türü seçimi zorunludur.");
+        }
+
+        if (string.IsNullOrWhiteSpace(document.PackageType))
+        {
+            ModelState.AddModelError("PackageType", "Paket türü seçimi zorunludur.");
+        }
+
+        if (string.IsNullOrWhiteSpace(document.ShippingAddress))
+        {
+            ModelState.AddModelError("ShippingAddress", "Gönderim adresi zorunludur.");
+        }
+
+        if (string.IsNullOrWhiteSpace(document.DeliveryAddress))
+        {
+            ModelState.AddModelError("DeliveryAddress", "Teslimat adresi zorunludur.");
+        }
+
+        if (document.DocumentTypeId == null || document.DocumentTypeId <= 0)
+        {
+            ModelState.AddModelError("DocumentTypeId", "Evrak türü seçimi zorunludur.");
         }
 
         // Log validation errors for debugging
@@ -139,15 +246,7 @@ public class DocumentController : BaseController
 
         if (ModelState.IsValid)
         {
-            document.DocumentNumber = await GenerateDocumentNumberAsync();
-            document.CreatedDate = DateTime.Now;
-            document.CreatedAt = DateTime.Now;
-            document.UpdatedAt = DateTime.Now;
-            document.IsActive = true;
-            document.Status = "DRAFT";
-            document.DeliveryStatus = "PREPARING";
-
-            document.CreatedBy = document.SenderUserId;
+            // All automatic fields are already set above
 
             _context.Add(document);
             await _context.SaveChangesAsync();
@@ -304,9 +403,9 @@ public class DocumentController : BaseController
             return NotFound();
         }
 
-        if (document.Status == "DRAFT")
+        if (document.Status == DocumentStatus.DRAFT.ToString())
         {
-            document.Status = "SENT";
+            document.Status = DocumentStatus.SENT.ToString();
             document.UpdatedAt = DateTime.Now;
 
             _context.Update(document);
@@ -339,14 +438,14 @@ public class DocumentController : BaseController
         document.DeliveryStatus = deliveryStatus;
         document.UpdatedAt = DateTime.Now;
 
-        if (deliveryStatus == "SHIPPED" && document.ShippingDate == null)
+        if (deliveryStatus == DeliveryStatus.SHIPPED.ToString() && document.ShippingDate == null)
         {
             document.ShippingDate = DateTime.Now;
         }
-        else if (deliveryStatus == "DELIVERED")
+        else if (deliveryStatus == DeliveryStatus.DELIVERED.ToString())
         {
             document.DeliveryDate = DateTime.Now;
-            document.Status = "DELIVERED";
+            document.Status = DocumentStatus.DELIVERED.ToString();
         }
 
         _context.Update(document);
@@ -422,6 +521,60 @@ public class DocumentController : BaseController
 
     [HttpPost]
     [ValidateAntiForgeryToken]
+    public async Task<IActionResult> ReceiveDocument(int id, string receivedByName, string receiptNotes)
+    {
+        var currentUserId = GetCurrentUserIdRequired();
+        var document = await _context.Documents.FindAsync(id);
+        if (document == null)
+        {
+            return NotFound();
+        }
+
+        // Only allow receipt if document is delivered
+        if (document.DeliveryStatus != DeliveryStatus.DELIVERED.ToString())
+        {
+            TempData["Error"] = "Bu evrak henüz teslim edilmediği için teslim alınamaz.";
+            return RedirectToAction(nameof(Details), new { id });
+        }
+
+        // Check if user has permission to receive this document
+        var hasFullAccess = HasFullAccess();
+        var currentUserDepartmentId = GetCurrentUserDepartmentId();
+        
+        bool canReceive = hasFullAccess || 
+                         document.ReceiverUserId == currentUserId ||
+                         document.ReceiverDepartmentId == currentUserDepartmentId;
+
+        if (!canReceive)
+        {
+            TempData["Error"] = "Bu evrağı teslim alma yetkiniz bulunmamaktadır.";
+            return RedirectToAction(nameof(Details), new { id });
+        }
+
+        // Update document status to RECEIVED
+        document.Status = DocumentStatus.RECEIVED.ToString();
+        document.ReceivedBy = !string.IsNullOrEmpty(receivedByName) ? receivedByName : GetCurrentUserInfo();
+        document.DeliveryDate = DateTime.Now; // Update delivery date if not set
+        document.UpdatedAt = DateTime.Now;
+
+        _context.Update(document);
+        await _context.SaveChangesAsync();
+
+        // Log the receipt
+        var notes = $"Evrak teslim alındı. Teslim alan: {document.ReceivedBy}";
+        if (!string.IsNullOrEmpty(receiptNotes))
+        {
+            notes += $" - Not: {receiptNotes}";
+        }
+
+        await LogDocumentHistoryAsync(id, "RECEIVED", currentUserId, notes);
+
+        TempData["Success"] = "Evrak başarıyla teslim alındı.";
+        return RedirectToAction(nameof(Details), new { id });
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
     public async Task<IActionResult> Review(int id, bool approved, string reviewNotes)
     {
         var currentUserId = GetCurrentUserIdRequired();
@@ -434,16 +587,17 @@ public class DocumentController : BaseController
         document.ReviewedBy = currentUserId;
         document.ReviewDate = DateTime.Now;
         document.ReviewNotes = reviewNotes;
-        document.Status = approved ? "APPROVED" : "REJECTED";
+        document.Status = approved ? DocumentStatus.RECEIVED.ToString() : DocumentStatus.CANCELLED.ToString();
         document.UpdatedAt = DateTime.Now;
 
         _context.Update(document);
         await _context.SaveChangesAsync();
 
-        await LogDocumentHistoryAsync(id, approved ? "APPROVED" : "REJECTED", currentUserId, 
-            $"Evrak {(approved ? "onaylandı" : "reddedildi")}: {(string.IsNullOrEmpty(reviewNotes) ? "" : reviewNotes)}");
+        var actionType = approved ? "RECEIVED" : "CANCELLED";
+        await LogDocumentHistoryAsync(id, actionType, currentUserId, 
+            $"Evrak {(approved ? "teslim alındı" : "iptal edildi")}: {(string.IsNullOrEmpty(reviewNotes) ? "" : reviewNotes)}");
 
-        TempData["Success"] = $"Evrak başarıyla {(approved ? "onaylandı" : "reddedildi")}.";
+        TempData["Success"] = $"Evrak başarıyla {(approved ? "teslim alındı" : "iptal edildi")}.";
         return RedirectToAction(nameof(Details), new { id });
     }
 
@@ -473,23 +627,44 @@ public class DocumentController : BaseController
     public async Task<IActionResult> MyDocuments()
     {
         // Get current user from session
-        int currentUserId = GetCurrentUserIdRequired();
+        int? currentUserId = GetCurrentUserId(); // Use nullable int
 
-        var sentDocuments = await _context.Documents
-            .Include(d => d.DocumentType)
-            .Include(d => d.ReceiverUser)
-            .Include(d => d.ReceiverDepartment)
-            .Where(d => d.SenderUserId == currentUserId && d.IsActive)
-            .OrderByDescending(d => d.CreatedDate)
-            .ToListAsync();
+        IEnumerable<Document> sentDocuments = new List<Document>();
+        IEnumerable<Document> receivedDocuments = new List<Document>(); // Initialize as empty list of lists
 
-        var receivedDocuments = await _context.Documents
-            .Include(d => d.DocumentType)
-            .Include(d => d.SenderUser)
-            .Include(d => d.SenderDepartment)
-            .Where(d => d.ReceiverUserId == currentUserId && d.IsActive)
-            .OrderByDescending(d => d.CreatedDate)
-            .ToListAsync();
+        if (!currentUserId.HasValue)
+        {
+            // If user ID is not available, log and return empty lists
+            _logger.LogWarning("MyDocuments: Current user ID is not available. Returning empty lists.");
+            TempData["Error"] = "Oturum bilgileriniz eksik. Lütfen tekrar giriş yapın.";
+            ViewBag.SentDocuments = sentDocuments;
+            ViewBag.ReceivedDocuments = receivedDocuments;
+            return View();
+        }
+
+        try
+        {
+            sentDocuments = await _context.Documents
+                .Include(d => d.DocumentType)
+                .Include(d => d.ReceiverUser)
+                .Include(d => d.ReceiverDepartment)
+                .Where(d => d.SenderUserId == currentUserId.Value && d.IsActive)
+                .OrderByDescending(d => d.CreatedDate)
+                .ToListAsync();
+
+            receivedDocuments = await _context.Documents
+                .Include(d => d.DocumentType)
+                .Include(d => d.SenderUser)
+                .Include(d => d.SenderDepartment)
+                .Where(d => d.ReceiverUserId == currentUserId.Value && d.IsActive)
+                .OrderByDescending(d => d.CreatedDate)
+                .ToListAsync();
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error fetching documents for MyDocuments page.");
+            TempData["Error"] = "Evraklar yüklenirken bir hata oluştu: " + ex.Message;
+        }
 
         ViewBag.SentDocuments = sentDocuments;
         ViewBag.ReceivedDocuments = receivedDocuments;

@@ -1,4 +1,6 @@
 @model muhaberat_evrak_yonetim.Entities.Document
+@using muhaberat_evrak_yonetim.Enums
+@using muhaberat_evrak_yonetim.Extensions
 
 @{
     ViewData["Title"] = "Evrak Detayları";
@@ -10,7 +12,7 @@
             <i class="fas fa-file-alt mr-2"></i>Evrak Detayları
         </h1>
         <div>
-            @if (Model.Status == "DRAFT")
+            @if (Model.Status == DocumentStatus.DRAFT.ToString())
             {
                 <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning btn-sm mr-2">
                     <i class="fas fa-edit mr-1"></i>Düzenle
@@ -22,6 +24,12 @@
                         <i class="fas fa-paper-plane mr-1"></i>Gönder
                     </button>
                 </form>
+            }
+            @if (Model.Status == DocumentStatus.DELIVERED.ToString() && Model.DeliveryStatus == DeliveryStatus.DELIVERED.ToString())
+            {
+                <button type="button" class="btn btn-info btn-sm mr-2" data-toggle="modal" data-target="#receiptModal">
+                    <i class="fas fa-inbox mr-1"></i>Teslim Al
+                </button>
             }
             <a asp-action="Index" class="btn btn-secondary btn-sm">
                 <i class="fas fa-arrow-left mr-1"></i>Geri
@@ -372,6 +380,55 @@
                     </div>
                 </div>
             </div>
+        </div>
+    </div>
+</div>
+
+<!-- Receipt Modal -->
+<div class="modal fade" id="receiptModal" tabindex="-1" role="dialog" aria-labelledby="receiptModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="receiptModalLabel">
+                    <i class="fas fa-inbox mr-2"></i>Evrak Teslim Alma
+                </h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form method="post" asp-action="ReceiveDocument" asp-route-id="@Model.Id">
+                @Html.AntiForgeryToken()
+                <div class="modal-body">
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle mr-2"></i>
+                        <strong>@Model.DocumentNumber</strong> numaralı evrağı teslim almak üzeresiniz.
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="receivedByName">
+                            <i class="fas fa-user mr-1"></i>Teslim Alan Kişi
+                        </label>
+                        <input type="text" class="form-control" name="receivedByName" id="receivedByName" 
+                               placeholder="Teslim alan kişinin adı (boş bırakılırsa oturum sahibi)">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="receiptNotes">
+                            <i class="fas fa-sticky-note mr-1"></i>Teslim Alma Notları
+                        </label>
+                        <textarea class="form-control" name="receiptNotes" id="receiptNotes" rows="3" 
+                                  placeholder="Teslim alma ile ilgili notlar (isteğe bağlı)"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">
+                        <i class="fas fa-times mr-1"></i>İptal
+                    </button>
+                    <button type="submit" class="btn btn-success">
+                        <i class="fas fa-check mr-1"></i>Teslim Al
+                    </button>
+                </div>
+            </form>
         </div>
     </div>
 </div>

@@ -68,6 +68,14 @@ public class UserController : BaseController
 
     public async Task<IActionResult> Create()
     {
+        // Sadece Muhaberat departmanından olanlar yeni kullanıcı ekleyebilir
+        var currentUserDepartment = GetCurrentUserDepartment();
+        if (currentUserDepartment != "Muhaberat")
+        {
+            TempData["Error"] = "Yeni kullanıcı ekleme yetkiniz bulunmamaktadır.";
+            return RedirectToAction("Index");
+        }
+
         ViewData["Departments"] = await _context.Departments
             .Where(d => d.IsActive)
             .OrderBy(d => d.DepartmentName)
@@ -90,6 +98,14 @@ public class UserController : BaseController
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Create(User user, string confirmPassword)
     {
+        // Sadece Muhaberat departmanından olanlar yeni kullanıcı ekleyebilir
+        var currentUserDepartment = GetCurrentUserDepartment();
+        if (currentUserDepartment != "Muhaberat")
+        {
+            TempData["Error"] = "Yeni kullanıcı ekleme yetkiniz bulunmamaktadır.";
+            return RedirectToAction("Index");
+        }
+
         if (string.IsNullOrEmpty(user.PasswordHash) || user.PasswordHash != confirmPassword)
         {
             ModelState.AddModelError("", "Şifreler eşleşmiyor.");

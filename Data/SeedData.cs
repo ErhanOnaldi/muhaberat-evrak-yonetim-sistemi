@@ -1,5 +1,6 @@
 using muhaberat_evrak_yonetim.Models;
 using muhaberat_evrak_yonetim.Entities;
+using muhaberat_evrak_yonetim.Enums;
 using Microsoft.EntityFrameworkCore;
 
 namespace muhaberat_evrak_yonetim.Data;
@@ -327,8 +328,8 @@ public static class SeedData
                 PackageType = "ENVELOPE",
                 ShippingAddress = "İstanbul Şube, Levent Mahallesi",
                 DeliveryAddress = "Ankara Merkez, Kızılay",
-                Status = "SENT",
-                DeliveryStatus = "IN_TRANSIT",
+                Status = DocumentStatus.SENT.ToString(),
+                DeliveryStatus = DeliveryStatus.IN_TRANSIT.ToString(),
                 IsActive = true,
                 CreatedAt = DateTime.Now.AddDays(-5),
                 UpdatedAt = DateTime.Now.AddDays(-2)
@@ -350,8 +351,8 @@ public static class SeedData
                 PackageType = "SPECIAL",
                 ShippingAddress = "İstanbul Şube Portföy Departmanı",
                 DeliveryAddress = "Ankara Merkez Muhaberat",
-                Status = "DRAFT",
-                DeliveryStatus = "PREPARING",
+                Status = DocumentStatus.DRAFT.ToString(),
+                DeliveryStatus = DeliveryStatus.PREPARING.ToString(),
                 IsActive = true,
                 CreatedAt = DateTime.Now.AddDays(-3),
                 UpdatedAt = DateTime.Now.AddDays(-3)
@@ -375,8 +376,8 @@ public static class SeedData
                 CargoCompany = "Aras Kargo",
                 CargoTrackingNumber = "1234567890",
                 ShippingDate = DateTime.Now,
-                Status = "SENT",
-                DeliveryStatus = "SHIPPED",
+                Status = DocumentStatus.SENT.ToString(),
+                DeliveryStatus = DeliveryStatus.SHIPPED.ToString(),
                 IsActive = true,
                 CreatedAt = DateTime.Now.AddDays(-1),
                 UpdatedAt = DateTime.Now

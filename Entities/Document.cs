@@ -7,7 +7,6 @@ namespace muhaberat_evrak_yonetim.Entities
         [Key]
         public int Id { get; set; }
 
-        [Required]
         [StringLength(50)]
         public string DocumentNumber { get; set; } = null!;
 
@@ -23,7 +22,7 @@ namespace muhaberat_evrak_yonetim.Entities
 
         [Required(ErrorMessage = "Gönderen kullanıcı seçimi zorunludur.")]
         public int SenderUserId { get; set; }
-        public User SenderUser { get; set; } = null!;
+        public User? SenderUser { get; set; }
 
         [Required(ErrorMessage = "Gönderen departman seçimi zorunludur.")]
         public int SenderDepartmentId { get; set; }
@@ -42,7 +41,7 @@ namespace muhaberat_evrak_yonetim.Entities
         public string? CustomerName { get; set; }
 
         public int CreatedBy { get; set; }
-        public User CreatedByUser { get; set; } = null!;
+        public User? CreatedByUser { get; set; }
 
         public DateTime CreatedDate { get; set; }
 
@@ -90,6 +89,10 @@ namespace muhaberat_evrak_yonetim.Entities
         public string? ReviewNotes { get; set; }
 
         public string? FilePath { get; set; }
+
+        // TODO: Add Tags and Metadata fields after migration
+        // public string? Tags { get; set; }
+        // public string? Metadata { get; set; }
 
         public DateTime CreatedAt { get; set; }
         public DateTime UpdatedAt { get; set; }

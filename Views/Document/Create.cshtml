@@ -71,6 +71,17 @@
                             <span asp-validation-for="Description" class="text-danger small"></span>
                         </div>
 
+                        <!-- TODO: Add Tags field after migration
+                        <div class="mb-3">
+                            <label asp-for="Tags" class="form-label">
+                                <i class="fas fa-tags mr-2"></i>Etiketler
+                            </label>
+                            <input asp-for="Tags" class="form-control" placeholder="Virgülle ayırarak etiket ekleyin (örn: acil, önemli, mali)">
+                            <small class="form-text text-muted">Evrakı daha kolay bulabilmek için etiketler ekleyebilirsiniz.</small>
+                            <span asp-validation-for="Tags" class="text-danger small"></span>
+                        </div>
+                        -->
+
                         <div class="row">
                             <div class="col-md-6 mb-3">
                                 <label asp-for="CustomerId" class="form-label">
@@ -103,7 +114,7 @@
                                 <label asp-for="ReceiverUserId" class="form-label">
                                     <i class="fas fa-user mr-2"></i>Alıcı Kullanıcı
                                 </label>
-                                <select asp-for="ReceiverUserId" class="form-control" id="receiverUser">
+                                <select asp-for="ReceiverUserId" class="form-control" id="ReceiverUserId">
                                     <option value="">Kullanıcı seçin (opsiyonel)</option>
                                     @foreach (var user in ViewData["Users"] as List<muhaberat_evrak_yonetim.Entities.User>)
                                     {
@@ -118,7 +129,7 @@
                                 <label asp-for="ReceiverDepartmentId" class="form-label">
                                     <i class="fas fa-building mr-2"></i>Alıcı Departman
                                 </label>
-                                <select asp-for="ReceiverDepartmentId" class="form-control" id="receiverDepartment">
+                                <select asp-for="ReceiverDepartmentId" class="form-control" id="ReceiverDepartmentId">
                                     <option value="">Departman seçin (opsiyonel)</option>
                                     @foreach (var dept in ViewData["Departments"] as List<muhaberat_evrak_yonetim.Entities.Department>)
                                     {
@@ -331,17 +342,26 @@
             $('#SenderUserId').change(function() {
                 var selectedOption = $(this).find('option:selected');
                 var departmentId = selectedOption.data('department');
-                if (departmentId) {
+                if (departmentId && departmentId !== '') {
                     $('#SenderDepartmentId').val(departmentId);
                 }
             });
 
+            // Auto-sync sender user department on page load
+            if (currentUserId > 0) {
+                var selectedOption = $('#SenderUserId option:selected');
+                var departmentId = selectedOption.data('department');
+                if (departmentId && departmentId !== '') {
+                    $('#SenderDepartmentId').val(departmentId);
+                }
+            }
+
             // Auto-sync receiver department when user is selected
-            $('#receiverUser').change(function() {
+            $('#ReceiverUserId').change(function() {
                 var selectedOption = $(this).find('option:selected');
                 var departmentId = selectedOption.data('department');
                 if (departmentId) {
-                    $('#receiverDepartment').val(departmentId);
+                    $('#ReceiverDepartmentId').val(departmentId);
                 }
             });
 
@@ -368,8 +388,30 @@
             // Form validation
             $('form').on('submit', function(e) {
                 var senderUser = $('#SenderUserId').val();
+                var senderDept = $('#SenderDepartmentId').val();
                 var receiverUser = $('#ReceiverUserId').val();
                 var receiverDept = $('#ReceiverDepartmentId').val();
+                var title = $('#Title').val().trim();
+                var docType = $('#DocumentTypeId').val();
+                var physicalType = $('#PhysicalDocumentType').val();
+                var packageType = $('#PackageType').val();
+                var shippingAddr = $('#ShippingAddress').val().trim();
+                var deliveryAddr = $('#DeliveryAddress').val().trim();
+                
+                // Check required fields
+                if (!title) {
+                    e.preventDefault();
+                    alert('Lütfen başlık girin.');
+                    $('#Title').focus();
+                    return false;
+                }
+                
+                if (!docType || docType === '' || docType === '0') {
+                    e.preventDefault();
+                    alert('Lütfen evrak türü seçin.');
+                    $('#DocumentTypeId').focus();
+                    return false;
+                }
                 
                 // Check sender user selection
                 if (!senderUser || senderUser === '' || senderUser === '0') {
@@ -379,10 +421,49 @@
                     return false;
                 }
                 
-                // Check receiver selection
-                if (!receiverUser && !receiverDept) {
+                // Check sender department selection
+                if (!senderDept || senderDept === '' || senderDept === '0') {
                     e.preventDefault();
-                    alert('Lütfen alıcı kullanıcı veya departman seçin.');
+                    alert('Lütfen gönderen departman seçin.');
+                    $('#SenderDepartmentId').focus();
+                    return false;
+                }
+                
+                // Check receiver selection - allow server-side validation to handle this
+                console.log('Receiver User:', receiverUser);
+                console.log('Receiver Dept:', receiverDept);
+                
+                // Skip client-side receiver validation, let server handle it
+                // Server-side validation is more reliable for this case
+                
+                // Check physical document type
+                if (!physicalType || physicalType === '') {
+                    e.preventDefault();
+                    alert('Lütfen fiziksel evrak türü seçin.');
+                    $('#PhysicalDocumentType').focus();
+                    return false;
+                }
+                
+                // Check package type
+                if (!packageType || packageType === '') {
+                    e.preventDefault();
+                    alert('Lütfen paket türü seçin.');
+                    $('#PackageType').focus();
+                    return false;
+                }
+                
+                // Check addresses
+                if (!shippingAddr) {
+                    e.preventDefault();
+                    alert('Lütfen gönderim adresi girin.');
+                    $('#ShippingAddress').focus();
+                    return false;
+                }
+                
+                if (!deliveryAddr) {
+                    e.preventDefault();
+                    alert('Lütfen teslimat adresi girin.');
+                    $('#DeliveryAddress').focus();
                     return false;
                 }
             });

@@ -3,6 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using muhaberat_evrak_yonetim.Models;
 using muhaberat_evrak_yonetim.Entities;
 using System.Security.Claims;
+using System.Net;
 
 namespace muhaberat_evrak_yonetim.Controllers;
 
@@ -52,6 +53,7 @@ public class AccountController : Controller
         HttpContext.Session.SetString("Username", user.Username);
         HttpContext.Session.SetString("UserFullName", $"{user.FirstName} {user.LastName}");
         HttpContext.Session.SetString("UserEmail", user.Email);
+        HttpContext.Session.SetString("LastActivity", DateTime.Now.ToString());
 
         if (user.DepartmentId.HasValue)
         {
@@ -88,7 +90,6 @@ public class AccountController : Controller
 
         _logger.LogInformation($"User {username} logged in successfully");
 
-        TempData["Success"] = "Başarıyla giriş yaptınız.";
         return RedirectToAction("Index", "Home");
     }
 

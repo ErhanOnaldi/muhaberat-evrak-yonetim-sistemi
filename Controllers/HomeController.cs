@@ -25,7 +25,9 @@ public class HomeController : BaseController
 
         IQueryable<Document> documentsQuery = _context.Documents.Where(d => d.IsActive);
 
-        if (!hasFullAccess)
+        var currentUserDepartment = GetCurrentUserDepartment();
+
+        if (!hasFullAccess && currentUserDepartment != "Muhaberat")
         {
             documentsQuery = documentsQuery.Where(d =>
                 d.SenderUserId == currentUserId ||
@@ -61,19 +63,10 @@ public class HomeController : BaseController
                 .Include(d => d.ReceiverUser)
                 .Include(d => d.ReceiverDepartment)
                 .OrderByDescending(d => d.CreatedDate)
-                .Take(5)
+                .Take(4)
                 .ToListAsync(),
 
-            DepartmentActivity = await _context.Departments
-                .Where(d => d.IsActive)
-                .Select(d => new
-                {
-                    Department = d,
-                    SentCount = d.SentDocuments.AsQueryable().Count(doc => doc.IsActive)
-                })
-                .OrderByDescending(d => d.SentCount)
-                .Take(5)
-                .ToListAsync(),
+            
 
             DocumentTypeUsage = await _context.DocumentTypes
                 .Where(dt => dt.IsActive)
