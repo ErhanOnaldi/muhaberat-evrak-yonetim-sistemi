@@ -72,8 +72,9 @@ public class HomeController : BaseController
                 .Where(dt => dt.IsActive)
                 .Select(dt => new {
                     DocumentType = dt,
-                    DocumentCount = dt.Documents.AsQueryable().Count(d => d.IsActive)
+                    DocumentCount = documentsQuery.Count(d => d.DocumentTypeId == dt.Id)
                 })
+                .Where(x => x.DocumentCount > 0) // Sadece evrakı olan türleri göster
                 .OrderByDescending(dt => dt.DocumentCount)
                 .Take(6)
                 .ToListAsync(),
