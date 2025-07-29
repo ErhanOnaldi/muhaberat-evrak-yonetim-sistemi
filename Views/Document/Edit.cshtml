@@ -136,12 +136,15 @@
                                 </label>
                                 <select asp-for="ReceiverUserId" class="form-control" id="receiverUser">
                                     <option value="">Kullanıcı seçin (opsiyonel)</option>
-                                    @foreach (var user in ViewData["Users"] as List<muhaberat_evrak_yonetim.Entities.User>)
+                                    @if (ViewData["Users"] is List<muhaberat_evrak_yonetim.Entities.User> users)
                                     {
-                                        <option value="@user.Id" data-department="@user.DepartmentId" 
-                                                selected="@(user.Id == Model.ReceiverUserId)">
-                                            @user.FirstName @user.LastName (@user.Department?.DepartmentName)
-                                        </option>
+                                        @foreach (var user in users)
+                                        {
+                                            <option value="@user.Id" data-department="@user.DepartmentId" 
+                                                    selected="@(user.Id == Model.ReceiverUserId)">
+                                                @user.FirstName @user.LastName (@user.Department?.DepartmentName)
+                                            </option>
+                                        }
                                     }
                                 </select>
                                 <span asp-validation-for="ReceiverUserId" class="text-danger small"></span>
@@ -152,11 +155,14 @@
                                 </label>
                                 <select asp-for="ReceiverDepartmentId" class="form-control" id="receiverDepartment">
                                     <option value="">Departman seçin (opsiyonel)</option>
-                                    @foreach (var dept in ViewData["Departments"] as List<muhaberat_evrak_yonetim.Entities.Department>)
+                                    @if (ViewData["Departments"] is List<muhaberat_evrak_yonetim.Entities.Department> departments)
                                     {
-                                        <option value="@dept.Id" selected="@(dept.Id == Model.ReceiverDepartmentId)">
-                                            @dept.DepartmentName
-                                        </option>
+                                        @foreach (var dept in departments)
+                                        {
+                                            <option value="@dept.Id" selected="@(dept.Id == Model.ReceiverDepartmentId)">
+                                                @dept.DepartmentName
+                                            </option>
+                                        }
                                     }
                                 </select>
                                 <span asp-validation-for="ReceiverDepartmentId" class="text-danger small"></span>

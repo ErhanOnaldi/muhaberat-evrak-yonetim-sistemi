@@ -5,7 +5,7 @@
     var stats = ViewBag.DashboardStats;
     var recentDocuments = (stats.RecentDocuments as List<Document>) ?? new List<Document>();
     
-    var documentTypeUsage = (stats.DocumentTypeUsage as List<DocumentType>) ?? new List<DocumentType>();
+    var documentTypeUsage = (stats.DocumentTypeUsage as List<dynamic>) ?? new List<dynamic>();
 }
 
 <div class="container-fluid">
@@ -185,68 +185,9 @@
     </div>
 
     <div class="row">
-        <!-- Monthly Statistics Chart -->
-        <div class="col-xl-8 col-lg-7">
-            <div class="card shadow mb-4">
-                <div class="card-header py-3 d-flex justify-content-between align-items-center">
-                    <h6 class="m-0 font-weight-bold text-primary">
-                        <i class="fas fa-chart-line mr-2"></i>Son 6 Ay Evrak İstatistikleri
-                    </h6>
-                    <div class="dropdown no-arrow">
-                        <a class="dropdown-toggle" href="#" role="button" data-toggle="dropdown">
-                            <i class="fas fa-ellipsis-v fa-sm fa-fw text-gray-400"></i>
-                        </a>
-                        <div class="dropdown-menu dropdown-menu-right shadow">
-                            <a class="dropdown-item" href="#" onclick="exportChart()">
-                                <i class="fas fa-download fa-sm fa-fw mr-2 text-gray-400"></i>
-                                Grafiği İndir
-                            </a>
-                        </div>
-                    </div>
-                </div>
-                <div class="card-body">
-                    <div class="chart-area">
-                        <canvas id="monthlyChart"></canvas>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Quick Actions & Performance -->
-        <div class="col-xl-4 col-lg-5">
-            <!-- Quick Actions -->
-            <div class="card shadow mb-4">
-                <div class="card-header py-3">
-                    <h6 class="m-0 font-weight-bold text-primary">
-                        <i class="fas fa-bolt mr-2"></i>Hızlı İşlemler
-                    </h6>
-                </div>
-                <div class="card-body">
-                    <div class="d-grid gap-2">
-                        <a asp-controller="Document" asp-action="Create" class="btn btn-primary btn-sm">
-                            <i class="fas fa-plus mr-2"></i>Yeni Evrak Oluştur
-                        </a>
-                        <a asp-controller="Document" asp-action="Index" class="btn btn-outline-primary btn-sm">
-                            <i class="fas fa-list mr-2"></i>Tüm Evrakları Görüntüle
-                        </a>
-                        <a asp-controller="User" asp-action="Index" class="btn btn-outline-secondary btn-sm">
-                            <i class="fas fa-users mr-2"></i>Kullanıcı Yönetimi
-                        </a>
-                        <a asp-controller="Department" asp-action="Index" class="btn btn-outline-info btn-sm">
-                            <i class="fas fa-building mr-2"></i>Departman Yönetimi
-                        </a>
-                    </div>
-                </div>
-            </div>
-
-            
-        </div>
-    </div>
-
-    <div class="row">
         <!-- Recent Documents -->
-        <div class="col-lg-12 mb-4">
-            <div class="card shadow mb-4">
+        <div class="col-xl-8 col-lg-7 mb-4">
+            <div class="card shadow h-100">
                 <div class="card-header py-3 d-flex justify-content-between align-items-center">
                     <h6 class="m-0 font-weight-bold text-primary">
                         <i class="fas fa-file-alt mr-2"></i>Son Evraklar
@@ -306,46 +247,76 @@
             </div>
         </div>
 
+        <div class="col-xl-4 col-lg-5 mb-4">
+            <div class="card shadow h-100">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-bolt mr-2"></i>Hızlı İşlemler
+                    </h6>
+                </div>
+                <div class="card-body d-flex flex-column justify-content-between" style="min-height: 280px;">
+                    <div class="d-grid gap-2">
+                        <a asp-controller="Document" asp-action="Create" class="btn btn-primary btn-sm">
+                            <i class="fas fa-plus mr-2"></i>Yeni Evrak Oluştur
+                        </a>
+                        <a asp-controller="Document" asp-action="Index" class="btn btn-outline-primary btn-sm">
+                            <i class="fas fa-list mr-2"></i>Tüm Evrakları Görüntüle
+                        </a>
+                        <a asp-controller="User" asp-action="Index" class="btn btn-outline-secondary btn-sm">
+                            <i class="fas fa-users mr-2"></i>Kullanıcı Yönetimi
+                        </a>
+                        <a asp-controller="Department" asp-action="Index" class="btn btn-outline-info btn-sm">
+                            <i class="fas fa-building mr-2"></i>Departman Yönetimi
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
         
     </div>
 
-    <!-- Document Type Usage -->
     <div class="row">
-        <div class="col-12">
+        <div class="col-lg-12 mb-4">
             <div class="card shadow mb-4">
                 <div class="card-header py-3">
                     <h6 class="m-0 font-weight-bold text-primary">
-                        <i class="fas fa-chart-bar mr-2"></i>En Çok Kullanılan Evrak Türleri
+                        <i class="fas fa-chart-pie mr-2"></i>En Çok Kullanılan Evrak Türleri
                     </h6>
                 </div>
                 <div class="card-body">
-                    @if (documentTypeUsage.Any())
-                    {
-                        <div class="row">
-                            @foreach (var docType in documentTypeUsage)
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="chart-pie pt-4 pb-2">
+                                <canvas id="documentTypePieChart"></canvas>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <h6 class="mb-3">En Çok Kullanılan İlk 3 Evrak Türü</h6>
+                            @if (documentTypeUsage.Any())
                             {
-                                <div class="col-lg-2 col-md-4 col-sm-6 mb-3">
-                                    <div class="text-center p-3 bg-light rounded">
-                                        <div class="doctype-icon-large mb-2 @(docType.IsUrgent ? "bg-warning" : "")">
-                                            <i class="fas @(docType.IsUrgent ? "fa-bolt" : "fa-file-alt")"></i>
-                                        </div>
-                                        <h6 class="mb-1">@docType.TypeName</h6>
-                                        <small class="text-muted">@docType.TypeCode</small>
-                                        <div class="mt-2">
-                                            <span class="badge badge-primary">@docType.Documents.Count() kullanım</span>
-                                        </div>
-                                    </div>
-                                </div>
+                                <ul class="list-group list-group-flush">
+                                    @foreach (var docType in documentTypeUsage.Take(3))
+                                    {
+                                        <li class="list-group-item d-flex justify-content-between align-items-center">
+                                            <div>
+                                                <span class="color-box" style="background-color: @GetRandomColor();"></span>
+                                                @docType.DocumentType.TypeName
+                                            </div>
+                                            <a asp-controller="Document" asp-action="Create" asp-route-documentTypeId="@docType.DocumentType.Id" class="btn btn-sm btn-success">
+                                                <i class="fas fa-plus mr-1"></i>Yeni Oluştur
+                                            </a>
+                                        </li>
+                                    }
+                                </ul>
+                            }
+                            else
+                            {
+                                <div class="alert alert-info">Henüz evrak türü kullanımı bulunmamaktadır.</div>
                             }
                         </div>
-                    }
-                    else
-                    {
-                        <div class="text-center py-4">
-                            <i class="fas fa-chart-bar fa-3x text-gray-300 mb-3"></i>
-                            <p class="text-muted">Henüz evrak türü kullanımı bulunmamaktadır.</p>
-                        </div>
-                    }
+                    </div>
                 </div>
             </div>
         </div>
@@ -414,76 +385,78 @@
         position: relative;
         height: 300px;
     }
+
+    .color-box {
+        display: inline-block;
+        width: 15px;
+        height: 15px;
+        border-radius: 3px;
+        margin-right: 5px;
+        vertical-align: middle;
+    }
 </style>
+
+@functions {
+    private string GetRandomColor()
+    {
+        var random = new Random();
+        return $"rgb({random.Next(0, 256)}, {random.Next(0, 256)}, {random.Next(0, 256)})";
+    }
+}
 
 @section Scripts {
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script>
         $(document).ready(function() {
-            // Monthly Statistics Chart
-            var ctx = document.getElementById('monthlyChart').getContext('2d');
-            var monthlyData = @Html.Raw(Json.Serialize(stats.MonthlyStats));
-            
-            var chart = new Chart(ctx, {
-                type: 'line',
-                data: {
-                    labels: monthlyData.map(m => m.month),
-                    datasets: [{
-                        label: 'Toplam Evrak',
-                        data: monthlyData.map(m => m.documentCount),
-                        borderColor: '#4e73df',
-                        backgroundColor: 'rgba(78, 115, 223, 0.1)',
-                        borderWidth: 3,
-                        fill: true,
-                        tension: 0.4
-                    }, {
-                        label: 'Teslim Edilen',
-                        data: monthlyData.map(m => m.deliveredCount),
-                        borderColor: '#1cc88a',
-                        backgroundColor: 'rgba(28, 200, 138, 0.1)',
-                        borderWidth: 3,
-                        fill: true,
-                        tension: 0.4
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            position: 'top',
-                        }
-                    },
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            grid: {
-                                color: 'rgba(0,0,0,0.1)'
-                            }
-                        },
-                        x: {
-                            grid: {
-                                color: 'rgba(0,0,0,0.1)'
-                            }
-                        }
-                    }
+            var documentTypeUsage = @Html.Raw(Json.Serialize(stats.DocumentTypeUsage));
+            var labels = documentTypeUsage.map(item => item.documentType.typeName);
+            var data = documentTypeUsage.map(item => item.documentCount);
+            var backgroundColors = [];
+
+            // Generate random colors for the chart and list
+            for (var i = 0; i < labels.length; i++) {
+                var color = `rgb(${Math.floor(Math.random() * 256)}, ${Math.floor(Math.random() * 256)}, ${Math.floor(Math.random() * 256)})`;
+                backgroundColors.push(color);
+            }
+
+            // Update color boxes in the list
+            $('.color-box').each(function(index) {
+                if (backgroundColors[index]) {
+                    $(this).css('background-color', backgroundColors[index]);
                 }
             });
 
-            // Auto-refresh every 5 minutes
-            setInterval(function() {
-                location.reload();
-            }, 300000);
+            var ctx = document.getElementById('documentTypePieChart').getContext('2d');
+            var myPieChart = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: data,
+                        backgroundColor: backgroundColors,
+                        hoverBorderColor: "rgba(234, 236, 244, 1)"
+                    }],
+                },
+                options: {
+                    maintainAspectRatio: false,
+                    tooltips: {
+                        backgroundColor: "rgb(255,255,255)",
+                        bodyFontColor: "#858796",
+                        borderColor: '#dddfeb',
+                        borderWidth: 1,
+                        xPadding: 15,
+                        yPadding: 15,
+                        displayColors: false,
+                        caretPadding: 10,
+                    },
+                    legend: {
+                        display: false
+                    },
+                    cutoutPercentage: 80,
+                },
+            });
         });
-
-        function exportChart() {
-            // Chart export functionality
-            var canvas = document.getElementById('monthlyChart');
-            var url = canvas.toDataURL('image/png');
-            var link = document.createElement('a');
-            link.download = 'evrak-istatistikleri.png';
-            link.href = url;
-            link.click();
-        }
     </script>
 }
+
+

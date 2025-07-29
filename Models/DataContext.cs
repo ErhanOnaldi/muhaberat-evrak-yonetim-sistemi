@@ -132,25 +132,14 @@ public class DataContext : DbContext
             .OnDelete(DeleteBehavior.Cascade);
 
         // Constraints
-        modelBuilder.Entity<Document>()
-            .HasCheckConstraint("CK_Document_ReceiverCheck", 
-                "[ReceiverUserId] IS NOT NULL OR [ReceiverDepartmentId] IS NOT NULL");
-
-        modelBuilder.Entity<Document>()
-            .HasCheckConstraint("CK_Document_DeliveryStatus", 
-                "[DeliveryStatus] IN ('PREPARING', 'SHIPPED', 'IN_TRANSIT', 'DELIVERED', 'RETURNED')");
-
-        modelBuilder.Entity<Document>()
-            .HasCheckConstraint("CK_Document_Status", 
-                "[Status] IN ('DRAFT', 'SENT', 'DELIVERED', 'RECEIVED', 'CANCELLED')");
-
-        modelBuilder.Entity<Document>()
-            .HasCheckConstraint("CK_Document_PhysicalDocumentType", 
-                "[PhysicalDocumentType] IS NULL OR [PhysicalDocumentType] IN ('ORIGINAL', 'COPY', 'NOTARIZED')");
-
-        modelBuilder.Entity<Document>()
-            .HasCheckConstraint("CK_Document_PackageType", 
-                "[PackageType] IS NULL OR [PackageType] IN ('ENVELOPE', 'SMALL_PACKAGE', 'LARGE_PACKAGE', 'SPECIAL')");
+        modelBuilder.Entity<Document>(entity =>
+        {
+            entity.ToTable(t => t.HasCheckConstraint("CK_Document_ReceiverCheck", "[ReceiverUserId] IS NOT NULL OR [ReceiverDepartmentId] IS NOT NULL"));
+            entity.ToTable(t => t.HasCheckConstraint("CK_Document_DeliveryStatus", "[DeliveryStatus] IN ('PREPARING', 'SHIPPED', 'IN_TRANSIT', 'DELIVERED', 'RETURNED')"));
+            entity.ToTable(t => t.HasCheckConstraint("CK_Document_Status", "[Status] IN ('DRAFT', 'SENT', 'DELIVERED', 'RECEIVED', 'CANCELLED')"));
+            entity.ToTable(t => t.HasCheckConstraint("CK_Document_PhysicalDocumentType", "[PhysicalDocumentType] IS NULL OR [PhysicalDocumentType] IN ('ORIGINAL', 'COPY', 'NOTARIZED')"));
+            entity.ToTable(t => t.HasCheckConstraint("CK_Document_PackageType", "[PackageType] IS NULL OR [PackageType] IN ('ENVELOPE', 'SMALL_PACKAGE', 'LARGE_PACKAGE', 'SPECIAL')"));
+        });
 
         // Indexes for performance
         modelBuilder.Entity<Document>()

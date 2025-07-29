@@ -173,9 +173,12 @@
                                         </label>
                                         <select asp-for="DepartmentId" class="form-select" required>
                                             <option value="">Departman seçin</option>
-                                            @foreach (var dept in ViewData["Departments"] as List<muhaberat_evrak_yonetim.Entities.Department>)
+                                            @if (ViewData["Departments"] is List<muhaberat_evrak_yonetim.Entities.Department> departments)
                                             {
-                                                <option value="@dept.Id">@dept.DepartmentName</option>
+                                                @foreach (var dept in departments)
+                                                {
+                                                    <option value="@dept.Id">@dept.DepartmentName</option>
+                                                }
                                             }
                                         </select>
                                         <span asp-validation-for="DepartmentId" class="text-danger small"></span>
@@ -186,9 +189,12 @@
                                         </label>
                                         <select asp-for="RoleId" class="form-select" required>
                                             <option value="">Rol seçin</option>
-                                            @foreach (var role in ViewData["Roles"] as List<muhaberat_evrak_yonetim.Entities.Role>)
+                                            @if (ViewData["Roles"] is List<muhaberat_evrak_yonetim.Entities.Role> roles)
                                             {
-                                                <option value="@role.Id">@role.RoleName</option>
+                                                @foreach (var role in roles)
+                                                {
+                                                    <option value="@role.Id">@role.RoleName</option>
+                                                }
                                             }
                                         </select>
                                         <span asp-validation-for="RoleId" class="text-danger small"></span>
@@ -201,9 +207,12 @@
                                     </label>
                                     <select asp-for="UnitId" class="form-select">
                                         <option value="">Birim seçin (opsiyonel)</option>
-                                        @foreach (var unit in ViewData["Units"] as List<muhaberat_evrak_yonetim.Entities.Unit>)
+                                        @if (ViewData["Units"] is List<muhaberat_evrak_yonetim.Entities.Unit> units)
                                         {
-                                            <option value="@unit.Id">@unit.UnitName</option>
+                                            @foreach (var unit in units)
+                                            {
+                                                <option value="@unit.Id">@unit.UnitName</option>
+                                            }
                                         }
                                     </select>
                                     <span asp-validation-for="UnitId" class="text-danger small"></span>

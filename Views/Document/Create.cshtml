@@ -53,9 +53,13 @@
                                 </label>
                                 <select asp-for="DocumentTypeId" class="form-control" required>
                                     <option value="">Evrak türü seçin</option>
-                                    @foreach (var docType in ViewData["DocumentTypes"] as List<muhaberat_evrak_yonetim.Entities.DocumentType>)
+                                    @if (ViewData["DocumentTypes"] is List<muhaberat_evrak_yonetim.Entities.DocumentType> documentTypes)
                                     {
-                                        <option value="@docType.Id">@docType.TypeName (@docType.TypeCode)</option>
+                                        var selectedDocTypeId = Context.Request.Query["documentTypeId"].ToString();
+                                        @foreach (var docType in documentTypes)
+                                        {
+                                            <option value="@docType.Id" selected="@(docType.Id.ToString() == selectedDocTypeId)">@docType.TypeName (@docType.TypeCode)</option>
+                                        }
                                     }
                                 </select>
                                 <span asp-validation-for="DocumentTypeId" class="text-danger small"></span>
@@ -116,11 +120,14 @@
                                 </label>
                                 <select asp-for="ReceiverUserId" class="form-control" id="ReceiverUserId">
                                     <option value="">Kullanıcı seçin (opsiyonel)</option>
-                                    @foreach (var user in ViewData["Users"] as List<muhaberat_evrak_yonetim.Entities.User>)
+                                    @if (ViewData["Users"] is List<muhaberat_evrak_yonetim.Entities.User> users)
                                     {
-                                        <option value="@user.Id" data-department="@user.DepartmentId">
-                                            @user.FirstName @user.LastName (@user.Department?.DepartmentName)
-                                        </option>
+                                        @foreach (var user in users)
+                                        {
+                                            <option value="@user.Id" data-department="@user.DepartmentId">
+                                                @user.FirstName @user.LastName (@user.Department?.DepartmentName)
+                                            </option>
+                                        }
                                     }
                                 </select>
                                 <span asp-validation-for="ReceiverUserId" class="text-danger small"></span>
@@ -131,9 +138,12 @@
                                 </label>
                                 <select asp-for="ReceiverDepartmentId" class="form-control" id="ReceiverDepartmentId">
                                     <option value="">Departman seçin (opsiyonel)</option>
-                                    @foreach (var dept in ViewData["Departments"] as List<muhaberat_evrak_yonetim.Entities.Department>)
+                                    @if (ViewData["Departments"] is List<muhaberat_evrak_yonetim.Entities.Department> departments)
                                     {
-                                        <option value="@dept.Id">@dept.DepartmentName</option>
+                                        @foreach (var dept in departments)
+                                        {
+                                            <option value="@dept.Id">@dept.DepartmentName</option>
+                                        }
                                     }
                                 </select>
                                 <span asp-validation-for="ReceiverDepartmentId" class="text-danger small"></span>
@@ -328,8 +338,8 @@
     <script>
         $(document).ready(function() {
             // Auto-select current user as sender
-            var currentUserId = @(ViewData["CurrentUserId"] ?? 0);
-            var currentUserDepartmentId = @(ViewData["CurrentUserDepartmentId"] ?? 0);
+            var currentUserId = @(ViewData["CurrentUserId"] as int? ?? 0);
+            var currentUserDepartmentId = @(ViewData["CurrentUserDepartmentId"] as int? ?? 0);
             
             if (currentUserId > 0) {
                 $('#SenderUserId').val(currentUserId);

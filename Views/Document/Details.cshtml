@@ -1,6 +1,7 @@
 @model muhaberat_evrak_yonetim.Entities.Document
 @using muhaberat_evrak_yonetim.Enums
 @using muhaberat_evrak_yonetim.Extensions
+@using Microsoft.AspNetCore.Http
 
 @{
     ViewData["Title"] = "Evrak Detayları";
@@ -25,11 +26,21 @@
                     </button>
                 </form>
             }
-            @if (Model.Status == DocumentStatus.DELIVERED.ToString() && Model.DeliveryStatus == DeliveryStatus.DELIVERED.ToString())
+            @if (Model.DeliveryStatus == DeliveryStatus.DELIVERED.ToString() && Model.Status != DocumentStatus.RECEIVED.ToString() && Model.Status != DocumentStatus.CANCELLED.ToString())
             {
-                <button type="button" class="btn btn-info btn-sm mr-2" data-toggle="modal" data-target="#receiptModal">
-                    <i class="fas fa-inbox mr-1"></i>Teslim Al
-                </button>
+                var currentUserId = ViewBag.CurrentUserId as int?;
+                var currentUserDepartmentId = Context.Session.GetInt32("DepartmentId");
+
+                // canReceive should be true ONLY if the current user is the direct receiver (user or department)
+                bool canReceive = (currentUserId.HasValue && Model.ReceiverUserId == currentUserId.Value) ||
+                                  (currentUserDepartmentId.HasValue && Model.ReceiverDepartmentId == currentUserDepartmentId.Value);
+                
+                @if (canReceive)
+                {
+                    <button type="button" class="btn btn-info btn-sm mr-2" data-toggle="modal" data-target="#receiptModal">
+                        <i class="fas fa-inbox mr-1"></i>Teslim Al
+                    </button>
+                }
             }
             <a asp-action="Index" class="btn btn-secondary btn-sm">
                 <i class="fas fa-arrow-left mr-1"></i>Geri
@@ -277,6 +288,18 @@
                         <h6>Kargo Durumu</h6>
                         <span class="badge @deliveryStatusClass p-2">@Model.DeliveryStatus</span>
                     </div>
+                    
+                    @if (Model.Status == DocumentStatus.RECEIVED.ToString() && !string.IsNullOrEmpty(Model.ReceivedBy))
+                    {
+                        <div class="mb-3">
+                            <h6 class="text-success">Teslim Alındı</h6>
+                            <p class="mb-1"><strong>@Model.ReceivedBy</strong></p>
+                            @if (Model.DeliveryDate.HasValue)
+                            {
+                                <small class="text-muted">@Model.DeliveryDate.Value.ToString("dd.MM.yyyy HH:mm")</small>
+                            }
+                        </div>
+                    }
                 </div>
             </div>
 
@@ -384,7 +407,6 @@
     </div>
 </div>
 
-<!-- Receipt Modal -->
 <div class="modal fade" id="receiptModal" tabindex="-1" role="dialog" aria-labelledby="receiptModalLabel" aria-hidden="true">
     <div class="modal-dialog" role="document">
         <div class="modal-content">

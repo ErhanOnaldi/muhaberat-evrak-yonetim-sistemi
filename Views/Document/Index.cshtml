@@ -236,7 +236,7 @@
                                 </td>
                                 <td>
                                     <span class="badge badge-info badge-pill">
-                                        @Html.DisplayFor(modelItem => item.DocumentType.TypeName)
+                                        @(item.DocumentType?.TypeName ?? "N/A")
                                     </span>
                                 </td>
                                 <td>
@@ -340,7 +340,14 @@
                                            class="btn btn-sm btn-outline-success" title="Kargo Takip">
                                             <i class="fas fa-shipping-fast"></i>
                                         </a>
-                                        @if (item.Status == DocumentStatus.DELIVERED.ToString() && item.DeliveryStatus == DeliveryStatus.DELIVERED.ToString())
+                                        @{
+                                            var currentUserId = Context.Session.GetInt32("UserId");
+                                            var currentUserDepartmentId = Context.Session.GetInt32("DepartmentId");
+
+                                            bool canReceive = (currentUserId.HasValue && item.ReceiverUserId == currentUserId.Value) ||
+                                                              (currentUserDepartmentId.HasValue && item.ReceiverDepartmentId == currentUserDepartmentId.Value);
+                                        }
+                                        @if (item.Status == DocumentStatus.DELIVERED.ToString() && item.DeliveryStatus == DeliveryStatus.DELIVERED.ToString() && canReceive)
                                         {
                                             <form method="post" asp-action="ReceiveDocument" asp-route-id="@item.Id" class="d-inline">
                                                 @Html.AntiForgeryToken()
