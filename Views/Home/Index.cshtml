@@ -299,12 +299,15 @@
                                     @foreach (var docType in documentTypeUsage.Take(3))
                                     {
                                         <li class="list-group-item d-flex justify-content-between align-items-center">
-                                            <div>
-                                                <span class="color-box" style="background-color: @GetRandomColor();"></span>
-                                                @docType.DocumentType.TypeName
+                                            <div class="d-flex align-items-center">
+                                                <span class="color-box me-2"></span>
+                                                <div>
+                                                    <strong>@docType.DocumentType.TypeName</strong>
+                                                    <small class="text-muted d-block">@docType.DocumentCount adet</small>
+                                                </div>
                                             </div>
                                             <a asp-controller="Document" asp-action="Create" asp-route-documentTypeId="@docType.DocumentType.Id" class="btn btn-sm btn-success">
-                                                <i class="fas fa-plus mr-1"></i>Yeni Oluştur
+                                                <i class="fas fa-plus me-1"></i>Yeni Oluştur
                                             </a>
                                         </li>
                                     }
@@ -385,6 +388,12 @@
         height: 300px;
     }
 
+    .chart-pie {
+        position: relative;
+        height: 300px;
+        width: 100%;
+    }
+
     .color-box {
         display: inline-block;
         width: 15px;
@@ -404,54 +413,113 @@
 }
 
 @section Scripts {
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0"></script>
     <script>
         $(document).ready(function() {
             var documentTypeUsage = @Html.Raw(Json.Serialize(stats.DocumentTypeUsage));
-            var labels = documentTypeUsage.map(item => item.documentType.typeName);
-            var data = documentTypeUsage.map(item => item.documentCount);
-            var backgroundColors = [];
-
-            for (var i = 0; i < labels.length; i++) {
-                var color = `rgb(${Math.floor(Math.random() * 256)}, ${Math.floor(Math.random() * 256)}, ${Math.floor(Math.random() * 256)})`;
-                backgroundColors.push(color);
-            }
-
-            $('.color-box').each(function(index) {
-                if (backgroundColors[index]) {
-                    $(this).css('background-color', backgroundColors[index]);
+            
+            // Debug bilgisi
+            console.log('DocumentTypeUsage Data:', documentTypeUsage);
+            console.log('Length:', documentTypeUsage ? documentTypeUsage.length : 'undefined');
+            
+            if (documentTypeUsage && documentTypeUsage.length > 0) {
+                // Debug: Her item'ın yapısını kontrol et
+                console.log('First item structure:', documentTypeUsage[0]);
+                console.log('All keys in first item:', Object.keys(documentTypeUsage[0]));
+                if (documentTypeUsage[0].DocumentType) {
+                    console.log('DocumentType keys:', Object.keys(documentTypeUsage[0].DocumentType));
                 }
-            });
+                
+                // Property isimlerini dinamik olarak tespit et
+                var firstItem = documentTypeUsage[0];
+                var labels, data;
+                
+                // Capital case kontrolü (C# PascalCase)
+                if (firstItem.DocumentType && firstItem.DocumentType.TypeName) {
+                    labels = documentTypeUsage.map(item => item.DocumentType.TypeName);
+                    data = documentTypeUsage.map(item => item.DocumentCount);
+                }
+                // Camel case kontrolü (JavaScript camelCase) 
+                else if (firstItem.documentType && firstItem.documentType.typeName) {
+                    labels = documentTypeUsage.map(item => item.documentType.typeName);
+                    data = documentTypeUsage.map(item => item.documentCount);
+                }
+                else {
+                    console.error('Property structure not recognized');
+                    return;
+                }
+                
+                console.log('Labels:', labels);
+                console.log('Data:', data);
+                
+                // Sabit renkler tanımla
+                var predefinedColors = [
+                    '#4e73df', '#1cc88a', '#36b9cc', '#f6c23e', '#e74a3b', 
+                    '#858796', '#fd7e14', '#6f42c1', '#20c997', '#ffc107'
+                ];
+                
+                var backgroundColors = [];
+                for (var i = 0; i < labels.length; i++) {
+                    backgroundColors.push(predefinedColors[i % predefinedColors.length]);
+                }
 
-            var ctx = document.getElementById('documentTypePieChart').getContext('2d');
-            var myPieChart = new Chart(ctx, {
-                type: 'doughnut',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        data: data,
-                        backgroundColor: backgroundColors,
-                        hoverBorderColor: "rgba(234, 236, 244, 1)"
-                    }],
-                },
-                options: {
-                    maintainAspectRatio: false,
-                    tooltips: {
-                        backgroundColor: "rgb(255,255,255)",
-                        bodyFontColor: "#858796",
-                        borderColor: '#dddfeb',
-                        borderWidth: 1,
-                        xPadding: 15,
-                        yPadding: 15,
-                        displayColors: false,
-                        caretPadding: 10,
-                    },
-                    legend: {
-                        display: false
-                    },
-                    cutoutPercentage: 80,
-                },
-            });
+                // Color box'ları güncelle
+                $('.color-box').each(function(index) {
+                    if (backgroundColors[index]) {
+                        $(this).css('background-color', backgroundColors[index]);
+                    }
+                });
+
+                var ctx = document.getElementById('documentTypePieChart');
+                if (ctx) {
+                    var myPieChart = new Chart(ctx, {
+                        type: 'doughnut',
+                        data: {
+                            labels: labels,
+                            datasets: [{
+                                data: data,
+                                backgroundColor: backgroundColors,
+                                borderColor: backgroundColors,
+                                borderWidth: 2,
+                                hoverBorderWidth: 3
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: {
+                                    display: false
+                                },
+                                tooltip: {
+                                    backgroundColor: 'rgba(255,255,255,0.9)',
+                                    titleColor: '#858796',
+                                    bodyColor: '#858796',
+                                    borderColor: '#dddfeb',
+                                    borderWidth: 1,
+                                    cornerRadius: 10,
+                                    displayColors: true,
+                                    callbacks: {
+                                        label: function(context) {
+                                            var total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                            var percentage = Math.round((context.raw / total) * 100);
+                                            return context.label + ': ' + context.raw + ' (' + percentage + '%)';
+                                        }
+                                    }
+                                }
+                            },
+                            cutout: '60%',
+                            animation: {
+                                animateRotate: true,
+                                duration: 1000
+                            }
+                        }
+                    });
+                }
+            } else {
+                // Veri yoksa mesaj göster
+                $('#documentTypePieChart').parent().html('<div class="text-center py-4"><i class="fas fa-chart-pie fa-3x text-gray-300 mb-3"></i><p class="text-muted">Henüz evrak türü kullanımı bulunmamaktadır.</p></div>');
+            }
         });
     </script>
 }

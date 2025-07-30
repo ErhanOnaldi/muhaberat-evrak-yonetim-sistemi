@@ -90,10 +90,6 @@ namespace muhaberat_evrak_yonetim.Entities
 
         public string? FilePath { get; set; }
 
-        // TODO: Add Tags and Metadata fields after migration
-        // public string? Tags { get; set; }
-        // public string? Metadata { get; set; }
-
         public DateTime CreatedAt { get; set; }
         public DateTime UpdatedAt { get; set; }
 

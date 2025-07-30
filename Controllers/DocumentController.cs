@@ -44,7 +44,6 @@ public class DocumentController : BaseController
                 d.ReceiverDepartmentId == currentUserDepartmentId);
         }
 
-        // Apply search filters
         if (!string.IsNullOrEmpty(searchQuery))
         {
             documentsQuery = documentsQuery.Where(d =>
@@ -53,8 +52,6 @@ public class DocumentController : BaseController
                 (d.Description != null && d.Description.Contains(searchQuery)) ||
                 (d.CustomerName != null && d.CustomerName.Contains(searchQuery)) ||
                 (d.CustomerId != null && d.CustomerId.Contains(searchQuery)));
-                // TODO: Add Tags search after migration
-                // (d.Tags != null && d.Tags.Contains(searchQuery)));
         }
 
         if (documentTypeId.HasValue)
@@ -86,7 +83,6 @@ public class DocumentController : BaseController
             .OrderByDescending(d => d.CreatedDate)
             .ToListAsync();
 
-        // Prepare ViewData for search form
         ViewData["DocumentTypes"] = await _context.DocumentTypes
             .Where(dt => dt.IsActive)
             .ToListAsync();
@@ -145,7 +141,6 @@ public class DocumentController : BaseController
             .Where(d => d.IsActive)
             .ToListAsync();
 
-        // Get current user info for pre-filling sender information
         var currentUserId = GetCurrentUserId();
         var currentUserDepartmentId = GetCurrentUserDepartmentId();
         
@@ -162,13 +157,11 @@ public class DocumentController : BaseController
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Create(Document document)
     {
-        // Remove validation for auto-generated fields
         ModelState.Remove(nameof(Document.DocumentNumber));
         ModelState.Remove(nameof(Document.SenderUser));
         ModelState.Remove(nameof(Document.CreatedByUser));
         ModelState.Remove(nameof(Document.CreatedDate));
         
-        // Set automatic fields before validation
         document.DocumentNumber = await GenerateDocumentNumberAsync();
         document.CreatedDate = DateTime.Now;
         document.CreatedAt = DateTime.Now;
@@ -178,26 +171,22 @@ public class DocumentController : BaseController
         document.Status = DocumentStatus.DRAFT.ToString();
         document.DeliveryStatus = DeliveryStatus.PREPARING.ToString();
 
-        // Custom validation for SenderUserId
         if (document.SenderUserId <= 0)
         {
             ModelState.AddModelError("SenderUserId", "Lütfen gönderen kullanıcı seçin.");
         }
 
-        // Custom validation for SenderDepartmentId
         if (document.SenderDepartmentId <= 0)
         {
             ModelState.AddModelError("SenderDepartmentId", "Lütfen gönderen departman seçin.");
         }
 
-        // Custom validation for receiver (at least one required)
         if (document.ReceiverUserId == null && document.ReceiverDepartmentId == null)
         {
             ModelState.AddModelError("ReceiverUserId", "En az bir alıcı seçmelisiniz: Kullanıcı veya Departman.");
             ModelState.AddModelError("ReceiverDepartmentId", "En az bir alıcı seçmelisiniz: Kullanıcı veya Departman.");
         }
 
-        // Custom validation for required string fields
         if (string.IsNullOrWhiteSpace(document.Title))
         {
             ModelState.AddModelError("Title", "Başlık alanı zorunludur.");
@@ -228,7 +217,6 @@ public class DocumentController : BaseController
             ModelState.AddModelError("DocumentTypeId", "Evrak türü seçimi zorunludur.");
         }
 
-        // Log validation errors for debugging
         if (!ModelState.IsValid)
         {
             foreach (var key in ModelState.Keys)
@@ -246,12 +234,9 @@ public class DocumentController : BaseController
 
         if (ModelState.IsValid)
         {
-            // All automatic fields are already set above
-
             _context.Add(document);
             await _context.SaveChangesAsync();
 
-            // Log document creation
             await LogDocumentHistoryAsync(document.Id, "UPLOADED", document.CreatedBy, "Evrak oluşturuldu");
 
             TempData["Success"] = "Evrak başarıyla oluşturuldu.";
@@ -271,7 +256,6 @@ public class DocumentController : BaseController
             .Where(d => d.IsActive)
             .ToListAsync();
 
-        // Reload current user info for pre-filling sender information on error
         var currentUserId = GetCurrentUserId();
         var currentUserDepartmentId = GetCurrentUserDepartmentId();
         
@@ -530,14 +514,12 @@ public class DocumentController : BaseController
             return NotFound();
         }
 
-        // Only allow receipt if document is delivered
         if (document.DeliveryStatus != DeliveryStatus.DELIVERED.ToString())
         {
             TempData["Error"] = "Bu evrak henüz teslim edilmediği için teslim alınamaz.";
             return RedirectToAction(nameof(Details), new { id });
         }
 
-        // Check if user has permission to receive this document
         var hasFullAccess = HasFullAccess();
         var currentUserDepartmentId = GetCurrentUserDepartmentId();
         
@@ -551,16 +533,14 @@ public class DocumentController : BaseController
             return RedirectToAction(nameof(Details), new { id });
         }
 
-        // Update document status to RECEIVED
         document.Status = DocumentStatus.RECEIVED.ToString();
         document.ReceivedBy = !string.IsNullOrEmpty(receivedByName) ? receivedByName : GetCurrentUserInfo();
-        document.DeliveryDate = DateTime.Now; // Update delivery date if not set
+        document.DeliveryDate = DateTime.Now; 
         document.UpdatedAt = DateTime.Now;
 
         _context.Update(document);
         await _context.SaveChangesAsync();
 
-        // Log the receipt
         var notes = $"Evrak teslim alındı. Teslim alan: {document.ReceivedBy}";
         if (!string.IsNullOrEmpty(receiptNotes))
         {
@@ -626,15 +606,13 @@ public class DocumentController : BaseController
 
     public async Task<IActionResult> MyDocuments()
     {
-        // Get current user from session
-        int? currentUserId = GetCurrentUserId(); // Use nullable int
+        int? currentUserId = GetCurrentUserId(); 
 
         IEnumerable<Document> sentDocuments = new List<Document>();
-        IEnumerable<Document> receivedDocuments = new List<Document>(); // Initialize as empty list of lists
+        IEnumerable<Document> receivedDocuments = new List<Document>(); 
 
         if (!currentUserId.HasValue)
         {
-            // If user ID is not available, log and return empty lists
             _logger.LogWarning("MyDocuments: Current user ID is not available. Returning empty lists.");
             TempData["Error"] = "Oturum bilgileriniz eksik. Lütfen tekrar giriş yapın.";
             ViewBag.SentDocuments = sentDocuments;

@@ -68,20 +68,17 @@ public class HomeController : BaseController
 
             
 
-            DocumentTypeUsage = await _context.DocumentTypes
-                .Where(dt => dt.IsActive)
-                .Select(dt => new {
-                    DocumentType = dt,
-                    DocumentCount = documentsQuery.Count(d => d.DocumentTypeId == dt.Id)
-                })
-                .Where(x => x.DocumentCount > 0) // Sadece evrakı olan türleri göster
-                .OrderByDescending(dt => dt.DocumentCount)
-                .Take(6)
-                .ToListAsync(),
+            DocumentTypeUsage = await GetDocumentTypeUsageAsync(documentsQuery),
 
             MonthlyStats = await GetMonthlyStatistics(documentsQuery)
         };
 
+        // Debug bilgisi ekle
+        _logger.LogInformation($"Total Document Types: {await _context.DocumentTypes.CountAsync(dt => dt.IsActive)}");
+        _logger.LogInformation($"Total Documents (filtered): {await documentsQuery.CountAsync()}");
+        _logger.LogInformation($"DocumentTypeUsage count: {dashboardStats.DocumentTypeUsage.Count}");
+        _logger.LogInformation($"Current User ID: {currentUserId}, Department: {currentUserDepartment}, HasFullAccess: {hasFullAccess}");
+        
         ViewBag.DashboardStats = dashboardStats;
         return View();
     }
@@ -110,6 +107,36 @@ public class HomeController : BaseController
         }
 
         return monthlyData;
+    }
+
+    private async Task<List<object>> GetDocumentTypeUsageAsync(IQueryable<Document> documentsQuery)
+    {
+        // Önce tüm aktif document type'ları al
+        var documentTypes = await _context.DocumentTypes
+            .Where(dt => dt.IsActive)
+            .ToListAsync();
+
+        var documentTypeUsage = new List<object>();
+
+        foreach (var docType in documentTypes)
+        {
+            // Her document type için ayrı ayrı count yap
+            var count = await documentsQuery.CountAsync(d => d.DocumentTypeId == docType.Id);
+            
+            if (count > 0)
+            {
+                documentTypeUsage.Add(new
+                {
+                    DocumentType = docType,
+                    DocumentCount = count
+                });
+            }
+        }
+
+        return documentTypeUsage
+            .OrderByDescending(x => ((dynamic)x).DocumentCount)
+            .Take(6)
+            .ToList();
     }
 
     public IActionResult Privacy()

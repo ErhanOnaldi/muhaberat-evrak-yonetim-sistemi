@@ -33,13 +33,11 @@ public class BaseController : Controller
         if (!userId.HasValue)
             return false;
 
-        // Check session expiry
         var lastActivity = HttpContext.Session.GetString("LastActivity");
         if (!string.IsNullOrEmpty(lastActivity))
         {
             if (DateTime.TryParse(lastActivity, out DateTime lastActiveTime))
             {
-                // Session timeout after 30 minutes of inactivity
                 if (DateTime.Now.Subtract(lastActiveTime).TotalMinutes > 30)
                 {
                     HttpContext.Session.Clear();
@@ -48,7 +46,6 @@ public class BaseController : Controller
             }
         }
 
-        // Update last activity
         HttpContext.Session.SetString("LastActivity", DateTime.Now.ToString());
         return true;
     }

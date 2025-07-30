@@ -52,7 +52,6 @@ public class UserController : BaseController
             return NotFound();
         }
 
-        // Get user statistics
         var stats = new
         {
             TotalSent = user.SentDocuments.Count(d => d.IsActive),

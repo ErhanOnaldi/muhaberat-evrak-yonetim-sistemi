@@ -17,137 +17,137 @@ build_property._SupportedPlatformList = Linux,macOS,Windows
 build_property._SupportedPlatformList = Linux,macOS,Windows
 build_property.RootNamespace = muhaberat_evrak_yonetim
 build_property.RootNamespace = muhaberat_evrak_yonetim
-build_property.ProjectDir = C:\Users\erhan\OneDrive\Masaüstü\muhaberat-evrak-yonetim\
+build_property.ProjectDir = c:\Users\erhan\OneDrive\Masaüstü\muhaberat-evrak-yonetim\
 build_property.EnableComHosting = 
 build_property.EnableGeneratedComInterfaceComImportInterop = 
 build_property.RazorLangVersion = 9.0
 build_property.SupportLocalizedComponentNames = 
 build_property.GenerateRazorMetadataSourceChecksumAttributes = 
-build_property.MSBuildProjectDirectory = C:\Users\erhan\OneDrive\Masaüstü\muhaberat-evrak-yonetim
+build_property.MSBuildProjectDirectory = c:\Users\erhan\OneDrive\Masaüstü\muhaberat-evrak-yonetim
 build_property._RazorSourceGeneratorDebug = 
 build_property.EffectiveAnalysisLevelStyle = 9.0
 build_property.EnableCodeStyleSeverity = 
 
-[C:/Users/erhan/OneDrive/Masaüstü/muhaberat-evrak-yonetim/Views/Account/AccessDenied.cshtml]
+[c:/Users/erhan/OneDrive/Masaüstü/muhaberat-evrak-yonetim/Views/Account/AccessDenied.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWNjb3VudFxBY2Nlc3NEZW5pZWQuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/erhan/OneDrive/Masaüstü/muhaberat-evrak-yonetim/Views/Account/Login.cshtml]
+[c:/Users/erhan/OneDrive/Masaüstü/muhaberat-evrak-yonetim/Views/Account/Login.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWNjb3VudFxMb2dpbi5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/erhan/OneDrive/Masaüstü/muhaberat-evrak-yonetim/Views/Account/Profile.cshtml]
+[c:/Users/erhan/OneDrive/Masaüstü/muhaberat-evrak-yonetim/Views/Account/Profile.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWNjb3VudFxQcm9maWxlLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/erhan/OneDrive/Masaüstü/muhaberat-evrak-yonetim/Views/Account/Register.cshtml]
+[c:/Users/erhan/OneDrive/Masaüstü/muhaberat-evrak-yonetim/Views/Account/Register.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWNjb3VudFxSZWdpc3Rlci5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/erhan/OneDrive/Masaüstü/muhaberat-evrak-yonetim/Views/Department/Create.cshtml]
+[c:/Users/erhan/OneDrive/Masaüstü/muhaberat-evrak-yonetim/Views/Department/Create.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRGVwYXJ0bWVudFxDcmVhdGUuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/erhan/OneDrive/Masaüstü/muhaberat-evrak-yonetim/Views/Department/Details.cshtml]
+[c:/Users/erhan/OneDrive/Masaüstü/muhaberat-evrak-yonetim/Views/Department/Details.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRGVwYXJ0bWVudFxEZXRhaWxzLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/erhan/OneDrive/Masaüstü/muhaberat-evrak-yonetim/Views/Department/Edit.cshtml]
+[c:/Users/erhan/OneDrive/Masaüstü/muhaberat-evrak-yonetim/Views/Department/Edit.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRGVwYXJ0bWVudFxFZGl0LmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/erhan/OneDrive/Masaüstü/muhaberat-evrak-yonetim/Views/Department/Index.cshtml]
+[c:/Users/erhan/OneDrive/Masaüstü/muhaberat-evrak-yonetim/Views/Department/Index.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRGVwYXJ0bWVudFxJbmRleC5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/erhan/OneDrive/Masaüstü/muhaberat-evrak-yonetim/Views/DocumentType/Index.cshtml]
+[c:/Users/erhan/OneDrive/Masaüstü/muhaberat-evrak-yonetim/Views/DocumentType/Index.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRG9jdW1lbnRUeXBlXEluZGV4LmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/erhan/OneDrive/Masaüstü/muhaberat-evrak-yonetim/Views/Document/CargoTracking.cshtml]
+[c:/Users/erhan/OneDrive/Masaüstü/muhaberat-evrak-yonetim/Views/Document/CargoTracking.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRG9jdW1lbnRcQ2FyZ29UcmFja2luZy5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/erhan/OneDrive/Masaüstü/muhaberat-evrak-yonetim/Views/Document/Create.cshtml]
+[c:/Users/erhan/OneDrive/Masaüstü/muhaberat-evrak-yonetim/Views/Document/Create.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRG9jdW1lbnRcQ3JlYXRlLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/erhan/OneDrive/Masaüstü/muhaberat-evrak-yonetim/Views/Document/Details.cshtml]
+[c:/Users/erhan/OneDrive/Masaüstü/muhaberat-evrak-yonetim/Views/Document/Details.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRG9jdW1lbnRcRGV0YWlscy5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/erhan/OneDrive/Masaüstü/muhaberat-evrak-yonetim/Views/Document/Edit.cshtml]
+[c:/Users/erhan/OneDrive/Masaüstü/muhaberat-evrak-yonetim/Views/Document/Edit.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRG9jdW1lbnRcRWRpdC5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/erhan/OneDrive/Masaüstü/muhaberat-evrak-yonetim/Views/Document/History.cshtml]
+[c:/Users/erhan/OneDrive/Masaüstü/muhaberat-evrak-yonetim/Views/Document/History.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRG9jdW1lbnRcSGlzdG9yeS5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/erhan/OneDrive/Masaüstü/muhaberat-evrak-yonetim/Views/Document/Index.cshtml]
+[c:/Users/erhan/OneDrive/Masaüstü/muhaberat-evrak-yonetim/Views/Document/Index.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRG9jdW1lbnRcSW5kZXguY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/erhan/OneDrive/Masaüstü/muhaberat-evrak-yonetim/Views/Document/MyDocuments.cshtml]
+[c:/Users/erhan/OneDrive/Masaüstü/muhaberat-evrak-yonetim/Views/Document/MyDocuments.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRG9jdW1lbnRcTXlEb2N1bWVudHMuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/erhan/OneDrive/Masaüstü/muhaberat-evrak-yonetim/Views/Home/Index.cshtml]
+[c:/Users/erhan/OneDrive/Masaüstü/muhaberat-evrak-yonetim/Views/Home/Index.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcSG9tZVxJbmRleC5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/erhan/OneDrive/Masaüstü/muhaberat-evrak-yonetim/Views/Role/Index.cshtml]
+[c:/Users/erhan/OneDrive/Masaüstü/muhaberat-evrak-yonetim/Views/Role/Index.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcUm9sZVxJbmRleC5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/erhan/OneDrive/Masaüstü/muhaberat-evrak-yonetim/Views/Shared/Error.cshtml]
+[c:/Users/erhan/OneDrive/Masaüstü/muhaberat-evrak-yonetim/Views/Shared/Error.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXEVycm9yLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/erhan/OneDrive/Masaüstü/muhaberat-evrak-yonetim/Views/Shared/_ValidationScriptsPartial.cshtml]
+[c:/Users/erhan/OneDrive/Masaüstü/muhaberat-evrak-yonetim/Views/Shared/_ValidationScriptsPartial.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXF9WYWxpZGF0aW9uU2NyaXB0c1BhcnRpYWwuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/erhan/OneDrive/Masaüstü/muhaberat-evrak-yonetim/Views/User/ByDepartment.cshtml]
+[c:/Users/erhan/OneDrive/Masaüstü/muhaberat-evrak-yonetim/Views/User/ByDepartment.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcVXNlclxCeURlcGFydG1lbnQuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/erhan/OneDrive/Masaüstü/muhaberat-evrak-yonetim/Views/User/ByRole.cshtml]
+[c:/Users/erhan/OneDrive/Masaüstü/muhaberat-evrak-yonetim/Views/User/ByRole.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcVXNlclxCeVJvbGUuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/erhan/OneDrive/Masaüstü/muhaberat-evrak-yonetim/Views/User/Create.cshtml]
+[c:/Users/erhan/OneDrive/Masaüstü/muhaberat-evrak-yonetim/Views/User/Create.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcVXNlclxDcmVhdGUuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/erhan/OneDrive/Masaüstü/muhaberat-evrak-yonetim/Views/User/Details.cshtml]
+[c:/Users/erhan/OneDrive/Masaüstü/muhaberat-evrak-yonetim/Views/User/Details.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcVXNlclxEZXRhaWxzLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/erhan/OneDrive/Masaüstü/muhaberat-evrak-yonetim/Views/User/Edit.cshtml]
+[c:/Users/erhan/OneDrive/Masaüstü/muhaberat-evrak-yonetim/Views/User/Edit.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcVXNlclxFZGl0LmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/erhan/OneDrive/Masaüstü/muhaberat-evrak-yonetim/Views/User/Index.cshtml]
+[c:/Users/erhan/OneDrive/Masaüstü/muhaberat-evrak-yonetim/Views/User/Index.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcVXNlclxJbmRleC5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/erhan/OneDrive/Masaüstü/muhaberat-evrak-yonetim/Views/User/MyDocuments.cshtml]
+[c:/Users/erhan/OneDrive/Masaüstü/muhaberat-evrak-yonetim/Views/User/MyDocuments.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcVXNlclxNeURvY3VtZW50cy5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/erhan/OneDrive/Masaüstü/muhaberat-evrak-yonetim/Views/User/Statistics.cshtml]
+[c:/Users/erhan/OneDrive/Masaüstü/muhaberat-evrak-yonetim/Views/User/Statistics.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcVXNlclxTdGF0aXN0aWNzLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/erhan/OneDrive/Masaüstü/muhaberat-evrak-yonetim/Views/_ViewImports.cshtml]
+[c:/Users/erhan/OneDrive/Masaüstü/muhaberat-evrak-yonetim/Views/_ViewImports.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcX1ZpZXdJbXBvcnRzLmNzaHRtbA==
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/erhan/OneDrive/Masaüstü/muhaberat-evrak-yonetim/Views/_ViewStart.cshtml]
+[c:/Users/erhan/OneDrive/Masaüstü/muhaberat-evrak-yonetim/Views/_ViewStart.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcX1ZpZXdTdGFydC5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
-[C:/Users/erhan/OneDrive/Masaüstü/muhaberat-evrak-yonetim/Views/Shared/_Layout.cshtml]
+[c:/Users/erhan/OneDrive/Masaüstü/muhaberat-evrak-yonetim/Views/Shared/_Layout.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcU2hhcmVkXF9MYXlvdXQuY3NodG1s
 build_metadata.AdditionalFiles.CssScope = b-v1x5p8rmyw
