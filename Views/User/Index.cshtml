@@ -11,31 +11,17 @@
         </h1>
         @if (ViewBag.CurrentDepartmentName == "Muhaberat")
         {
-            <a asp-action="Create" class="btn btn-primary">
-                <i class="fas fa-plus mr-2"></i>Yeni Kullanıcı
-            </a>
+            <div class="btn-group" role="group">
+                <a asp-action="Create" class="btn btn-primary">
+                    <i class="fas fa-plus mr-2"></i>Yeni Kullanıcı
+                </a>
+                <a asp-action="AllInactive" class="btn btn-outline-danger">
+                    <i class="fas fa-user-slash mr-2"></i>Deaktif Kullanıcılar
+                </a>
+            </div>
         }
     </div>
 
-    <!-- Success/Error Messages -->
-    @if (TempData["Success"] != null)
-    {
-        <div class="alert alert-success alert-dismissible fade show" role="alert">
-            <i class="fas fa-check-circle mr-2"></i>@TempData["Success"]
-            <button type="button" class="close" data-bs-dismiss="alert">
-                <span>&times;</span>
-            </button>
-        </div>
-    }
-    @if (TempData["Error"] != null)
-    {
-        <div class="alert alert-danger alert-dismissible fade show" role="alert">
-            <i class="fas fa-exclamation-triangle mr-2"></i>@TempData["Error"]
-            <button type="button" class="close" data-bs-dismiss="alert">
-                <span>&times;</span>
-            </button>
-        </div>
-    }
 
     <!-- Statistics Cards -->
     <div class="row mb-4">
@@ -230,6 +216,47 @@
 @section Scripts {
     <script>
         $(document).ready(function() {
+            // Configure toastr options
+            toastr.options = {
+                "closeButton": true,
+                "debug": false,
+                "newestOnTop": true,
+                "progressBar": true,
+                "positionClass": "toast-top-right",
+                "preventDuplicates": false,
+                "onclick": null,
+                "showDuration": "300",
+                "hideDuration": "1000",
+                "timeOut": "4000",
+                "extendedTimeOut": "1000",
+                "showEasing": "swing",
+                "hideEasing": "linear",
+                "showMethod": "fadeIn",
+                "hideMethod": "fadeOut"
+            };
+
+            // Show success/error messages as toasts
+            @if (TempData["Success"] != null)
+            {
+                <text>
+                toastr.success('@Html.Raw(TempData["Success"])', 'Başarılı!', {
+                    iconClass: 'toast-success',
+                    timeOut: 4000
+                });
+                </text>
+            }
+            
+            @if (TempData["Error"] != null)  
+            {
+                <text>
+                toastr.error('@Html.Raw(TempData["Error"])', 'Hata!', {
+                    iconClass: 'toast-error',
+                    timeOut: 5000
+                });
+                </text>
+            }
+
+            // Initialize DataTable
             $('#usersTable').DataTable({
                 "language": {
                     "url": "//cdn.datatables.net/plug-ins/1.10.25/i18n/Turkish.json"

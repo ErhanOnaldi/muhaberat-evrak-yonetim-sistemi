@@ -70,7 +70,12 @@ public class HomeController : BaseController
 
             DocumentTypeUsage = await GetDocumentTypeUsageAsync(documentsQuery),
 
-            MonthlyStats = await GetMonthlyStatistics(documentsQuery)
+            MonthlyStats = await GetMonthlyStatistics(documentsQuery),
+            
+            // Yeni grafik verileri
+            DocumentStatusChart = await GetDocumentStatusChartData(documentsQuery),
+            TopDepartmentsChart = await GetTopDepartmentsChartData(documentsQuery),
+            DeliverySuccessChart = await GetDeliverySuccessChartData(documentsQuery)
         };
 
         // Debug bilgisi ekle
@@ -78,6 +83,9 @@ public class HomeController : BaseController
         _logger.LogInformation($"Total Documents (filtered): {await documentsQuery.CountAsync()}");
         _logger.LogInformation($"DocumentTypeUsage count: {dashboardStats.DocumentTypeUsage.Count}");
         _logger.LogInformation($"Current User ID: {currentUserId}, Department: {currentUserDepartment}, HasFullAccess: {hasFullAccess}");
+        _logger.LogInformation($"DocumentStatusChart: {System.Text.Json.JsonSerializer.Serialize(dashboardStats.DocumentStatusChart)}");
+        _logger.LogInformation($"TopDepartmentsChart: {System.Text.Json.JsonSerializer.Serialize(dashboardStats.TopDepartmentsChart)}");
+        _logger.LogInformation($"DeliverySuccessChart: {System.Text.Json.JsonSerializer.Serialize(dashboardStats.DeliverySuccessChart)}");
         
         ViewBag.DashboardStats = dashboardStats;
         return View();
@@ -139,8 +147,145 @@ public class HomeController : BaseController
             .ToList();
     }
 
+    private async Task<object> GetDocumentStatusChartData(IQueryable<Document> documentsQuery)
+    {
+        var statusCounts = new
+        {
+            Delivered = await documentsQuery.CountAsync(d => d.Status == "DELIVERED" || d.Status == "RECEIVED"),
+            InProgress = await documentsQuery.CountAsync(d => d.Status == "SENT" || d.Status == "IN_TRANSIT"),
+            Pending = await documentsQuery.CountAsync(d => d.Status == "PENDING" || d.Status == "DRAFT"),
+            Total = await documentsQuery.CountAsync()
+        };
+
+        return new
+        {
+            Labels = new[] { "Teslim Edildi", "İşlemde", "Beklemede" },
+            Data = new[] { statusCounts.Delivered, statusCounts.InProgress, statusCounts.Pending },
+            Colors = new[] { "#28a745", "#ffc107", "#dc3545" }
+        };
+    }
+
+    private async Task<object> GetTopDepartmentsChartData(IQueryable<Document> documentsQuery)
+    {
+        var senderStats = await documentsQuery
+            .Where(d => d.SenderDepartment != null)
+            .GroupBy(d => d.SenderDepartment.DepartmentName)
+            .Select(g => new { Department = g.Key, Count = g.Count() })
+            .OrderByDescending(x => x.Count)
+            .Take(8)
+            .ToListAsync();
+
+        var receiverStats = await documentsQuery
+            .Where(d => d.ReceiverDepartment != null)
+            .GroupBy(d => d.ReceiverDepartment.DepartmentName)
+            .Select(g => new { Department = g.Key, Count = g.Count() })
+            .OrderByDescending(x => x.Count)
+            .Take(8)
+            .ToListAsync();
+
+        return new
+        {
+            SenderData = new
+            {
+                Labels = senderStats.Select(s => s.Department).ToArray(),
+                Data = senderStats.Select(s => s.Count).ToArray()
+            },
+            ReceiverData = new
+            {
+                Labels = receiverStats.Select(r => r.Department).ToArray(),
+                Data = receiverStats.Select(r => r.Count).ToArray()
+            }
+        };
+    }
+
+    private async Task<object> GetDeliverySuccessChartData(IQueryable<Document> documentsQuery)
+    {
+        var departmentSuccess = await documentsQuery
+            .Where(d => d.SenderDepartment != null)
+            .GroupBy(d => d.SenderDepartment.DepartmentName)
+            .Select(g => new
+            {
+                Department = g.Key,
+                Total = g.Count(),
+                Delivered = g.Count(d => d.Status == "DELIVERED" || d.Status == "RECEIVED")
+            })
+            .Where(x => x.Total >= 5) // En az 5 evrakı olan departmanlar
+            .OrderByDescending(x => (double)x.Delivered / x.Total)
+            .Take(10)
+            .ToListAsync();
+
+        var successRates = departmentSuccess.Select(d => new
+        {
+            Department = d.Department,
+            SuccessRate = Math.Round((double)d.Delivered / d.Total * 100, 1),
+            Total = d.Total,
+            Delivered = d.Delivered
+        }).ToList();
+
+        return new
+        {
+            Labels = successRates.Select(s => s.Department).ToArray(),
+            Data = successRates.Select(s => s.SuccessRate).ToArray(),
+            Details = successRates.Select(s => new { s.Total, s.Delivered }).ToArray()
+        };
+    }
+
     public IActionResult Privacy()
     {
+        return View();
+    }
+
+    public async Task<IActionResult> Admin()
+    {
+        // Sadece Muhaberat departmanından olanlar admin paneline erişebilir
+        var currentUserDepartment = GetCurrentUserDepartment();
+        if (currentUserDepartment != "Muhaberat")
+        {
+            TempData["Error"] = "Yönetim paneline erişim yetkiniz bulunmamaktadır.";
+            return RedirectToAction("Index");
+        }
+
+        var adminStats = new
+        {
+            // Active entities
+            TotalActiveUsers = await _context.Users.CountAsync(u => u.IsActive),
+            TotalActiveDepartments = await _context.Departments.CountAsync(d => d.IsActive),
+            TotalActiveRoles = await _context.Roles.CountAsync(r => r.IsActive),
+            TotalActiveDocumentTypes = await _context.DocumentTypes.CountAsync(dt => dt.IsActive),
+
+            // Inactive entities
+            TotalInactiveUsers = await _context.Users.CountAsync(u => !u.IsActive),
+            TotalInactiveDepartments = await _context.Departments.CountAsync(d => !d.IsActive),
+            TotalInactiveRoles = await _context.Roles.CountAsync(r => !r.IsActive),
+            TotalInactiveDocumentTypes = await _context.DocumentTypes.CountAsync(dt => !dt.IsActive),
+
+            // Recent deactivations (last 30 days)
+            RecentlyDeactivatedUsers = await _context.Users
+                .Where(u => !u.IsActive && u.UpdatedAt >= DateTime.Now.AddDays(-30))
+                .CountAsync(),
+            
+            RecentlyDeactivatedDepartments = await _context.Departments
+                .Where(d => !d.IsActive && d.CreatedAt >= DateTime.Now.AddDays(-30))
+                .CountAsync(),
+
+            // Quick access data
+            RecentInactiveUsers = await _context.Users
+                .Include(u => u.Department)
+                .Include(u => u.Role)
+                .Where(u => !u.IsActive)
+                .OrderByDescending(u => u.UpdatedAt)
+                .Take(5)
+                .ToListAsync(),
+
+            RecentInactiveDepartments = await _context.Departments
+                .Include(d => d.Unit)
+                .Where(d => !d.IsActive)
+                .OrderByDescending(d => d.CreatedAt)
+                .Take(5)
+                .ToListAsync()
+        };
+
+        ViewBag.AdminStats = adminStats;
         return View();
     }
 

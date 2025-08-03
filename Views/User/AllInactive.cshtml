@@ -1,0 +1,304 @@
+@model IEnumerable<muhaberat_evrak_yonetim.Entities.User>
+@{
+    ViewData["Title"] = "Deaktif Kullanıcılar";
+}
+
+<div class="container-fluid">
+    <!-- Page Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-0 text-danger">
+                <i class="fas fa-user-slash mr-2"></i>Deaktif Kullanıcılar
+            </h1>
+            <p class="mb-0 text-muted">Sistemden çıkarılmış kullanıcıları yönetin ve geri aktif edin</p>
+        </div>
+        <div>
+            <a asp-action="Index" class="btn btn-primary">
+                <i class="fas fa-users mr-2"></i>Aktif Kullanıcılar
+            </a>
+        </div>
+    </div>
+
+    <!-- Success/Error Messages -->
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="fas fa-check-circle mr-2"></i>@TempData["Success"]
+            <button type="button" class="close" data-bs-dismiss="alert">
+                <span>&times;</span>
+            </button>
+        </div>
+    }
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="fas fa-exclamation-triangle mr-2"></i>@TempData["Error"]
+            <button type="button" class="close" data-bs-dismiss="alert">
+                <span>&times;</span>
+            </button>
+        </div>
+    }
+
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-danger shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-danger text-uppercase mb-1">
+                                Toplam Deaktif
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">@Model.Count()</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-user-slash fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-warning shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                Farklı Departman
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">@Model.Select(u => u.DepartmentId).Distinct().Count()</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-building fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-info shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                                Bu Ay Deaktif
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                @Model.Count(u => u.UpdatedAt.Month == DateTime.Now.Month && u.UpdatedAt.Year == DateTime.Now.Year)
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-calendar-times fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-secondary shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-secondary text-uppercase mb-1">
+                                En Eski Deaktif
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                @if (Model.Any())
+                                {
+                                    var oldestDeactivated = Model.OrderBy(u => u.UpdatedAt).FirstOrDefault();
+                                    <span>@((DateTime.Now - oldestDeactivated.UpdatedAt).Days) gün</span>
+                                }
+                                else
+                                {
+                                    <span>-</span>
+                                }
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-history fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @if (Model.Any())
+    {
+
+        <!-- Detailed Table -->
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-danger">
+                    <i class="fas fa-table mr-2"></i>Deaktif Kullanıcı Listesi
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-bordered" id="inactiveUsersTable" width="100%" cellspacing="0">
+                        <thead>
+                            <tr>
+                                <th>Kullanıcı</th>
+                                <th>Departman</th>
+                                <th>Rol</th>
+                                <th>E-posta</th>
+                                <th>Katılma Tarihi</th>
+                                <th>Deaktif Tarihi</th>
+                                <th>İşlemler</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var user in Model)
+                            {
+                                <tr class="table-secondary">
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="user-avatar-inactive mr-2">
+                                                <i class="fas fa-user"></i>
+                                            </div>
+                                            <div>
+                                                <strong class="text-muted">@user.FirstName @user.LastName</strong>
+                                                <br><small class="text-muted">@user.Username</small>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        @if (user.Department != null)
+                                        {
+                                            <span class="badge badge-secondary">@user.Department.DepartmentName</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">-</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        @if (user.Role != null)
+                                        {
+                                            <span class="badge badge-secondary">@user.Role.RoleName</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="text-muted">-</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        <a href="mailto:@user.Email" class="text-muted">
+                                            <i class="fas fa-envelope mr-1"></i>@user.Email
+                                        </a>
+                                    </td>
+                                    <td>@user.CreatedAt.ToString("dd.MM.yyyy")</td>
+                                    <td>
+                                        <span class="text-danger">@user.UpdatedAt.ToString("dd.MM.yyyy HH:mm")</span>
+                                    </td>
+                                    <td>
+                                        <div class="btn-group" role="group">
+                                            <form asp-action="Activate" asp-route-id="@user.Id" method="post" class="d-inline">
+                                                <button type="submit" class="btn btn-sm btn-outline-success" 
+                                                        title="Aktif Et" onclick="return confirm('Bu kullanıcıyı aktif etmek istediğinize emin misiniz?')">
+                                                    <i class="fas fa-user-check"></i>
+                                                </button>
+                                            </form>
+                                            <a asp-action="Details" asp-route-id="@user.Id" 
+                                               class="btn btn-sm btn-outline-info" title="Detaylar">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    }
+    else
+    {
+        <!-- Empty State -->
+        <div class="text-center py-5">
+            <div class="empty-state">
+                <i class="fas fa-user-check fa-3x text-success mb-3"></i>
+                <h5 class="text-success">Deaktif kullanıcı yok.</h5>
+                <p class="text-muted mb-4">
+                    Sistemde şu anda deaktif edilmiş kullanıcı bulunmamaktadır. Tüm kullanıcılar aktif durumda.
+                </p>
+                <a asp-action="Index" class="btn btn-primary">
+                    <i class="fas fa-users mr-2"></i>Aktif Kullanıcıları Görüntüle
+                </a>
+            </div>
+        </div>
+    }
+</div>
+
+<style>
+    .user-avatar-inactive {
+        width: 35px;
+        height: 35px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #858796 0%, #60616f 100%);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 14px;
+    }
+
+    .border-left-danger {
+        border-left: 4px solid #e74a3b !important;
+    }
+
+    .border-left-warning {
+        border-left: 4px solid #f6c23e !important;
+    }
+
+    .border-left-info {
+        border-left: 4px solid #36b9cc !important;
+    }
+
+    .border-left-secondary {
+        border-left: 4px solid #858796 !important;
+    }
+
+    .user-card {
+        transition: all 0.2s ease;
+    }
+
+    .user-card:hover {
+        background-color: #f8f9fc !important;
+        transform: translateY(-1px);
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .empty-state {
+        padding: 3rem;
+    }
+</style>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Initialize DataTable
+            if ($('#inactiveUsersTable').length > 0) {
+                $('#inactiveUsersTable').DataTable({
+                "language": {
+                    "url": "//cdn.datatables.net/plug-ins/1.10.25/i18n/Turkish.json"
+                },
+                "order": [[ 5, "desc" ]], // Sort by deactivation date
+                "pageLength": 25,
+                "responsive": true,
+                "columnDefs": [
+                    { "orderable": false, "targets": 6 } // Actions columns
+                ]
+                });
+            }
+
+
+            // Add tooltips
+            $('[title]').tooltip();
+        });
+    </script>
+}

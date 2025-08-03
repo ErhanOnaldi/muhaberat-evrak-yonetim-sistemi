@@ -322,6 +322,40 @@ public class DepartmentController : BaseController
         return View(departments);
     }
 
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> BulkActivate(List<int> departmentIds)
+    {
+        if (departmentIds == null || !departmentIds.Any())
+        {
+            TempData["Error"] = "Aktivasyon için departman seçmelisiniz.";
+            return RedirectToAction("AllInactive");
+        }
+
+        try
+        {
+            var departmentsToActivate = await _context.Departments
+                .Where(d => departmentIds.Contains(d.Id) && !d.IsActive)
+                .ToListAsync();
+
+            foreach (var department in departmentsToActivate)
+            {
+                department.IsActive = true;
+            }
+
+            await _context.SaveChangesAsync();
+
+            TempData["Success"] = $"{departmentsToActivate.Count} departman başarıyla aktif edildi.";
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Bulk department activation failed");
+            TempData["Error"] = "Departmanlar aktif edilirken bir hata oluştu.";
+        }
+
+        return RedirectToAction("AllInactive");
+    }
+
     private bool DepartmentExists(int id)
     {
         return _context.Departments.Any(e => e.Id == id);

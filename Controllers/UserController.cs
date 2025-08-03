@@ -446,6 +446,70 @@ public class UserController : BaseController
         return View(users);
     }
 
+    public async Task<IActionResult> AllInactive()
+    {
+        // Sadece Muhaberat departmanından olanlar deaktif kullanıcıları görebilir
+        var currentUserDepartment = GetCurrentUserDepartment();
+        if (currentUserDepartment != "Muhaberat")
+        {
+            TempData["Error"] = "Deaktif kullanıcıları görme yetkiniz bulunmamaktadır.";
+            return RedirectToAction("Index");
+        }
+
+        var inactiveUsers = await _context.Users
+            .Include(u => u.Department)
+            .Include(u => u.Role)
+            .Include(u => u.Unit)
+            .Where(u => !u.IsActive)
+            .OrderByDescending(u => u.UpdatedAt)
+            .ToListAsync();
+
+        return View(inactiveUsers);
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> BulkActivate(List<int> userIds)
+    {
+        // Sadece Muhaberat departmanından olanlar toplu aktivasyon yapabilir
+        var currentUserDepartment = GetCurrentUserDepartment();
+        if (currentUserDepartment != "Muhaberat")
+        {
+            TempData["Error"] = "Toplu aktivasyon yetkiniz bulunmamaktadır.";
+            return RedirectToAction("AllInactive");
+        }
+
+        if (userIds == null || !userIds.Any())
+        {
+            TempData["Error"] = "Aktivasyon için kullanıcı seçmelisiniz.";
+            return RedirectToAction("AllInactive");
+        }
+
+        try
+        {
+            var usersToActivate = await _context.Users
+                .Where(u => userIds.Contains(u.Id) && !u.IsActive)
+                .ToListAsync();
+
+            foreach (var user in usersToActivate)
+            {
+                user.IsActive = true;
+                user.UpdatedAt = DateTime.Now;
+            }
+
+            await _context.SaveChangesAsync();
+
+            TempData["Success"] = $"{usersToActivate.Count} kullanıcı başarıyla aktif edildi.";
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Bulk user activation failed");
+            TempData["Error"] = "Kullanıcılar aktif edilirken bir hata oluştu.";
+        }
+
+        return RedirectToAction("AllInactive");
+    }
+
     private bool UserExists(int id)
     {
         return _context.Users.Any(e => e.Id == id && e.IsActive);
