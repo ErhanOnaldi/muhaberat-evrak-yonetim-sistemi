@@ -187,26 +187,33 @@
                                                 }
                                             </td>
                                             <td>
-                                                @switch (doc.DeliveryStatus)
+                                                @if (doc.Cargo != null)
                                                 {
-                                                    case "PREPARING":
-                                                        <span class="badge badge-warning">Hazırlanıyor</span>
-                                                        break;
-                                                    case "SHIPPED":
-                                                        <span class="badge badge-primary">Kargoya Verildi</span>
-                                                        break;
-                                                    case "IN_TRANSIT":
-                                                        <span class="badge badge-info">Yolda</span>
-                                                        break;
-                                                    case "DELIVERED":
-                                                        <span class="badge badge-success">Teslim Edildi</span>
-                                                        break;
-                                                    case "RETURNED":
-                                                        <span class="badge badge-danger">İade</span>
-                                                        break;
-                                                    default:
-                                                        <span class="badge badge-light">@doc.DeliveryStatus</span>
-                                                        break;
+                                                    @switch (doc.Cargo.DeliveryStatus)
+                                                    {
+                                                        case "PREPARING":
+                                                            <span class="badge badge-warning">Hazırlanıyor</span>
+                                                            break;
+                                                        case "SHIPPED":
+                                                            <span class="badge badge-primary">Kargoya Verildi</span>
+                                                            break;
+                                                        case "IN_TRANSIT":
+                                                            <span class="badge badge-info">Yolda</span>
+                                                            break;
+                                                        case "DELIVERED":
+                                                            <span class="badge badge-success">Teslim Edildi</span>
+                                                            break;
+                                                        case "RETURNED":
+                                                            <span class="badge badge-danger">İade</span>
+                                                            break;
+                                                        default:
+                                                            <span class="badge badge-light">@doc.Cargo.DeliveryStatus</span>
+                                                            break;
+                                                    }
+                                                }
+                                                else
+                                                {
+                                                    <span class="badge badge-secondary">Kargo Atanmamış</span>
                                                 }
                                             </td>
                                             <td>@doc.CreatedDate.ToString("dd.MM.yyyy")</td>
@@ -223,7 +230,7 @@
                                                             <i class="fas fa-edit"></i>
                                                         </a>
                                                     }
-                                                    @if (!string.IsNullOrEmpty(doc.CargoTrackingNumber))
+                                                    @if (doc.Cargo != null && !string.IsNullOrEmpty(doc.Cargo.CargoTrackingNumber))
                                                     {
                                                         <a asp-controller="Document" asp-action="CargoTracking" asp-route-id="@doc.Id" 
                                                            class="btn btn-sm btn-outline-info" title="Kargo Takip">
@@ -317,26 +324,33 @@
                                                 }
                                             </td>
                                             <td>
-                                                @switch (doc.DeliveryStatus)
+                                                @if (doc.Cargo != null)
                                                 {
-                                                    case "PREPARING":
-                                                        <span class="badge badge-warning">Hazırlanıyor</span>
-                                                        break;
-                                                    case "SHIPPED":
-                                                        <span class="badge badge-primary">Kargoya Verildi</span>
-                                                        break;
-                                                    case "IN_TRANSIT":
-                                                        <span class="badge badge-info">Yolda</span>
-                                                        break;
-                                                    case "DELIVERED":
-                                                        <span class="badge badge-success">Teslim Edildi</span>
-                                                        break;
-                                                    case "RETURNED":
-                                                        <span class="badge badge-danger">İade</span>
-                                                        break;
-                                                    default:
-                                                        <span class="badge badge-light">@doc.DeliveryStatus</span>
-                                                        break;
+                                                    @switch (doc.Cargo.DeliveryStatus)
+                                                    {
+                                                        case "PREPARING":
+                                                            <span class="badge badge-warning">Hazırlanıyor</span>
+                                                            break;
+                                                        case "SHIPPED":
+                                                            <span class="badge badge-primary">Kargoya Verildi</span>
+                                                            break;
+                                                        case "IN_TRANSIT":
+                                                            <span class="badge badge-info">Yolda</span>
+                                                            break;
+                                                        case "DELIVERED":
+                                                            <span class="badge badge-success">Teslim Edildi</span>
+                                                            break;
+                                                        case "RETURNED":
+                                                            <span class="badge badge-danger">İade</span>
+                                                            break;
+                                                        default:
+                                                            <span class="badge badge-light">@doc.Cargo.DeliveryStatus</span>
+                                                            break;
+                                                    }
+                                                }
+                                                else
+                                                {
+                                                    <span class="badge badge-secondary">Kargo Atanmamış</span>
                                                 }
                                             </td>
                                             <td>@doc.CreatedDate.ToString("dd.MM.yyyy")</td>
@@ -346,7 +360,7 @@
                                                        class="btn btn-sm btn-outline-primary" title="Detaylar">
                                                         <i class="fas fa-eye"></i>
                                                     </a>
-                                                    @if (!string.IsNullOrEmpty(doc.CargoTrackingNumber))
+                                                    @if (doc.Cargo != null && !string.IsNullOrEmpty(doc.Cargo.CargoTrackingNumber))
                                                     {
                                                         <a asp-controller="Document" asp-action="CargoTracking" asp-route-id="@doc.Id" 
                                                            class="btn btn-sm btn-outline-info" title="Kargo Takip">

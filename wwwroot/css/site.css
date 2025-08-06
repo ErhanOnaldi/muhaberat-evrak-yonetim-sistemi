@@ -31,14 +31,28 @@ body {
     font-style: normal !important;
 }
 
-/* Autocomplete Styles */
-.autocomplete-container {
+/* Searchable Dropdown Styles - like Google Sheets */
+.searchable-dropdown-container {
     position: relative;
     display: inline-block;
     width: 100%;
 }
 
-.autocomplete-dropdown {
+.searchable-dropdown-input {
+    width: 100%;
+    padding-right: 30px; /* Space for dropdown arrow */
+    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 12 12"><path fill="%23999" d="M2 4l4 4 4-4z"/></svg>');
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    background-size: 12px;
+    cursor: pointer;
+}
+
+.searchable-dropdown-input:focus {
+    cursor: text;
+}
+
+.searchable-dropdown-list {
     position: absolute;
     top: 100%;
     left: 0;
@@ -51,30 +65,51 @@ body {
     z-index: 1050;
     max-height: 200px;
     overflow-y: auto;
-    margin-top: 1px;
+    display: none;
 }
 
-.autocomplete-item {
+.searchable-dropdown-item {
     padding: 10px 15px;
     cursor: pointer;
-    border-bottom: 1px solid #f0f0f0;
-    transition: background-color 0.2s ease;
+    border-bottom: 1px solid #f8f9fa;
+    transition: background-color 0.15s ease;
+    font-size: 14px;
 }
 
-.autocomplete-item:hover,
-.autocomplete-item.highlighted {
-    background-color: #f8f9fa;
+.searchable-dropdown-item:hover,
+.searchable-dropdown-item.highlighted {
+    background-color: #e3f2fd;
+    color: #1976d2;
 }
 
-.autocomplete-item:last-child {
+.searchable-dropdown-item:last-child {
     border-bottom: none;
 }
 
-.autocomplete-no-results {
-    padding: 10px 15px;
+.searchable-dropdown-item.selected {
+    background-color: #bbdefb;
+    color: #0d47a1;
+    font-weight: 500;
+}
+
+.searchable-dropdown-no-results {
+    padding: 15px;
     color: #6c757d;
     font-style: italic;
+    text-align: center;
+    background-color: #f8f9fa;
 }
+
+.searchable-dropdown-container.open .searchable-dropdown-input {
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+    border-bottom-color: #ced4da;
+}
+
+.searchable-dropdown-container.open .searchable-dropdown-list {
+    display: block;
+}
+
 
 h2 {
     padding-top: 110px;

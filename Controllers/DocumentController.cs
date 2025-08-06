@@ -18,7 +18,7 @@ public class DocumentController : BaseController
         _logger = logger;
     }
 
-    public async Task<IActionResult> Index(string searchQuery, int? documentTypeId, string status, string deliveryStatus, DateTime? fromDate, DateTime? toDate)
+    public async Task<IActionResult> Index(string searchQuery, int? documentTypeId, string status, int? cargoId, DateTime? fromDate, DateTime? toDate)
     {
         var currentUserId = GetCurrentUserId();
         var currentUserDepartmentId = GetCurrentUserDepartmentId();
@@ -31,6 +31,7 @@ public class DocumentController : BaseController
             .Include(d => d.SenderDepartment)
             .Include(d => d.ReceiverDepartment)
             .Include(d => d.CreatedByUser)
+            .Include(d => d.Cargo)
             .Where(d => d.IsActive);
 
         var currentUserDepartment = GetCurrentUserDepartment();
@@ -64,9 +65,9 @@ public class DocumentController : BaseController
             documentsQuery = documentsQuery.Where(d => d.Status == status);
         }
 
-        if (!string.IsNullOrEmpty(deliveryStatus))
+        if (cargoId.HasValue)
         {
-            documentsQuery = documentsQuery.Where(d => d.DeliveryStatus == deliveryStatus);
+            documentsQuery = documentsQuery.Where(d => d.CargoId == cargoId);
         }
 
         if (fromDate.HasValue)
@@ -90,7 +91,8 @@ public class DocumentController : BaseController
         ViewData["SearchQuery"] = searchQuery;
         ViewData["SelectedDocumentTypeId"] = documentTypeId;
         ViewData["SelectedStatus"] = status;
-        ViewData["SelectedDeliveryStatus"] = deliveryStatus;
+        ViewData["SelectedCargoId"] = cargoId;
+        ViewData["Cargos"] = await _context.Cargos.OrderBy(c => c.CargoTrackingNumber).ToListAsync();
         ViewData["FromDate"] = fromDate?.ToString("yyyy-MM-dd");
         ViewData["ToDate"] = toDate?.ToString("yyyy-MM-dd");
 
@@ -141,6 +143,11 @@ public class DocumentController : BaseController
             .Where(d => d.IsActive)
             .ToListAsync();
 
+        ViewData["Cargos"] = await _context.Cargos
+            .Where(c => c.IsActive && c.DeliveryStatus != "DELIVERED")
+            .OrderBy(c => c.CargoTrackingNumber)
+            .ToListAsync();
+
         var currentUserId = GetCurrentUserId();
         var currentUserDepartmentId = GetCurrentUserDepartmentId();
         
@@ -169,7 +176,6 @@ public class DocumentController : BaseController
         document.CreatedBy = document.SenderUserId;
         document.IsActive = true;
         document.Status = DocumentStatus.DRAFT.ToString();
-        document.DeliveryStatus = DeliveryStatus.PREPARING.ToString();
 
         if (document.SenderUserId <= 0)
         {
@@ -197,20 +203,6 @@ public class DocumentController : BaseController
             ModelState.AddModelError("PhysicalDocumentType", "Fiziksel evrak türü seçimi zorunludur.");
         }
 
-        if (string.IsNullOrWhiteSpace(document.PackageType))
-        {
-            ModelState.AddModelError("PackageType", "Paket türü seçimi zorunludur.");
-        }
-
-        if (string.IsNullOrWhiteSpace(document.ShippingAddress))
-        {
-            ModelState.AddModelError("ShippingAddress", "Gönderim adresi zorunludur.");
-        }
-
-        if (string.IsNullOrWhiteSpace(document.DeliveryAddress))
-        {
-            ModelState.AddModelError("DeliveryAddress", "Teslimat adresi zorunludur.");
-        }
 
         if (document.DocumentTypeId == null || document.DocumentTypeId <= 0)
         {
@@ -323,7 +315,6 @@ public class DocumentController : BaseController
                     Title = existingDocument.Title,
                     Description = existingDocument.Description,
                     Status = existingDocument.Status,
-                    DeliveryStatus = existingDocument.DeliveryStatus
                 };
 
                 existingDocument.Title = document.Title;
@@ -333,10 +324,7 @@ public class DocumentController : BaseController
                 existingDocument.ReceiverDepartmentId = document.ReceiverDepartmentId;
                 existingDocument.CustomerName = document.CustomerName;
                 existingDocument.CustomerId = document.CustomerId;
-                existingDocument.ShippingAddress = document.ShippingAddress;
-                existingDocument.DeliveryAddress = document.DeliveryAddress;
                 existingDocument.PhysicalDocumentType = document.PhysicalDocumentType;
-                existingDocument.PackageType = document.PackageType;
                 existingDocument.UpdatedAt = DateTime.Now;
 
                 _context.Update(existingDocument);
@@ -405,55 +393,6 @@ public class DocumentController : BaseController
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> UpdateCargoStatus(int id, string cargoCompany, string trackingNumber, string deliveryStatus, string location = null, string notes = null)
-    {
-        var currentUserId = GetCurrentUserIdRequired();
-        var document = await _context.Documents.FindAsync(id);
-        if (document == null)
-        {
-            return NotFound();
-        }
-
-        var oldStatus = document.DeliveryStatus;
-        
-        // Update document cargo information
-        document.CargoCompany = cargoCompany;
-        document.CargoTrackingNumber = trackingNumber;
-        document.DeliveryStatus = deliveryStatus;
-        document.UpdatedAt = DateTime.Now;
-
-        if (deliveryStatus == DeliveryStatus.SHIPPED.ToString() && document.ShippingDate == null)
-        {
-            document.ShippingDate = DateTime.Now;
-        }
-        else if (deliveryStatus == DeliveryStatus.DELIVERED.ToString())
-        {
-            document.DeliveryDate = DateTime.Now;
-            document.Status = DocumentStatus.DELIVERED.ToString();
-        }
-
-        _context.Update(document);
-        
-        var cargoLog = new CargoTrackingLog
-        {
-            DocumentId = id,
-            OldStatus = oldStatus,
-            NewStatus = deliveryStatus,
-            StatusChangeDate = DateTime.Now,
-            Location = location,
-            UpdatedBy = currentUserId, 
-            Notes = notes ?? $"Kargo şirketi: {cargoCompany}, Takip No: {trackingNumber}",
-            CreatedAt = DateTime.Now
-        };
-
-        _context.CargoTrackingLogs.Add(cargoLog);
-        await _context.SaveChangesAsync();
-
-        await LogDocumentHistoryAsync(id, "CARGO_UPDATED", currentUserId, $"Kargo durumu güncellendi: {deliveryStatus}");
-
-        TempData["Success"] = "Kargo durumu başarıyla güncellendi.";
-        return RedirectToAction(nameof(Details), new { id });
-    }
 
     public async Task<IActionResult> History(int id)
     {
@@ -514,9 +453,9 @@ public class DocumentController : BaseController
             return NotFound();
         }
 
-        if (document.DeliveryStatus != DeliveryStatus.DELIVERED.ToString())
+        if (document.Status != DocumentStatus.SENT.ToString())
         {
-            TempData["Error"] = "Bu evrak henüz teslim edilmediği için teslim alınamaz.";
+            TempData["Error"] = "Bu evrak henüz gönderilmediği için teslim alınamaz.";
             return RedirectToAction(nameof(Details), new { id });
         }
 
@@ -534,14 +473,13 @@ public class DocumentController : BaseController
         }
 
         document.Status = DocumentStatus.RECEIVED.ToString();
-        document.ReceivedBy = !string.IsNullOrEmpty(receivedByName) ? receivedByName : GetCurrentUserInfo();
-        document.DeliveryDate = DateTime.Now; 
+ 
         document.UpdatedAt = DateTime.Now;
 
         _context.Update(document);
         await _context.SaveChangesAsync();
 
-        var notes = $"Evrak teslim alındı. Teslim alan: {document.ReceivedBy}";
+        var notes = $"Evrak teslim alındı. Teslim alan: {(!string.IsNullOrEmpty(receivedByName) ? receivedByName : GetCurrentUserInfo())}";
         if (!string.IsNullOrEmpty(receiptNotes))
         {
             notes += $" - Not: {receiptNotes}";
@@ -686,46 +624,71 @@ public class DocumentController : BaseController
     [HttpGet]
     public async Task<JsonResult> GetDocumentTitles(string query)
     {
-        if (string.IsNullOrWhiteSpace(query) || query.Length < 2)
+        try
         {
+            var documentsQuery = _context.Documents.Where(d => d.IsActive);
+
+            if (!string.IsNullOrWhiteSpace(query))
+            {
+                documentsQuery = documentsQuery.Where(d => d.Title.Contains(query));
+            }
+
+            var titles = await documentsQuery
+                .Select(d => d.Title)
+                .ToListAsync();
+
+            
+            var distinctTitles = titles
+                .Distinct()
+                .Take(10)
+                .ToList();
+
+            return Json(distinctTitles);
+        }
+        catch (Exception ex)
+        {
+            
+            _logger.LogError(ex, "Error in GetDocumentTitles with query: {Query}", query);
             return Json(new List<string>());
         }
-
-        var titles = await _context.Documents
-            .Where(d => d.IsActive && d.Title.Contains(query))
-            .Select(d => d.Title)
-            .Distinct()
-            .Take(10)
-            .ToListAsync();
-
-        return Json(titles);
     }
 
     [HttpGet]
     public async Task<JsonResult> GetUserNames(string query)
     {
-        if (string.IsNullOrWhiteSpace(query) || query.Length < 2)
+        try
         {
+            var usersQuery = _context.Users
+                .Include(u => u.Department)
+                .Where(u => u.IsActive);
+
+            if (!string.IsNullOrWhiteSpace(query))
+            {
+                usersQuery = usersQuery.Where(u => 
+                    u.FirstName.Contains(query) || 
+                    u.LastName.Contains(query) || 
+                    (u.FirstName + " " + u.LastName).Contains(query));
+            }
+
+            var users = await usersQuery
+                .Select(u => new { 
+                    id = u.Id,
+                    name = u.FirstName + " " + u.LastName,
+                    department = u.Department != null ? u.Department.DepartmentName : "",
+                    departmentId = u.DepartmentId,
+                    fullText = u.FirstName + " " + u.LastName + " (" + (u.Department != null ? u.Department.DepartmentName : "") + ")"
+                })
+                .Take(10)
+                .ToListAsync();
+
+            return Json(users);
+        }
+        catch (Exception ex)
+        {
+            
+            _logger.LogError(ex, "Error in GetUserNames with query: {Query}", query);
             return Json(new List<object>());
         }
-
-        var users = await _context.Users
-            .Include(u => u.Department)
-            .Where(u => u.IsActive && 
-                   (u.FirstName.Contains(query) || 
-                    u.LastName.Contains(query) || 
-                    (u.FirstName + " " + u.LastName).Contains(query)))
-            .Select(u => new { 
-                id = u.Id,
-                name = u.FirstName + " " + u.LastName,
-                department = u.Department != null ? u.Department.DepartmentName : "",
-                departmentId = u.DepartmentId,
-                fullText = u.FirstName + " " + u.LastName + " (" + (u.Department != null ? u.Department.DepartmentName : "") + ")"
-            })
-            .Take(10)
-            .ToListAsync();
-
-        return Json(users);
     }
 
     private bool DocumentExists(int id)

@@ -1,0 +1,101 @@
+@model muhaberat_evrak_yonetim.Entities.Cargo
+
+@{
+    ViewData["Title"] = "Yeni Kargo Oluştur";
+}
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h4><i class="fas fa-plus"></i> @ViewData["Title"]</h4>
+            </div>
+            <div class="card-body">
+                <form asp-action="Create">
+                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label asp-for="CargoCompany" class="form-label">Kargo Şirketi</label>
+                                <input asp-for="CargoCompany" class="form-control" placeholder="Örn: MNG Kargo" />
+                                <span asp-validation-for="CargoCompany" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label asp-for="PackageType" class="form-label">Paket Türü <span class="text-danger">*</span></label>
+                                <select asp-for="PackageType" class="form-select">
+                                    <option value="">Paket türü seçiniz</option>
+                                    <option value="ENVELOPE">Zarf</option>
+                                    <option value="SMALL_PACKAGE">Küçük Paket</option>
+                                    <option value="LARGE_PACKAGE">Büyük Paket</option>
+                                    <option value="SPECIAL">Özel</option>
+                                </select>
+                                <span asp-validation-for="PackageType" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="form-group mb-3">
+                                <label asp-for="ShippingAddress" class="form-label">Gönderim Adresi <span class="text-danger">*</span></label>
+                                <textarea asp-for="ShippingAddress" class="form-control" rows="3" placeholder="Gönderim adresi"></textarea>
+                                <span asp-validation-for="ShippingAddress" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="form-group mb-3">
+                                <label asp-for="DeliveryAddress" class="form-label">Teslimat Adresi <span class="text-danger">*</span></label>
+                                <textarea asp-for="DeliveryAddress" class="form-control" rows="3" placeholder="Teslimat adresi"></textarea>
+                                <span asp-validation-for="DeliveryAddress" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
+                                <label asp-for="EstimatedDeliveryDate" class="form-label">Tahmini Teslimat Tarihi</label>
+                                <input asp-for="EstimatedDeliveryDate" type="date" class="form-control" />
+                                <span asp-validation-for="EstimatedDeliveryDate" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-actions pt-3 border-top">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> Kaydet
+                        </button>
+                        <a asp-action="Index" class="btn btn-secondary">
+                            <i class="fas fa-times"></i> İptal
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-info-circle"></i> Bilgi</h5>
+            </div>
+            <div class="card-body">
+                <ul class="list-unstyled">
+                    <li><strong>Takip Numarası:</strong> Otomatik oluşturulacaktır</li>
+                    <li><strong>Durum:</strong> Hazırlanıyor olarak başlayacaktır</li>
+                    <li><strong>Evraklar:</strong> Kargo oluşturduktan sonra evrak ekleyebilirsiniz</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

@@ -44,6 +44,14 @@ build_metadata.AdditionalFiles.CssScope =
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQWNjb3VudFxSZWdpc3Rlci5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
+[C:/Users/erhan/OneDrive/Masaüstü/muhaberat-evrak-yonetim/Views/Cargo/Create.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQ2FyZ29cQ3JlYXRlLmNzaHRtbA==
+build_metadata.AdditionalFiles.CssScope = 
+
+[C:/Users/erhan/OneDrive/Masaüstü/muhaberat-evrak-yonetim/Views/Cargo/Index.cshtml]
+build_metadata.AdditionalFiles.TargetPath = Vmlld3NcQ2FyZ29cSW5kZXguY3NodG1s
+build_metadata.AdditionalFiles.CssScope = 
+
 [C:/Users/erhan/OneDrive/Masaüstü/muhaberat-evrak-yonetim/Views/Department/AllInactive.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRGVwYXJ0bWVudFxBbGxJbmFjdGl2ZS5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
@@ -102,10 +110,6 @@ build_metadata.AdditionalFiles.CssScope =
 
 [C:/Users/erhan/OneDrive/Masaüstü/muhaberat-evrak-yonetim/Views/DocumentType/Index.cshtml]
 build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRG9jdW1lbnRUeXBlXEluZGV4LmNzaHRtbA==
-build_metadata.AdditionalFiles.CssScope = 
-
-[C:/Users/erhan/OneDrive/Masaüstü/muhaberat-evrak-yonetim/Views/Document/CargoTracking.cshtml]
-build_metadata.AdditionalFiles.TargetPath = Vmlld3NcRG9jdW1lbnRcQ2FyZ29UcmFja2luZy5jc2h0bWw=
 build_metadata.AdditionalFiles.CssScope = 
 
 [C:/Users/erhan/OneDrive/Masaüstü/muhaberat-evrak-yonetim/Views/Document/Create.cshtml]

@@ -17,12 +17,25 @@ public class DataContext : DbContext
     public DbSet<DocumentPermission> DocumentPermissions { get; set; }
     public DbSet<DocumentType> DocumentTypes { get; set; }
     public DbSet<DocumentTypeCategory> DocumentTypeCategories { get; set; }
+    public DbSet<Cargo> Cargos { get; set; }
     public DbSet<CargoTrackingLog> CargoTrackingLogs { get; set; }
     public DbSet<DocumentHistory> DocumentHistories { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
+        
+        // UTF-8 string handling for Turkish characters
+        foreach (var entityType in modelBuilder.Model.GetEntityTypes())
+        {
+            foreach (var property in entityType.GetProperties())
+            {
+                if (property.ClrType == typeof(string))
+                {
+                    property.SetIsUnicode(true);
+                }
+            }
+        }
 
         modelBuilder.Entity<Document>()
             .HasOne(d => d.SenderUser)
@@ -78,10 +91,22 @@ public class DataContext : DbContext
             .HasForeignKey(dh => dh.DocumentId)
             .OnDelete(DeleteBehavior.Cascade);
 
+        modelBuilder.Entity<Document>()
+            .HasOne(d => d.Cargo)
+            .WithMany(c => c.Documents)
+            .HasForeignKey(d => d.CargoId)
+            .OnDelete(DeleteBehavior.SetNull);
+
         modelBuilder.Entity<CargoTrackingLog>()
             .HasOne(ct => ct.Document)
             .WithMany(d => d.CargoTrackingLogs)
             .HasForeignKey(ct => ct.DocumentId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        modelBuilder.Entity<CargoTrackingLog>()
+            .HasOne(ct => ct.Cargo)
+            .WithMany(c => c.CargoTrackingLogs)
+            .HasForeignKey(ct => ct.CargoId)
             .OnDelete(DeleteBehavior.Cascade);
 
         modelBuilder.Entity<CargoTrackingLog>()
@@ -142,10 +167,8 @@ public class DataContext : DbContext
         modelBuilder.Entity<Document>(entity =>
         {
             entity.ToTable(t => t.HasCheckConstraint("CK_Document_ReceiverCheck", "[ReceiverUserId] IS NOT NULL OR [ReceiverDepartmentId] IS NOT NULL"));
-            entity.ToTable(t => t.HasCheckConstraint("CK_Document_DeliveryStatus", "[DeliveryStatus] IN ('PREPARING', 'SHIPPED', 'IN_TRANSIT', 'DELIVERED', 'RETURNED')"));
             entity.ToTable(t => t.HasCheckConstraint("CK_Document_Status", "[Status] IN ('DRAFT', 'SENT', 'DELIVERED', 'RECEIVED', 'CANCELLED')"));
             entity.ToTable(t => t.HasCheckConstraint("CK_Document_PhysicalDocumentType", "[PhysicalDocumentType] IS NULL OR [PhysicalDocumentType] IN ('ORIGINAL', 'COPY', 'NOTARIZED')"));
-            entity.ToTable(t => t.HasCheckConstraint("CK_Document_PackageType", "[PackageType] IS NULL OR [PackageType] IN ('ENVELOPE', 'SMALL_PACKAGE', 'LARGE_PACKAGE', 'SPECIAL')"));
         });
 
         // Indexes for performance
@@ -156,8 +179,6 @@ public class DataContext : DbContext
         modelBuilder.Entity<Document>()
             .HasIndex(d => d.CustomerId);
 
-        modelBuilder.Entity<Document>()
-            .HasIndex(d => d.CargoTrackingNumber);
 
         modelBuilder.Entity<Document>()
             .HasIndex(d => d.CreatedDate);
@@ -165,8 +186,6 @@ public class DataContext : DbContext
         modelBuilder.Entity<Document>()
             .HasIndex(d => d.Status);
 
-        modelBuilder.Entity<Document>()
-            .HasIndex(d => d.DeliveryStatus);
 
         modelBuilder.Entity<User>()
             .HasIndex(u => u.Username)
@@ -187,5 +206,17 @@ public class DataContext : DbContext
         modelBuilder.Entity<DocumentType>()
             .HasIndex(dt => dt.TypeCode)
             .IsUnique();
+
+        modelBuilder.Entity<Cargo>(entity =>
+        {
+            entity.ToTable(t => t.HasCheckConstraint("CK_Cargo_DeliveryStatus", "[DeliveryStatus] IN ('PREPARING', 'SHIPPED', 'IN_TRANSIT', 'DELIVERED', 'RETURNED')"));
+            entity.ToTable(t => t.HasCheckConstraint("CK_Cargo_PackageType", "[PackageType] IS NULL OR [PackageType] IN ('ENVELOPE', 'SMALL_PACKAGE', 'LARGE_PACKAGE', 'SPECIAL')"));
+        });
+
+        modelBuilder.Entity<Cargo>()
+            .HasIndex(c => c.CargoTrackingNumber);
+
+        modelBuilder.Entity<Cargo>()
+            .HasIndex(c => c.DeliveryStatus);
     }
 }

@@ -157,10 +157,8 @@ C:\Users\erhan\OneDrive\Masaüstü\muhaberat-evrak-yonetim\obj\Debug\net9.0\comp
 C:\Users\erhan\OneDrive\Masaüstü\muhaberat-evrak-yonetim\obj\Debug\net9.0\compressed\zxienkok1a-q2bep0kvfs.gz
 C:\Users\erhan\OneDrive\Masaüstü\muhaberat-evrak-yonetim\obj\Debug\net9.0\compressed\n47qkfstje-nzr5gmjuqm.gz
 C:\Users\erhan\OneDrive\Masaüstü\muhaberat-evrak-yonetim\obj\Debug\net9.0\compressed\yed303wgow-f9ssof81nc.gz
-C:\Users\erhan\OneDrive\Masaüstü\muhaberat-evrak-yonetim\obj\Debug\net9.0\compressed\3koggysd2k-vujhokelww.gz
 C:\Users\erhan\OneDrive\Masaüstü\muhaberat-evrak-yonetim\obj\Debug\net9.0\compressed\icwp5deiux-e4xv06u00x.gz
 C:\Users\erhan\OneDrive\Masaüstü\muhaberat-evrak-yonetim\obj\Debug\net9.0\compressed\1hsfje4fhv-hctea94i4t.gz
-C:\Users\erhan\OneDrive\Masaüstü\muhaberat-evrak-yonetim\obj\Debug\net9.0\compressed\63f1sc561n-0crym83anv.gz
 C:\Users\erhan\OneDrive\Masaüstü\muhaberat-evrak-yonetim\obj\Debug\net9.0\compressed\m53qbnz9xy-bwt86b7k4t.gz
 C:\Users\erhan\OneDrive\Masaüstü\muhaberat-evrak-yonetim\obj\Debug\net9.0\compressed\7c0fgief6d-2y8sutej5m.gz
 C:\Users\erhan\OneDrive\Masaüstü\muhaberat-evrak-yonetim\obj\Debug\net9.0\compressed\ik3bowapag-61n19gt1b8.gz
@@ -1865,3 +1863,10 @@ C:\Users\erhan\OneDrive\Masaüstü\muhaberat-evrak-yonetim\obj\Debug\net9.0\muha
 C:\Users\erhan\OneDrive\Masaüstü\muhaberat-evrak-yonetim\obj\Debug\net9.0\muhaberat-evrak-yonetim.dll
 C:\Users\erhan\OneDrive\Masaüstü\muhaberat-evrak-yonetim\obj\Debug\net9.0\refint\muhaberat-evrak-yonetim.dll
 C:\Users\erhan\OneDrive\Masaüstü\muhaberat-evrak-yonetim\obj\Debug\net9.0\muhaberat-evrak-yonetim.pdb
+C:\Users\erhan\OneDrive\Masaüstü\muhaberat-evrak-yonetim\bin\Debug\net9.0\muhaberat-evrak-yonetim.deps.json
+C:\Users\erhan\OneDrive\Masaüstü\muhaberat-evrak-yonetim\bin\Debug\net9.0\muhaberat-evrak-yonetim.runtimeconfig.json
+C:\Users\erhan\OneDrive\Masaüstü\muhaberat-evrak-yonetim\bin\Debug\net9.0\muhaberat-evrak-yonetim.pdb
+C:\Users\erhan\OneDrive\Masaüstü\muhaberat-evrak-yonetim\obj\Debug\net9.0\muhaberat-evrak-yonetim.genruntimeconfig.cache
+C:\Users\erhan\OneDrive\Masaüstü\muhaberat-evrak-yonetim\obj\Debug\net9.0\ref\muhaberat-evrak-yonetim.dll
+C:\Users\erhan\OneDrive\Masaüstü\muhaberat-evrak-yonetim\obj\Debug\net9.0\compressed\3koggysd2k-wdtkzsv27q.gz
+C:\Users\erhan\OneDrive\Masaüstü\muhaberat-evrak-yonetim\obj\Debug\net9.0\compressed\63f1sc561n-a7ny3mcqjy.gz

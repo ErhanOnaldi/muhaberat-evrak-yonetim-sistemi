@@ -44,15 +44,9 @@
                                 <label asp-for="Title" class="form-label">
                                     <i class="fas fa-heading mr-2"></i>Başlık <span class="text-danger">*</span>
                                 </label>
-                                <div class="autocomplete-container">
-                                    <input asp-for="Title" class="form-control autocomplete-input" 
-                                           placeholder="Evrak başlığını girin" 
-                                           autocomplete="off" 
-                                           spellcheck="false"
-                                           data-autocomplete-url="@Url.Action("GetDocumentTitles")"
-                                           required>
-                                    <div class="autocomplete-dropdown" style="display: none;"></div>
-                                </div>
+                                <input asp-for="Title" class="form-control" 
+                                       placeholder="Evrak başlığını girin" 
+                                       required>
                                 <span asp-validation-for="Title" class="text-danger small"></span>
                             </div>
                             <div class="col-md-6 mb-3">
@@ -61,9 +55,12 @@
                                 </label>
                                 <select asp-for="DocumentTypeId" class="form-control" required>
                                     <option value="">Evrak türü seçin</option>
-                                    @if (ViewData["DocumentTypes"] is List<muhaberat_evrak_yonetim.Entities.DocumentType> documentTypes)
-                                    {
+                                    @{
+                                        var documentTypes = ViewData["DocumentTypes"] as List<muhaberat_evrak_yonetim.Entities.DocumentType>;
                                         var selectedDocTypeId = Context.Request.Query["documentTypeId"].ToString();
+                                    }
+                                    @if (documentTypes != null)
+                                    {
                                         @foreach (var docType in documentTypes)
                                         {
                                             <option value="@docType.Id" selected="@(docType.Id.ToString() == selectedDocTypeId)">@docType.TypeName (@docType.TypeCode)</option>
@@ -126,11 +123,14 @@
                                 <label asp-for="ReceiverUserId" class="form-label">
                                     <i class="fas fa-user mr-2"></i>Alıcı Kullanıcı
                                 </label>
+                                @{
+                                    var receiverUsers = ViewData["Users"] as List<muhaberat_evrak_yonetim.Entities.User>;
+                                }
                                 <select asp-for="ReceiverUserId" class="form-control" id="ReceiverUserId">
                                     <option value="">Kullanıcı seçin (opsiyonel)</option>
-                                    @if (ViewData["Users"] is List<muhaberat_evrak_yonetim.Entities.User> users)
+                                    @if (receiverUsers != null)
                                     {
-                                        @foreach (var user in users)
+                                        @foreach (var user in receiverUsers)
                                         {
                                             <option value="@user.Id" data-department="@user.DepartmentId">
                                                 @user.FirstName @user.LastName (@user.Department?.DepartmentName)
@@ -146,9 +146,12 @@
                                 </label>
                                 <select asp-for="ReceiverDepartmentId" class="form-control" id="ReceiverDepartmentId">
                                     <option value="">Departman seçin (opsiyonel)</option>
-                                    @if (ViewData["Departments"] is List<muhaberat_evrak_yonetim.Entities.Department> departments)
+                                    @{
+                                        var receiverDepartments = ViewData["Departments"] as List<muhaberat_evrak_yonetim.Entities.Department>;
+                                    }
+                                    @if (receiverDepartments != null)
                                     {
-                                        @foreach (var dept in departments)
+                                        @foreach (var dept in receiverDepartments)
                                         {
                                             <option value="@dept.Id">@dept.DepartmentName</option>
                                         }
@@ -183,51 +186,24 @@
                                 <span asp-validation-for="PhysicalDocumentType" class="text-danger small"></span>
                             </div>
                             <div class="col-md-6 mb-3">
-                                <label asp-for="PackageType" class="form-label">
-                                    <i class="fas fa-box-open mr-2"></i>Paket Türü <span class="text-danger">*</span>
+                                <label asp-for="CargoId" class="form-label">
+                                    <i class="fas fa-truck mr-2"></i>Kargo
                                 </label>
-                                <select asp-for="PackageType" class="form-control" required>
-                                    <option value="">Seçin</option>
-                                    <option value="ENVELOPE">Zarf</option>
-                                    <option value="SMALL_PACKAGE">Küçük Paket</option>
-                                    <option value="LARGE_PACKAGE">Büyük Paket</option>
-                                    <option value="SPECIAL">Özel Paket</option>
+                                <select asp-for="CargoId" class="form-control">
+                                    <option value="">Mevcut kargo seçin (opsiyonel)</option>
+                                    @{
+                                        var cargos = ViewData["Cargos"] as List<muhaberat_evrak_yonetim.Entities.Cargo>;
+                                    }
+                                    @if (cargos != null)
+                                    {
+                                        @foreach (var cargo in cargos)
+                                        {
+                                            <option value="@cargo.Id">@cargo.CargoTrackingNumber - @cargo.CargoCompany (@cargo.PackageType)</option>
+                                        }
+                                    }
                                 </select>
-                                <span asp-validation-for="PackageType" class="text-danger small"></span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Addresses Card -->
-                <div class="card shadow mb-4">
-                    <div class="card-header py-3">
-                        <h6 class="m-0 font-weight-bold text-info">
-                            <i class="fas fa-map-marker-alt mr-2"></i>Adres Bilgileri
-                        </h6>
-                    </div>
-                    <div class="card-body">
-                        <div class="mb-3">
-                            <label asp-for="ShippingAddress" class="form-label">
-                                <i class="fas fa-shipping-fast mr-2"></i>Gönderim Adresi <span class="text-danger">*</span>
-                            </label>
-                            <textarea asp-for="ShippingAddress" class="form-control" rows="3" 
-                                     placeholder="Evrağın gönderileceği adres..." required></textarea>
-                            <span asp-validation-for="ShippingAddress" class="text-danger small"></span>
-                        </div>
-
-                        <div class="mb-3">
-                            <label asp-for="DeliveryAddress" class="form-label">
-                                <i class="fas fa-home mr-2"></i>Teslimat Adresi <span class="text-danger">*</span>
-                            </label>
-                            <textarea asp-for="DeliveryAddress" class="form-control" rows="3" 
-                                     placeholder="Evrağın teslim edileceği adres..." required></textarea>
-                            <span asp-validation-for="DeliveryAddress" class="text-danger small"></span>
-                            <div class="form-check mt-2">
-                                <input class="form-check-input" type="checkbox" id="sameAsShipping">
-                                <label class="form-check-label" for="sameAsShipping">
-                                    Gönderim adresi ile aynı
-                                </label>
+                                <small class="form-text text-muted">Mevcut bir kargoya evrak ekleyebilir veya boş bırakarak sonra ekleyebilirsiniz.</small>
+                                <span asp-validation-for="CargoId" class="text-danger small"></span>
                             </div>
                         </div>
                     </div>
@@ -250,16 +226,23 @@
                             </label>
                             <select asp-for="SenderUserId" class="form-control" required>
                                 <option value="">Kullanıcı seçin</option>
-                                @foreach (var user in ViewData["Users"] as List<muhaberat_evrak_yonetim.Entities.User>)
+                                @{
+                                    var users = ViewData["Users"] as List<muhaberat_evrak_yonetim.Entities.User>;
+                                    var currentUserId = ViewData["CurrentUserId"] as int?;
+                                }
+                                @if (users != null)
                                 {
-                                    var isSelected = ViewData["CurrentUserId"] != null && user.Id == (int)ViewData["CurrentUserId"];
-                                    if (isSelected)
+                                    @foreach (var user in users)
                                     {
-                                        <option value="@user.Id" data-department="@user.DepartmentId" selected>@user.FirstName @user.LastName (@user.Department?.DepartmentName)</option>
-                                    }
-                                    else
-                                    {
-                                        <option value="@user.Id" data-department="@user.DepartmentId">@user.FirstName @user.LastName (@user.Department?.DepartmentName)</option>
+                                        var isSelected = currentUserId.HasValue && user.Id == currentUserId.Value;
+                                        if (isSelected)
+                                        {
+                                            <option value="@user.Id" data-department="@user.DepartmentId" selected>@user.FirstName @user.LastName (@user.Department?.DepartmentName)</option>
+                                        }
+                                        else
+                                        {
+                                            <option value="@user.Id" data-department="@user.DepartmentId">@user.FirstName @user.LastName (@user.Department?.DepartmentName)</option>
+                                        }
                                     }
                                 }
                             </select>
@@ -272,16 +255,23 @@
                             </label>
                             <select asp-for="SenderDepartmentId" class="form-control" required>
                                 <option value="">Departman seçin</option>
-                                @foreach (var dept in ViewData["Departments"] as List<muhaberat_evrak_yonetim.Entities.Department>)
+                                @{
+                                    var departments = ViewData["Departments"] as List<muhaberat_evrak_yonetim.Entities.Department>;
+                                    var currentUserDepartmentId = ViewData["CurrentUserDepartmentId"] as int?;
+                                }
+                                @if (departments != null)
                                 {
-                                    var isSelected = ViewData["CurrentUserDepartmentId"] != null && dept.Id == (int)ViewData["CurrentUserDepartmentId"];
-                                    if (isSelected)
+                                    @foreach (var dept in departments)
                                     {
-                                        <option value="@dept.Id" selected>@dept.DepartmentName</option>
-                                    }
-                                    else
-                                    {
-                                        <option value="@dept.Id">@dept.DepartmentName</option>
+                                        var isSelected = currentUserDepartmentId.HasValue && dept.Id == currentUserDepartmentId.Value;
+                                        if (isSelected)
+                                        {
+                                            <option value="@dept.Id" selected>@dept.DepartmentName</option>
+                                        }
+                                        else
+                                        {
+                                            <option value="@dept.Id">@dept.DepartmentName</option>
+                                        }
                                     }
                                 }
                             </select>
@@ -344,101 +334,23 @@
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
     <script>
-        // Simple document title autocomplete only
-        function initializeDocumentTitleAutocomplete() {
-            var $titleInput = $('#Title');
-            var $dropdown = $titleInput.siblings('.autocomplete-dropdown');
-            var url = $titleInput.data('autocomplete-url');
-            var currentHighlight = -1;
-            var searchTimeout;
-            
-            $titleInput.on('input', function() {
-                var query = $(this).val().trim();
-                currentHighlight = -1;
-                clearTimeout(searchTimeout);
-                
-                if (query.length < 2) {
-                    $dropdown.hide().empty();
-                    return;
-                }
-                
-                searchTimeout = setTimeout(function() {
-                    $.ajax({
-                        url: url,
-                        type: 'GET',
-                        data: { query: query },
-                        success: function(data) {
-                            $dropdown.empty();
-                            
-                            if (data && data.length > 0) {
-                                $.each(data, function(index, item) {
-                                    var $item = $('<div class="autocomplete-item"></div>');
-                                    $item.text(item);
-                                    $dropdown.append($item);
-                                });
-                                $dropdown.show();
-                            } else {
-                                $dropdown.html('<div class="autocomplete-no-results">Sonuç bulunamadı</div>');
-                                $dropdown.show();
-                            }
-                        },
-                        error: function() {
-                            $dropdown.hide();
-                        }
-                    });
-                }, 300);
-            });
-            
-            // Click to select
-            $dropdown.on('click', '.autocomplete-item', function() {
-                $titleInput.val($(this).text());
-                $dropdown.hide();
-                currentHighlight = -1;
-            });
-            
-            // Keyboard navigation
-            $titleInput.on('keydown', function(e) {
-                var $items = $dropdown.find('.autocomplete-item');
-                
-                if ($dropdown.is(':visible') && $items.length > 0) {
-                    if (e.keyCode === 40) { // Down arrow
-                        e.preventDefault();
-                        currentHighlight = (currentHighlight + 1) % $items.length;
-                        $items.removeClass('highlighted');
-                        $items.eq(currentHighlight).addClass('highlighted');
-                    } else if (e.keyCode === 38) { // Up arrow
-                        e.preventDefault();
-                        currentHighlight = currentHighlight <= 0 ? $items.length - 1 : currentHighlight - 1;
-                        $items.removeClass('highlighted');
-                        $items.eq(currentHighlight).addClass('highlighted');
-                    } else if (e.keyCode === 13) { // Enter
-                        if (currentHighlight >= 0) {
-                            e.preventDefault();
-                            $items.eq(currentHighlight).click();
-                        }
-                    } else if (e.keyCode === 27) { // Escape
-                        $dropdown.hide();
-                        currentHighlight = -1;
-                    }
-                }
-            });
-            
-            // Hide dropdown when clicking outside
-            $(document).on('click', function(e) {
-                if (!$titleInput.is(e.target) && !$dropdown.is(e.target) && $dropdown.has(e.target).length === 0) {
-                    $dropdown.hide();
-                    currentHighlight = -1;
-                }
-            });
-        }
-
         $(document).ready(function() {
-            // Initialize document title autocomplete only
-            initializeDocumentTitleAutocomplete();
-            
+            // Initialize Select2 for searchable dropdowns
+            $('#DocumentTypeId').select2({
+                placeholder: "Evrak türü seçin veya arayın",
+                allowClear: true
+            });
+
+            $('#ReceiverUserId').select2({
+                placeholder: "Kullanıcı seçin veya arayın",
+                allowClear: true
+            });
+
+            // --- Other existing logic ---
+
             // Auto-select current user as sender
-            var currentUserId = @(ViewData["CurrentUserId"] as int? ?? 0);
-            var currentUserDepartmentId = @(ViewData["CurrentUserDepartmentId"] as int? ?? 0);
+            var currentUserId = @Html.Raw(ViewData["CurrentUserId"] as int? ?? 0);
+            var currentUserDepartmentId = @Html.Raw(ViewData["CurrentUserDepartmentId"] as int? ?? 0);
             
             if (currentUserId > 0) {
                 $('#SenderUserId').val(currentUserId);
@@ -474,19 +386,6 @@
                 }
             });
 
-            // Copy shipping address to delivery address
-            $('#sameAsShipping').change(function() {
-                if ($(this).is(':checked')) {
-                    $('#DeliveryAddress').val($('#ShippingAddress').val());
-                }
-            });
-
-            // Update delivery address when shipping address changes
-            $('#ShippingAddress').on('input', function() {
-                if ($('#sameAsShipping').is(':checked')) {
-                    $('#DeliveryAddress').val($(this).val());
-                }
-            });
 
             // Auto-expand textareas
             $('textarea').on('input', function() {
@@ -496,76 +395,19 @@
 
             // Form validation
             $('form').on('submit', function(e) {
-                var senderUser = $('#SenderUserId').val();
-                var senderDept = $('#SenderDepartmentId').val();
                 var receiverUser = $('#ReceiverUserId').val();
                 var receiverDept = $('#ReceiverDepartmentId').val();
-                var title = $('#Title').val().trim();
-                var docType = $('#DocumentTypeId').val();
-                var physicalType = $('#PhysicalDocumentType').val();
-                var packageType = $('#PackageType').val();
-                var shippingAddr = $('#ShippingAddress').val().trim();
-                var deliveryAddr = $('#DeliveryAddress').val().trim();
-                
-                // Check required fields
-                if (!title) {
+
+                // Validation: Ensure at least one recipient is selected
+                if ((!receiverUser || receiverUser === '') && (!receiverDept || receiverDept === '')) {
                     e.preventDefault();
-                    alert('Lütfen başlık girin.');
-                    $('#Title').focus();
-                    return false;
-                }
-                
-                if (!docType || docType === '' || docType === '0') {
-                    e.preventDefault();
-                    alert('Lütfen evrak türü seçin.');
-                    $('#DocumentTypeId').focus();
-                    return false;
-                }
-                
-                // Check sender user selection
-                if (!senderUser || senderUser === '' || senderUser === '0') {
-                    e.preventDefault();
-                    alert('Lütfen gönderen kullanıcı seçin.');
-                    $('#SenderUserId').focus();
-                    return false;
-                }
-                
-                // Check sender department selection
-                if (!senderDept || senderDept === '' || senderDept === '0') {
-                    e.preventDefault();
-                    alert('Lütfen gönderen departman seçin.');
-                    $('#SenderDepartmentId').focus();
-                    return false;
-                }
-                
-                // Check physical document type
-                if (!physicalType || physicalType === '') {
-                    e.preventDefault();
-                    alert('Lütfen fiziksel evrak türü seçin.');
-                    $('#PhysicalDocumentType').focus();
-                    return false;
-                }
-                
-                // Check package type
-                if (!packageType || packageType === '') {
-                    e.preventDefault();
-                    alert('Lütfen paket türü seçin.');
-                    $('#PackageType').focus();
-                    return false;
-                }
-                
-                // Check addresses
-                if (!shippingAddr) {
-                    e.preventDefault();
-                    alert('Lütfen gönderim adresi girin.');
-                    $('#ShippingAddress').focus();
-                    return false;
-                }
-                
-                if (!deliveryAddr) {
-                    e.preventDefault();
-                    alert('Lütfen teslimat adresi girin.');
-                    $('#DeliveryAddress').focus();
+                    alert('Lütfen bir alıcı kullanıcı veya alıcı departman seçin.');
+                    // Focus the first available recipient field
+                    if ($('#ReceiverUserId').is(':enabled')) {
+                        $('#ReceiverUserId').select2('open');
+                    } else {
+                        $('#ReceiverDepartmentId').focus();
+                    }
                     return false;
                 }
             });

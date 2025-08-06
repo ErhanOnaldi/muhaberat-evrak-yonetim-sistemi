@@ -1,0 +1,137 @@
+@model IEnumerable<muhaberat_evrak_yonetim.Entities.Cargo>
+
+@{
+    ViewData["Title"] = "Kargo Yönetimi";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>@ViewData["Title"]</h1>
+    <a asp-action="Create" class="btn btn-primary">
+        <i class="fas fa-plus"></i> Yeni Kargo
+    </a>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-striped table-hover">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Takip No</th>
+                        <th>Kargo Şirketi</th>
+                        <th>Evrak Sayısı</th>
+                        <th>Paket Türü</th>
+                        <th>Durum</th>
+                        <th>Gönderim Tarihi</th>
+                        <th>Tahmini Teslimat</th>
+                        <th>İşlemler</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var cargo in Model)
+                    {
+                        <tr>
+                            <td>
+                                <strong>@cargo.CargoTrackingNumber</strong>
+                            </td>
+                            <td>@cargo.CargoCompany</td>
+                            <td>
+                                <span class="badge bg-info">@cargo.Documents.Count</span>
+                            </td>
+                            <td>
+                                @switch (cargo.PackageType)
+                                {
+                                    case "ENVELOPE":
+                                        <span class="badge bg-light text-dark">Zarf</span>
+                                        break;
+                                    case "SMALL_PACKAGE":
+                                        <span class="badge bg-secondary">Küçük Paket</span>
+                                        break;
+                                    case "LARGE_PACKAGE":
+                                        <span class="badge bg-warning text-dark">Büyük Paket</span>
+                                        break;
+                                    case "SPECIAL":
+                                        <span class="badge bg-danger">Özel</span>
+                                        break;
+                                    default:
+                                        <span class="badge bg-light text-dark">@cargo.PackageType</span>
+                                        break;
+                                }
+                            </td>
+                            <td>
+                                @switch (cargo.DeliveryStatus)
+                                {
+                                    case "PREPARING":
+                                        <span class="badge bg-warning">Hazırlanıyor</span>
+                                        break;
+                                    case "SHIPPED":
+                                        <span class="badge bg-info">Kargoya Verildi</span>
+                                        break;
+                                    case "IN_TRANSIT":
+                                        <span class="badge bg-primary">Yolda</span>
+                                        break;
+                                    case "DELIVERED":
+                                        <span class="badge bg-success">Teslim Edildi</span>
+                                        break;
+                                    case "RETURNED":
+                                        <span class="badge bg-danger">İade Edildi</span>
+                                        break;
+                                    default:
+                                        <span class="badge bg-secondary">@cargo.DeliveryStatus</span>
+                                        break;
+                                }
+                            </td>
+                            <td>
+                                @if (cargo.ShippingDate.HasValue)
+                                {
+                                    @cargo.ShippingDate.Value.ToString("dd.MM.yyyy HH:mm")
+                                }
+                                else
+                                {
+                                    <span class="text-muted">-</span>
+                                }
+                            </td>
+                            <td>
+                                @if (cargo.EstimatedDeliveryDate.HasValue)
+                                {
+                                    @cargo.EstimatedDeliveryDate.Value.ToString("dd.MM.yyyy")
+                                }
+                                else
+                                {
+                                    <span class="text-muted">-</span>
+                                }
+                            </td>
+                            <td>
+                                <div class="btn-group btn-group-sm" role="group">
+                                    <a asp-action="Details" asp-route-id="@cargo.Id" class="btn btn-outline-info" title="Detaylar">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    <a asp-action="Edit" asp-route-id="@cargo.Id" class="btn btn-outline-warning" title="Düzenle">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    @if (cargo.Documents.Count == 0)
+                                    {
+                                        <a asp-action="Delete" asp-route-id="@cargo.Id" class="btn btn-outline-danger" title="Sil">
+                                            <i class="fas fa-trash"></i>
+                                        </a>
+                                    }
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+            
+            @if (!Model.Any())
+            {
+                <div class="text-center py-5">
+                    <i class="fas fa-box-open fa-3x text-muted mb-3"></i>
+                    <p class="text-muted">Henüz kargo bulunmamaktadır.</p>
+                    <a asp-action="Create" class="btn btn-primary">
+                        <i class="fas fa-plus"></i> İlk Kargoyu Oluştur
+                    </a>
+                </div>
+            }
+        </div>
+    </div>
+</div>

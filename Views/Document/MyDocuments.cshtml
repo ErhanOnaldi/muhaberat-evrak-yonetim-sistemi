@@ -188,8 +188,9 @@
                                                 <span class="badge @statusClass">@document.Status</span>
                                             </td>
                                             <td>
-                                                @{
-                                                    var deliveryStatusClass = document.DeliveryStatus switch
+                                                @if (document.Cargo != null)
+                                                {
+                                                    var deliveryStatusClass = document.Cargo.DeliveryStatus switch
                                                     {
                                                         "PREPARING" => "badge-warning",
                                                         "SHIPPED" => "badge-info",
@@ -198,11 +199,15 @@
                                                         "RETURNED" => "badge-danger",
                                                         _ => "badge-secondary"
                                                     };
+                                                    <span class="badge @deliveryStatusClass">@document.Cargo.DeliveryStatus</span>
+                                                    @if (!string.IsNullOrEmpty(document.Cargo.CargoTrackingNumber))
+                                                    {
+                                                        <br><small class="text-muted">@document.Cargo.CargoTrackingNumber</small>
+                                                    }
                                                 }
-                                                <span class="badge @deliveryStatusClass">@document.DeliveryStatus</span>
-                                                @if (!string.IsNullOrEmpty(document.CargoTrackingNumber))
+                                                else
                                                 {
-                                                    <br><small class="text-muted">@document.CargoTrackingNumber</small>
+                                                    <span class="badge badge-secondary">Kargo Atanmamış</span>
                                                 }
                                             </td>
                                             <td>
@@ -320,8 +325,9 @@
                                                 <span class="badge @statusClass">@document.Status</span>
                                             </td>
                                             <td>
-                                                @{
-                                                    var deliveryStatusClass = document.DeliveryStatus switch
+                                                @if (document.Cargo != null)
+                                                {
+                                                    var deliveryStatusClass = document.Cargo.DeliveryStatus switch
                                                     {
                                                         "PREPARING" => "badge-warning",
                                                         "SHIPPED" => "badge-info",
@@ -330,11 +336,15 @@
                                                         "RETURNED" => "badge-danger",
                                                         _ => "badge-secondary"
                                                     };
+                                                    <span class="badge @deliveryStatusClass">@document.Cargo.DeliveryStatus</span>
+                                                    @if (!string.IsNullOrEmpty(document.Cargo.CargoTrackingNumber))
+                                                    {
+                                                        <br><small class="text-muted">@document.Cargo.CargoTrackingNumber</small>
+                                                    }
                                                 }
-                                                <span class="badge @deliveryStatusClass">@document.DeliveryStatus</span>
-                                                @if (!string.IsNullOrEmpty(document.CargoTrackingNumber))
+                                                else
                                                 {
-                                                    <br><small class="text-muted">@document.CargoTrackingNumber</small>
+                                                    <span class="badge badge-secondary">Kargo Atanmamış</span>
                                                 }
                                             </td>
                                             <td>

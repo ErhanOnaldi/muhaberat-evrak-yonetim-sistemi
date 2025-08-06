@@ -7,8 +7,11 @@ namespace muhaberat_evrak_yonetim.Entities
         [Key]
         public int Id { get; set; }
 
-        public int DocumentId { get; set; }
-        public Document Document { get; set; } = null!;
+        public int? DocumentId { get; set; }
+        public Document? Document { get; set; }
+
+        public int CargoId { get; set; }
+        public Cargo Cargo { get; set; } = null!;
 
         [StringLength(20)]
         public string? OldStatus { get; set; }

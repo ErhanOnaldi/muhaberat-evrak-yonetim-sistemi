@@ -22,6 +22,87 @@ namespace muhaberat_evrak_yonetim.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
+            modelBuilder.Entity("muhaberat_evrak_yonetim.Entities.Cargo", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("CargoCompany")
+                        .HasMaxLength(100)
+                        .IsUnicode(true)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("CargoTrackingNumber")
+                        .HasMaxLength(50)
+                        .IsUnicode(true)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("DeliveryAddress")
+                        .IsRequired()
+                        .IsUnicode(true)
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("DeliveryDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("DeliveryNotes")
+                        .IsUnicode(true)
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("DeliveryStatus")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .IsUnicode(true)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<DateTime?>("EstimatedDeliveryDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("PackageType")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .IsUnicode(true)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("ReceivedBy")
+                        .HasMaxLength(100)
+                        .IsUnicode(true)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("ShippingAddress")
+                        .IsRequired()
+                        .IsUnicode(true)
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("ShippingDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CargoTrackingNumber");
+
+                    b.HasIndex("DeliveryStatus");
+
+                    b.ToTable("Cargos", t =>
+                        {
+                            t.HasCheckConstraint("CK_Cargo_DeliveryStatus", "[DeliveryStatus] IN ('PREPARING', 'SHIPPED', 'IN_TRANSIT', 'DELIVERED', 'RETURNED')");
+
+                            t.HasCheckConstraint("CK_Cargo_PackageType", "[PackageType] IS NULL OR [PackageType] IN ('ENVELOPE', 'SMALL_PACKAGE', 'LARGE_PACKAGE', 'SPECIAL')");
+                        });
+                });
+
             modelBuilder.Entity("muhaberat_evrak_yonetim.Entities.CargoTrackingLog", b =>
                 {
                     b.Property<int>("Id")
@@ -30,25 +111,32 @@ namespace muhaberat_evrak_yonetim.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<int>("CargoId")
+                        .HasColumnType("int");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
-                    b.Property<int>("DocumentId")
+                    b.Property<int?>("DocumentId")
                         .HasColumnType("int");
 
                     b.Property<string>("Location")
                         .HasMaxLength(200)
+                        .IsUnicode(true)
                         .HasColumnType("nvarchar(200)");
 
                     b.Property<string>("NewStatus")
                         .HasMaxLength(20)
+                        .IsUnicode(true)
                         .HasColumnType("nvarchar(20)");
 
                     b.Property<string>("Notes")
+                        .IsUnicode(true)
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("OldStatus")
                         .HasMaxLength(20)
+                        .IsUnicode(true)
                         .HasColumnType("nvarchar(20)");
 
                     b.Property<DateTime>("StatusChangeDate")
@@ -58,6 +146,8 @@ namespace muhaberat_evrak_yonetim.Migrations
                         .HasColumnType("int");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("CargoId");
 
                     b.HasIndex("DocumentId");
 
@@ -80,14 +170,17 @@ namespace muhaberat_evrak_yonetim.Migrations
                     b.Property<string>("DepartmentCode")
                         .IsRequired()
                         .HasMaxLength(10)
+                        .IsUnicode(true)
                         .HasColumnType("nvarchar(10)");
 
                     b.Property<string>("DepartmentName")
                         .IsRequired()
                         .HasMaxLength(100)
+                        .IsUnicode(true)
                         .HasColumnType("nvarchar(100)");
 
                     b.Property<string>("Description")
+                        .IsUnicode(true)
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("HasFullAccess")
@@ -117,13 +210,8 @@ namespace muhaberat_evrak_yonetim.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("CargoCompany")
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<string>("CargoTrackingNumber")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
+                    b.Property<int?>("CargoId")
+                        .HasColumnType("int");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
@@ -136,60 +224,39 @@ namespace muhaberat_evrak_yonetim.Migrations
 
                     b.Property<string>("CustomerId")
                         .HasMaxLength(100)
+                        .IsUnicode(true)
                         .HasColumnType("nvarchar(100)");
 
                     b.Property<string>("CustomerName")
                         .HasMaxLength(200)
+                        .IsUnicode(true)
                         .HasColumnType("nvarchar(200)");
 
-                    b.Property<string>("DeliveryAddress")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime?>("DeliveryDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("DeliveryNotes")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("DeliveryStatus")
-                        .IsRequired()
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
-
                     b.Property<string>("Description")
+                        .IsUnicode(true)
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("DocumentNumber")
                         .IsRequired()
                         .HasMaxLength(50)
+                        .IsUnicode(true)
                         .HasColumnType("nvarchar(50)");
 
                     b.Property<int>("DocumentTypeId")
                         .HasColumnType("int");
 
-                    b.Property<DateTime?>("EstimatedDeliveryDate")
-                        .HasColumnType("datetime2");
-
                     b.Property<string>("FilePath")
+                        .IsUnicode(true)
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
 
-                    b.Property<string>("PackageType")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
                     b.Property<string>("PhysicalDocumentType")
                         .IsRequired()
                         .HasMaxLength(50)
+                        .IsUnicode(true)
                         .HasColumnType("nvarchar(50)");
-
-                    b.Property<string>("ReceivedBy")
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
 
                     b.Property<int?>("ReceiverDepartmentId")
                         .HasColumnType("int");
@@ -201,6 +268,7 @@ namespace muhaberat_evrak_yonetim.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<string>("ReviewNotes")
+                        .IsUnicode(true)
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<int?>("ReviewedBy")
@@ -212,21 +280,16 @@ namespace muhaberat_evrak_yonetim.Migrations
                     b.Property<int>("SenderUserId")
                         .HasColumnType("int");
 
-                    b.Property<string>("ShippingAddress")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<DateTime?>("ShippingDate")
-                        .HasColumnType("datetime2");
-
                     b.Property<string>("Status")
                         .IsRequired()
                         .HasMaxLength(20)
+                        .IsUnicode(true)
                         .HasColumnType("nvarchar(20)");
 
                     b.Property<string>("Title")
                         .IsRequired()
                         .HasMaxLength(200)
+                        .IsUnicode(true)
                         .HasColumnType("nvarchar(200)");
 
                     b.Property<DateTime>("UpdatedAt")
@@ -234,15 +297,13 @@ namespace muhaberat_evrak_yonetim.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("CargoTrackingNumber");
+                    b.HasIndex("CargoId");
 
                     b.HasIndex("CreatedBy");
 
                     b.HasIndex("CreatedDate");
 
                     b.HasIndex("CustomerId");
-
-                    b.HasIndex("DeliveryStatus");
 
                     b.HasIndex("DocumentNumber")
                         .IsUnique();
@@ -263,10 +324,6 @@ namespace muhaberat_evrak_yonetim.Migrations
 
                     b.ToTable("Documents", t =>
                         {
-                            t.HasCheckConstraint("CK_Document_DeliveryStatus", "[DeliveryStatus] IN ('PREPARING', 'SHIPPED', 'IN_TRANSIT', 'DELIVERED', 'RETURNED')");
-
-                            t.HasCheckConstraint("CK_Document_PackageType", "[PackageType] IS NULL OR [PackageType] IN ('ENVELOPE', 'SMALL_PACKAGE', 'LARGE_PACKAGE', 'SPECIAL')");
-
                             t.HasCheckConstraint("CK_Document_PhysicalDocumentType", "[PhysicalDocumentType] IS NULL OR [PhysicalDocumentType] IN ('ORIGINAL', 'COPY', 'NOTARIZED')");
 
                             t.HasCheckConstraint("CK_Document_ReceiverCheck", "[ReceiverUserId] IS NOT NULL OR [ReceiverDepartmentId] IS NOT NULL");
@@ -289,21 +346,26 @@ namespace muhaberat_evrak_yonetim.Migrations
                     b.Property<string>("ActionType")
                         .IsRequired()
                         .HasMaxLength(50)
+                        .IsUnicode(true)
                         .HasColumnType("nvarchar(50)");
 
                     b.Property<int>("DocumentId")
                         .HasColumnType("int");
 
                     b.Property<string>("IpAddress")
+                        .IsUnicode(true)
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("NewValues")
+                        .IsUnicode(true)
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Notes")
+                        .IsUnicode(true)
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("OldValues")
+                        .IsUnicode(true)
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<int?>("UserId")
@@ -379,6 +441,7 @@ namespace muhaberat_evrak_yonetim.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<string>("Description")
+                        .IsUnicode(true)
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("EstimatedDeliveryDays")
@@ -391,6 +454,7 @@ namespace muhaberat_evrak_yonetim.Migrations
                         .HasColumnType("bit");
 
                     b.Property<string>("PackageRequirements")
+                        .IsUnicode(true)
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("RequiresSignature")
@@ -399,11 +463,13 @@ namespace muhaberat_evrak_yonetim.Migrations
                     b.Property<string>("TypeCode")
                         .IsRequired()
                         .HasMaxLength(20)
+                        .IsUnicode(true)
                         .HasColumnType("nvarchar(20)");
 
                     b.Property<string>("TypeName")
                         .IsRequired()
                         .HasMaxLength(100)
+                        .IsUnicode(true)
                         .HasColumnType("nvarchar(100)");
 
                     b.HasKey("Id");
@@ -426,17 +492,20 @@ namespace muhaberat_evrak_yonetim.Migrations
 
                     b.Property<string>("CategoryCode")
                         .HasMaxLength(20)
+                        .IsUnicode(true)
                         .HasColumnType("nvarchar(20)");
 
                     b.Property<string>("CategoryName")
                         .IsRequired()
                         .HasMaxLength(100)
+                        .IsUnicode(true)
                         .HasColumnType("nvarchar(100)");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
                     b.Property<string>("Description")
+                        .IsUnicode(true)
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("IsActive")
@@ -462,6 +531,7 @@ namespace muhaberat_evrak_yonetim.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<string>("Description")
+                        .IsUnicode(true)
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("IsActive")
@@ -470,11 +540,13 @@ namespace muhaberat_evrak_yonetim.Migrations
                     b.Property<string>("RoleCode")
                         .IsRequired()
                         .HasMaxLength(10)
+                        .IsUnicode(true)
                         .HasColumnType("nvarchar(10)");
 
                     b.Property<string>("RoleName")
                         .IsRequired()
                         .HasMaxLength(50)
+                        .IsUnicode(true)
                         .HasColumnType("nvarchar(50)");
 
                     b.HasKey("Id");
@@ -497,6 +569,7 @@ namespace muhaberat_evrak_yonetim.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<string>("Description")
+                        .IsUnicode(true)
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("IsActive")
@@ -505,6 +578,7 @@ namespace muhaberat_evrak_yonetim.Migrations
                     b.Property<string>("UnitName")
                         .IsRequired()
                         .HasMaxLength(100)
+                        .IsUnicode(true)
                         .HasColumnType("nvarchar(100)");
 
                     b.HasKey("Id");
@@ -529,11 +603,13 @@ namespace muhaberat_evrak_yonetim.Migrations
                     b.Property<string>("Email")
                         .IsRequired()
                         .HasMaxLength(100)
+                        .IsUnicode(true)
                         .HasColumnType("nvarchar(100)");
 
                     b.Property<string>("FirstName")
                         .IsRequired()
                         .HasMaxLength(50)
+                        .IsUnicode(true)
                         .HasColumnType("nvarchar(50)");
 
                     b.Property<bool>("IsActive")
@@ -542,11 +618,13 @@ namespace muhaberat_evrak_yonetim.Migrations
                     b.Property<string>("LastName")
                         .IsRequired()
                         .HasMaxLength(50)
+                        .IsUnicode(true)
                         .HasColumnType("nvarchar(50)");
 
                     b.Property<string>("PasswordHash")
                         .IsRequired()
                         .HasMaxLength(255)
+                        .IsUnicode(true)
                         .HasColumnType("nvarchar(255)");
 
                     b.Property<int?>("RoleId")
@@ -561,6 +639,7 @@ namespace muhaberat_evrak_yonetim.Migrations
                     b.Property<string>("Username")
                         .IsRequired()
                         .HasMaxLength(50)
+                        .IsUnicode(true)
                         .HasColumnType("nvarchar(50)");
 
                     b.HasKey("Id");
@@ -582,16 +661,23 @@ namespace muhaberat_evrak_yonetim.Migrations
 
             modelBuilder.Entity("muhaberat_evrak_yonetim.Entities.CargoTrackingLog", b =>
                 {
+                    b.HasOne("muhaberat_evrak_yonetim.Entities.Cargo", "Cargo")
+                        .WithMany("CargoTrackingLogs")
+                        .HasForeignKey("CargoId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("muhaberat_evrak_yonetim.Entities.Document", "Document")
                         .WithMany("CargoTrackingLogs")
                         .HasForeignKey("DocumentId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .OnDelete(DeleteBehavior.SetNull);
 
                     b.HasOne("muhaberat_evrak_yonetim.Entities.User", "UpdatedByUser")
                         .WithMany()
                         .HasForeignKey("UpdatedBy")
                         .OnDelete(DeleteBehavior.SetNull);
+
+                    b.Navigation("Cargo");
 
                     b.Navigation("Document");
 
@@ -611,6 +697,11 @@ namespace muhaberat_evrak_yonetim.Migrations
 
             modelBuilder.Entity("muhaberat_evrak_yonetim.Entities.Document", b =>
                 {
+                    b.HasOne("muhaberat_evrak_yonetim.Entities.Cargo", "Cargo")
+                        .WithMany("Documents")
+                        .HasForeignKey("CargoId")
+                        .OnDelete(DeleteBehavior.SetNull);
+
                     b.HasOne("muhaberat_evrak_yonetim.Entities.User", "CreatedByUser")
                         .WithMany("CreatedDocuments")
                         .HasForeignKey("CreatedBy")
@@ -649,6 +740,8 @@ namespace muhaberat_evrak_yonetim.Migrations
                         .HasForeignKey("SenderUserId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
+
+                    b.Navigation("Cargo");
 
                     b.Navigation("CreatedByUser");
 
@@ -740,6 +833,13 @@ namespace muhaberat_evrak_yonetim.Migrations
                     b.Navigation("Role");
 
                     b.Navigation("Unit");
+                });
+
+            modelBuilder.Entity("muhaberat_evrak_yonetim.Entities.Cargo", b =>
+                {
+                    b.Navigation("CargoTrackingLogs");
+
+                    b.Navigation("Documents");
                 });
 
             modelBuilder.Entity("muhaberat_evrak_yonetim.Entities.Department", b =>

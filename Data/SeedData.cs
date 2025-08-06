@@ -371,12 +371,8 @@ public static class SeedData
                 CreatedBy = users[0].Id,
                 CustomerName = "Ahmet Yılmaz",
                 CustomerId = "12345678901",
-                PhysicalDocumentType = "Fotokopi",
-                PackageType = "Standart Zarf",
-                ShippingAddress = "Muhaberat Departmanı, İstanbul",
-                DeliveryAddress = "Muhasebe Departmanı, İstanbul",
-                Status = "PENDING",
-                DeliveryStatus = "PREPARING",
+                PhysicalDocumentType = "COPY",
+                Status = "DRAFT",
                 IsActive = true,
                 CreatedDate = DateTime.Now.AddDays(-5),
                 CreatedAt = DateTime.Now.AddDays(-5),
@@ -395,18 +391,10 @@ public static class SeedData
                 CreatedBy = users[0].Id,
                 CustomerName = "ABC Şirketi",
                 CustomerId = "1234567890",
-                PhysicalDocumentType = "Orijinal Belge",
-                PackageType = "Özel Zarf",
-                ShippingAddress = "Muhaberat Departmanı, İstanbul",
-                DeliveryAddress = "Şube Portföy Yönetimi, İstanbul",
-                CargoCompany = "Aras Kargo",
-                CargoTrackingNumber = "123456789",
-                Status = "SHIPPED",
-                DeliveryStatus = "IN_TRANSIT",
+                PhysicalDocumentType = "ORIGINAL",
+                Status = "SENT",
                 IsActive = true,
                 CreatedDate = DateTime.Now.AddDays(-3),
-                ShippingDate = DateTime.Now.AddDays(-2),
-                EstimatedDeliveryDate = DateTime.Now.AddDays(1),
                 CreatedAt = DateTime.Now.AddDays(-3),
                 UpdatedAt = DateTime.Now.AddDays(-2)
             },
@@ -423,19 +411,10 @@ public static class SeedData
                 CreatedBy = users[3].Id,
                 CustomerName = "Mehmet Demir",
                 CustomerId = "98765432109",
-                PhysicalDocumentType = "Sözleşme",
-                PackageType = "Özel Güvenlik Zarfı",
-                ShippingAddress = "Müşteri İlişkileri, İstanbul",
-                DeliveryAddress = "Muhaberat Departmanı, İstanbul",
-                CargoCompany = "MNG Kargo",
-                CargoTrackingNumber = "987654321",
+                PhysicalDocumentType = "NOTARIZED",
                 Status = "DELIVERED",
-                DeliveryStatus = "DELIVERED",
-                ReceivedBy = "Muhaberat Personeli",
                 IsActive = true,
                 CreatedDate = DateTime.Now.AddDays(-7),
-                ShippingDate = DateTime.Now.AddDays(-5),
-                DeliveryDate = DateTime.Now.AddDays(-2),
                 CreatedAt = DateTime.Now.AddDays(-7),
                 UpdatedAt = DateTime.Now.AddDays(-2)
             }
@@ -444,54 +423,6 @@ public static class SeedData
         await context.Documents.AddRangeAsync(sampleDocuments);
         await context.SaveChangesAsync();
 
-        // Create cargo tracking logs for the documents
-        var cargoTrackingLogs = new List<CargoTrackingLog>();
-        foreach (var doc in sampleDocuments)
-        {
-            cargoTrackingLogs.Add(new CargoTrackingLog
-            {
-                DocumentId = doc.Id,
-                OldStatus = null,
-                NewStatus = "PENDING",
-                StatusChangeDate = doc.CreatedDate,
-                Location = "Gönderen Departman",
-                UpdatedBy = doc.SenderUserId,
-                Notes = "Evrak oluşturuldu",
-                CreatedAt = doc.CreatedDate
-            });
-
-            if (doc.Status == "SHIPPED" || doc.Status == "DELIVERED")
-            {
-                cargoTrackingLogs.Add(new CargoTrackingLog
-                {
-                    DocumentId = doc.Id,
-                    OldStatus = "PENDING",
-                    NewStatus = "SHIPPED",
-                    StatusChangeDate = doc.ShippingDate ?? doc.CreatedDate.AddHours(2),
-                    Location = "Kargo Merkezi",
-                    UpdatedBy = doc.SenderUserId,
-                    Notes = "Evrak kargoya verildi",
-                    CreatedAt = doc.ShippingDate ?? doc.CreatedDate.AddHours(2)
-                });
-            }
-
-            if (doc.Status == "DELIVERED")
-            {
-                cargoTrackingLogs.Add(new CargoTrackingLog
-                {
-                    DocumentId = doc.Id,
-                    OldStatus = "SHIPPED",
-                    NewStatus = "DELIVERED",
-                    StatusChangeDate = doc.DeliveryDate ?? doc.CreatedDate.AddDays(1),
-                    Location = "Alıcı Departman",
-                    UpdatedBy = doc.ReceiverUserId ?? doc.SenderUserId,
-                    Notes = "Evrak teslim edildi",
-                    CreatedAt = doc.DeliveryDate ?? doc.CreatedDate.AddDays(1)
-                });
-            }
-        }
-
-        await context.CargoTrackingLogs.AddRangeAsync(cargoTrackingLogs);
-        await context.SaveChangesAsync();
+        // Sample cargo data and tracking logs will be added when needed
     }
 }

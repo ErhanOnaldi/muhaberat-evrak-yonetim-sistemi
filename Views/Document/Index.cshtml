@@ -67,7 +67,7 @@
                         <div class="col mr-2">
                             <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
                                 Kargoda</div>
-                            <div class="h5 mb-0 font-weight-bold text-gray-800">@Model.Count(d => d.DeliveryStatus == "SHIPPED" || d.DeliveryStatus == "IN_TRANSIT")</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">@Model.Count(d => d.Cargo != null && (d.Cargo.DeliveryStatus == "SHIPPED" || d.Cargo.DeliveryStatus == "IN_TRANSIT"))</div>
                         </div>
                         <div class="col-auto">
                             <i class="fas fa-shipping-fast fa-2x text-gray-300"></i>
@@ -83,7 +83,7 @@
                         <div class="col mr-2">
                             <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
                                 Teslim Edildi</div>
-                            <div class="h5 mb-0 font-weight-bold text-gray-800">@Model.Count(d => d.DeliveryStatus == "DELIVERED")</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">@Model.Count(d => d.Cargo != null && d.Cargo.DeliveryStatus == "DELIVERED")</div>
                         </div>
                         <div class="col-auto">
                             <i class="fas fa-check-circle fa-2x text-gray-300"></i>
@@ -143,19 +143,22 @@
                         </select>
                     </div>
                     <div class="col-md-2 mb-3">
-                        <label for="deliveryStatus" class="form-label">
-                            <i class="fas fa-truck mr-1"></i>Kargo Durumu
+                        <label for="cargoId" class="form-label">
+                            <i class="fas fa-truck mr-1"></i>Kargo
                         </label>
-                        <select class="form-control" name="deliveryStatus" id="deliveryStatus">
-                            <option value="">Tüm Durumlar</option>
+                        <select class="form-control" name="cargoId" id="cargoId">
+                            <option value="">Tüm Kargolar</option>
                             @{
-                                var selectedDeliveryStatus = ViewData["SelectedDeliveryStatus"]?.ToString();
+                                var selectedCargoId = ViewData["SelectedCargoId"]?.ToString();
+                                var cargos = ViewData["Cargos"] as List<muhaberat_evrak_yonetim.Entities.Cargo>;
                             }
-                            <option value="@DeliveryStatus.PREPARING" selected="@(selectedDeliveryStatus == DeliveryStatus.PREPARING.ToString())">@DeliveryStatus.PREPARING.ToDisplayString()</option>
-                            <option value="@DeliveryStatus.SHIPPED" selected="@(selectedDeliveryStatus == DeliveryStatus.SHIPPED.ToString())">@DeliveryStatus.SHIPPED.ToDisplayString()</option>
-                            <option value="@DeliveryStatus.IN_TRANSIT" selected="@(selectedDeliveryStatus == DeliveryStatus.IN_TRANSIT.ToString())">@DeliveryStatus.IN_TRANSIT.ToDisplayString()</option>
-                            <option value="@DeliveryStatus.DELIVERED" selected="@(selectedDeliveryStatus == DeliveryStatus.DELIVERED.ToString())">@DeliveryStatus.DELIVERED.ToDisplayString()</option>
-                            <option value="@DeliveryStatus.RETURNED" selected="@(selectedDeliveryStatus == DeliveryStatus.RETURNED.ToString())">@DeliveryStatus.RETURNED.ToDisplayString()</option>
+                            @if (cargos != null)
+                            {
+                                @foreach (var cargo in cargos)
+                                {
+                                    <option value="@cargo.Id" selected="@(selectedCargoId == cargo.Id.ToString())">@cargo.CargoTrackingNumber</option>
+                                }
+                            }
                         </select>
                     </div>
                     <div class="col-md-2 mb-3">
@@ -285,34 +288,19 @@
                                     </span>
                                 </td>
                                 <td>
-                                    @{
-                                        var deliveryStatusClass = item.DeliveryStatus switch
-                                        {
-                                            "PREPARING" => "badge-warning",
-                                            "SHIPPED" => "badge-info",
-                                            "IN_TRANSIT" => "badge-primary",
-                                            "DELIVERED" => "badge-success",
-                                            "RETURNED" => "badge-danger",
-                                            _ => "badge-secondary"
-                                        };
-                                        var deliveryIcon = item.DeliveryStatus switch
-                                        {
-                                            "PREPARING" => "fas fa-clock",
-                                            "SHIPPED" => "fas fa-truck",
-                                            "IN_TRANSIT" => "fas fa-shipping-fast",
-                                            "DELIVERED" => "fas fa-check-double",
-                                            "RETURNED" => "fas fa-undo",
-                                            _ => "fas fa-question"
-                                        };
-                                    }
-                                    <span class="badge @deliveryStatusClass">
-                                        <i class="@deliveryIcon mr-1"></i>@(EnumExtensions.ParseDeliveryStatus(item.DeliveryStatus).ToDisplayString())
-                                    </span>
-                                    @if (!string.IsNullOrEmpty(item.CargoTrackingNumber))
+                                    @* Remove the old delivery status variables as they are no longer used *@
+                                    @if (item.Cargo != null)
                                     {
-                                        <br><small class="text-muted">
-                                            <i class="fas fa-barcode mr-1"></i>@item.CargoTrackingNumber
-                                        </small>
+                                        <span class="badge badge-info">
+                                            <i class="fas fa-truck mr-1"></i>@item.Cargo.CargoTrackingNumber
+                                        </span>
+                                        <br><small class="text-muted">@item.Cargo.DeliveryStatus</small>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge badge-secondary">
+                                            <i class="fas fa-exclamation mr-1"></i>Kargo Atanmamış
+                                        </span>
                                     }
                                 </td>
                                 <td>
@@ -347,7 +335,7 @@
                                             bool canReceive = (currentUserId.HasValue && item.ReceiverUserId == currentUserId.Value) ||
                                                               (currentUserDepartmentId.HasValue && item.ReceiverDepartmentId == currentUserDepartmentId.Value);
                                         }
-                                        @if (item.Status == DocumentStatus.DELIVERED.ToString() && item.DeliveryStatus == DeliveryStatus.DELIVERED.ToString() && canReceive)
+                                        @if (item.Status == DocumentStatus.DELIVERED.ToString() && item.Cargo != null && item.Cargo.DeliveryStatus == DeliveryStatus.DELIVERED.ToString() && canReceive)
                                         {
                                             <form method="post" asp-action="ReceiveDocument" asp-route-id="@item.Id" class="d-inline">
                                                 @Html.AntiForgeryToken()

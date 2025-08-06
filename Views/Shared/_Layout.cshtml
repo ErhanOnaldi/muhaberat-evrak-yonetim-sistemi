@@ -28,7 +28,7 @@
     
     <!-- Select2 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
-    <link href="~/css/select2-custom.css" rel="stylesheet" />
+    <link href="~/css/select2-custom.css" rel="stylesheet" asp-append-version="true" />
     
     <!-- JavaScript -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
@@ -339,6 +339,14 @@
                                                     <i class="fas fa-tags text-warning"></i>
                                                 </span>
                                                 <span class="menu-title">Evrak Türleri</span>
+                                            </a>
+                                        </div>
+                                        <div class="menu-item">
+                                            <a class="menu-link" href="@Url.Action("Index", "Cargo")">
+                                                <span class="menu-icon">
+                                                    <i class="fas fa-truck text-info"></i>
+                                                </span>
+                                                <span class="menu-title">Kargo Yönetimi</span>
                                             </a>
                                         </div>
                                     }

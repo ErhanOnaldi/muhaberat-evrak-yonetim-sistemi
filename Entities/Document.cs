@@ -49,33 +49,8 @@ namespace muhaberat_evrak_yonetim.Entities
         [StringLength(50)]
         public string PhysicalDocumentType { get; set; } = null!;
 
-        [Required(ErrorMessage = "Paket türü seçimi zorunludur.")]
-        [StringLength(50)]
-        public string PackageType { get; set; } = null!;
-
-        [Required(ErrorMessage = "Gönderim adresi zorunludur.")]
-        public string ShippingAddress { get; set; } = null!;
-        
-        [Required(ErrorMessage = "Teslimat adresi zorunludur.")]
-        public string DeliveryAddress { get; set; } = null!;
-
-        [StringLength(100)]
-        public string? CargoCompany { get; set; }
-
-        [StringLength(50)]
-        public string? CargoTrackingNumber { get; set; }
-
-        public DateTime? ShippingDate { get; set; }
-        public DateTime? DeliveryDate { get; set; }
-        public DateTime? EstimatedDeliveryDate { get; set; }
-
-        [StringLength(20)]
-        public string DeliveryStatus { get; set; } = "PREPARING"; 
-
-        [StringLength(100)]
-        public string? ReceivedBy { get; set; }
-
-        public string? DeliveryNotes { get; set; }
+        public int? CargoId { get; set; }
+        public Cargo? Cargo { get; set; }
 
         public bool IsActive { get; set; } = true;
 

@@ -194,55 +194,28 @@
                                 <span asp-validation-for="PhysicalDocumentType" class="text-danger small"></span>
                             </div>
                             <div class="col-md-6 mb-3">
-                                <label asp-for="PackageType" class="form-label">
-                                    <i class="fas fa-box-open mr-2"></i>Paket Türü <span class="text-danger">*</span>
+                                <label asp-for="CargoId" class="form-label">
+                                    <i class="fas fa-truck mr-2"></i>Kargo
                                 </label>
-                                <select asp-for="PackageType" class="form-control" required>
-                                    <option value="">Seçin</option>
-                                    <option value="ENVELOPE" selected="@(Model.PackageType == "ENVELOPE")">Zarf</option>
-                                    <option value="SMALL_PACKAGE" selected="@(Model.PackageType == "SMALL_PACKAGE")">Küçük Paket</option>
-                                    <option value="LARGE_PACKAGE" selected="@(Model.PackageType == "LARGE_PACKAGE")">Büyük Paket</option>
-                                    <option value="SPECIAL" selected="@(Model.PackageType == "SPECIAL")">Özel Paket</option>
+                                <select asp-for="CargoId" class="form-control">
+                                    <option value="">Mevcut kargo seçin (opsiyonel)</option>
+                                    @{
+                                        var cargos = ViewData["Cargos"] as List<muhaberat_evrak_yonetim.Entities.Cargo>;
+                                    }
+                                    @if (cargos != null)
+                                    {
+                                        @foreach (var cargo in cargos)
+                                        {
+                                            <option value="@cargo.Id" selected="@(Model.CargoId == cargo.Id)">@cargo.CargoTrackingNumber - @cargo.CargoCompany (@cargo.PackageType)</option>
+                                        }
+                                    }
                                 </select>
-                                <span asp-validation-for="PackageType" class="text-danger small"></span>
+                                <span asp-validation-for="CargoId" class="text-danger small"></span>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <!-- Addresses Card -->
-                <div class="card shadow mb-4">
-                    <div class="card-header py-3">
-                        <h6 class="m-0 font-weight-bold text-info">
-                            <i class="fas fa-map-marker-alt mr-2"></i>Adres Bilgileri
-                        </h6>
-                    </div>
-                    <div class="card-body">
-                        <div class="mb-3">
-                            <label asp-for="ShippingAddress" class="form-label">
-                                <i class="fas fa-shipping-fast mr-2"></i>Gönderim Adresi <span class="text-danger">*</span>
-                            </label>
-                            <textarea asp-for="ShippingAddress" class="form-control" rows="3" 
-                                     placeholder="Evrağın gönderileceği adres..." required></textarea>
-                            <span asp-validation-for="ShippingAddress" class="text-danger small"></span>
-                        </div>
-
-                        <div class="mb-3">
-                            <label asp-for="DeliveryAddress" class="form-label">
-                                <i class="fas fa-home mr-2"></i>Teslimat Adresi <span class="text-danger">*</span>
-                            </label>
-                            <textarea asp-for="DeliveryAddress" class="form-control" rows="3" 
-                                     placeholder="Evrağın teslim edileceği adres..." required></textarea>
-                            <span asp-validation-for="DeliveryAddress" class="text-danger small"></span>
-                            <div class="form-check mt-2">
-                                <input class="form-check-input" type="checkbox" id="sameAsShipping">
-                                <label class="form-check-label" for="sameAsShipping">
-                                    Gönderim adresi ile aynı
-                                </label>
-                            </div>
-                        </div>
-                    </div>
-                </div>
             </div>
 
             <!-- Sidebar -->
@@ -397,19 +370,6 @@
                 }
             });
 
-            // Copy shipping address to delivery address
-            $('#sameAsShipping').change(function() {
-                if ($(this).is(':checked')) {
-                    $('#DeliveryAddress').val($('#ShippingAddress').val());
-                }
-            });
-
-            // Update delivery address when shipping address changes
-            $('#ShippingAddress').on('input', function() {
-                if ($('#sameAsShipping').is(':checked')) {
-                    $('#DeliveryAddress').val($(this).val());
-                }
-            });
 
             // Auto-expand textareas
             $('textarea').on('input', function() {
@@ -429,10 +389,6 @@
                 }
             });
 
-            // Check if addresses are the same on load
-            if ($('#ShippingAddress').val() === $('#DeliveryAddress').val() && $('#ShippingAddress').val() !== '') {
-                $('#sameAsShipping').prop('checked', true);
-            }
         });
     </script>
 }

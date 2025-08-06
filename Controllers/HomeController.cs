@@ -47,9 +47,9 @@ public class HomeController : BaseController
                 (d.Status == "DELIVERED" || d.Status == "RECEIVED")),
 
             InTransitCargo = await documentsQuery.CountAsync(d =>
-                (d.DeliveryStatus == "SHIPPED" || d.DeliveryStatus == "IN_TRANSIT")),
+                (d.Cargo != null && (d.Cargo.DeliveryStatus == "SHIPPED" || d.Cargo.DeliveryStatus == "IN_TRANSIT"))),
             DeliveredCargo = await documentsQuery.CountAsync(d =>
-                d.DeliveryStatus == "DELIVERED"),
+                (d.Cargo != null && d.Cargo.DeliveryStatus == "DELIVERED")),
 
             TotalUsers = await _context.Users.CountAsync(u => u.IsActive),
             TotalDepartments = await _context.Departments.CountAsync(d => d.IsActive),
@@ -78,14 +78,16 @@ public class HomeController : BaseController
             DeliverySuccessChart = await GetDeliverySuccessChartData(documentsQuery)
         };
 
-        // Debug bilgisi ekle
-        _logger.LogInformation($"Total Document Types: {await _context.DocumentTypes.CountAsync(dt => dt.IsActive)}");
-        _logger.LogInformation($"Total Documents (filtered): {await documentsQuery.CountAsync()}");
+        
+        // Debug için log ekle
         _logger.LogInformation($"DocumentTypeUsage count: {dashboardStats.DocumentTypeUsage.Count}");
-        _logger.LogInformation($"Current User ID: {currentUserId}, Department: {currentUserDepartment}, HasFullAccess: {hasFullAccess}");
-        _logger.LogInformation($"DocumentStatusChart: {System.Text.Json.JsonSerializer.Serialize(dashboardStats.DocumentStatusChart)}");
-        _logger.LogInformation($"TopDepartmentsChart: {System.Text.Json.JsonSerializer.Serialize(dashboardStats.TopDepartmentsChart)}");
-        _logger.LogInformation($"DeliverySuccessChart: {System.Text.Json.JsonSerializer.Serialize(dashboardStats.DeliverySuccessChart)}");
+        if (dashboardStats.DocumentTypeUsage.Any())
+        {
+            foreach (var item in dashboardStats.DocumentTypeUsage)
+            {
+                _logger.LogInformation($"DocumentType: {((dynamic)item).DocumentType?.TypeName}, Count: {((dynamic)item).DocumentCount}");
+            }
+        }
         
         ViewBag.DashboardStats = dashboardStats;
         return View();
