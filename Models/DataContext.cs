@@ -16,6 +16,7 @@ public class DataContext : DbContext
     public DbSet<Role> Roles { get; set; }
     public DbSet<DocumentPermission> DocumentPermissions { get; set; }
     public DbSet<DocumentType> DocumentTypes { get; set; }
+    public DbSet<DocumentTypeCategory> DocumentTypeCategories { get; set; }
     public DbSet<CargoTrackingLog> CargoTrackingLogs { get; set; }
     public DbSet<DocumentHistory> DocumentHistories { get; set; }
 
@@ -130,6 +131,12 @@ public class DataContext : DbContext
             .WithMany(d => d.DocumentPermissions)
             .HasForeignKey(dp => dp.DepartmentId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        modelBuilder.Entity<DocumentType>()
+            .HasOne(dt => dt.Category)
+            .WithMany(dtc => dtc.DocumentTypes)
+            .HasForeignKey(dt => dt.CategoryId)
+            .OnDelete(DeleteBehavior.Restrict);
 
         // Constraints
         modelBuilder.Entity<Document>(entity =>

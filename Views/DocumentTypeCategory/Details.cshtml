@@ -1,0 +1,245 @@
+@model muhaberat_evrak_yonetim.Entities.DocumentTypeCategory
+
+@{
+    ViewData["Title"] = "Kategori Detayları";
+    var stats = ViewBag.Statistics;
+}
+
+<div class="container-fluid">
+    <!-- Page Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3 mb-0 text-primary">
+            <i class="fas fa-info-circle mr-2"></i>Kategori Detayları
+        </h1>
+        <div>
+            <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-secondary btn-sm">
+                <i class="fas fa-edit mr-1"></i>Düzenle
+            </a>
+            <a asp-action="Index" class="btn btn-outline-secondary btn-sm">
+                <i class="fas fa-arrow-left mr-1"></i>Geri Dön
+            </a>
+        </div>
+    </div>
+
+    <!-- Category Information Card -->
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-tag mr-2"></i>@Model.CategoryName
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="font-weight-bold text-gray-800">
+                                    <i class="fas fa-tag mr-1 text-primary"></i>Kategori Adı
+                                </label>
+                                <p class="form-control-plaintext">@Model.CategoryName</p>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="font-weight-bold text-gray-800">
+                                    <i class="fas fa-code mr-1 text-info"></i>Kategori Kodu
+                                </label>
+                                <p class="form-control-plaintext">
+                                    @if (!string.IsNullOrEmpty(Model.CategoryCode))
+                                    {
+                                        <code class="bg-light p-1 rounded">@Model.CategoryCode</code>
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">Belirtilmemiş</span>
+                                    }
+                                </p>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="font-weight-bold text-gray-800">
+                                    <i class="fas fa-toggle-on mr-1 text-success"></i>Durum
+                                </label>
+                                <p class="form-control-plaintext">
+                                    @if (Model.IsActive)
+                                    {
+                                        <span class="badge badge-success">
+                                            <i class="fas fa-check mr-1"></i>Aktif
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge badge-danger">
+                                            <i class="fas fa-times mr-1"></i>Pasif
+                                        </span>
+                                    }
+                                </p>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="font-weight-bold text-gray-800">
+                                    <i class="fas fa-align-left mr-1 text-muted"></i>Açıklama
+                                </label>
+                                <p class="form-control-plaintext">
+                                    @if (!string.IsNullOrEmpty(Model.Description))
+                                    {
+                                        @Model.Description
+                                    }
+                                    else
+                                    {
+                                        <span class="text-muted">Açıklama eklenmemiş</span>
+                                    }
+                                </p>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="font-weight-bold text-gray-800">
+                                    <i class="fas fa-calendar-plus mr-1 text-success"></i>Oluşturma Tarihi
+                                </label>
+                                <p class="form-control-plaintext">@Model.CreatedAt.ToString("dd.MM.yyyy HH:mm")</p>
+                            </div>
+                            
+                            @if (Model.UpdatedAt.HasValue)
+                            {
+                                <div class="form-group">
+                                    <label class="font-weight-bold text-gray-800">
+                                        <i class="fas fa-calendar-edit mr-1 text-warning"></i>Son Güncelleme
+                                    </label>
+                                    <p class="form-control-plaintext">@Model.UpdatedAt.Value.ToString("dd.MM.yyyy HH:mm")</p>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Statistics Card -->
+        <div class="col-md-4">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-success">
+                        <i class="fas fa-chart-bar mr-2"></i>İstatistikler
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="font-weight-bold">Toplam Evrak Türü:</span>
+                            <span class="badge badge-primary badge-pill">@stats.TotalDocumentTypes</span>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="font-weight-bold">Aktif Evrak Türü:</span>
+                            <span class="badge badge-success badge-pill">@stats.ActiveDocumentTypes</span>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="font-weight-bold">Acil Evrak Türü:</span>
+                            <span class="badge badge-warning badge-pill">@stats.UrgentDocumentTypes</span>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="font-weight-bold">İmza Gerektiren:</span>
+                            <span class="badge badge-info badge-pill">@stats.SignatureRequiredTypes</span>
+                        </div>
+                    </div>
+                    
+                    <hr>
+                    
+                    @if (stats.TotalDocumentTypes > 0)
+                    {
+                        <div class="text-center">
+                            <a asp-controller="DocumentTypeCategory" asp-action="DocumentTypes" asp-route-id="@Model.Id" 
+                               class="btn btn-outline-primary btn-sm">
+                                <i class="fas fa-list mr-1"></i>Evrak Türlerini Görüntüle
+                            </a>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-center">
+                            <small class="text-muted">
+                                <i class="fas fa-info-circle mr-1"></i>
+                                Bu kategoride henüz evrak türü bulunmuyor.
+                            </small>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Document Types in Category -->
+    @if (Model.DocumentTypes.Any())
+    {
+        <div class="card shadow">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-info">
+                    <i class="fas fa-file-alt mr-2"></i>Bu Kategorideki Evrak Türleri
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    @foreach (var docType in Model.DocumentTypes.Take(6))
+                    {
+                        <div class="col-md-4 col-sm-6 mb-3">
+                            <div class="card border-left-info">
+                                <div class="card-body p-3">
+                                    <div class="d-flex align-items-center">
+                                        <div class="mr-3">
+                                            <i class="fas fa-file-alt fa-2x text-info"></i>
+                                        </div>
+                                        <div>
+                                            <div class="font-weight-bold text-gray-800">@docType.TypeName</div>
+                                            @if (!string.IsNullOrEmpty(docType.TypeCode))
+                                            {
+                                                <small class="text-muted">@docType.TypeCode</small>
+                                            }
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+                
+                @if (Model.DocumentTypes.Count > 6)
+                {
+                    <div class="text-center mt-3">
+                        <a asp-controller="DocumentTypeCategory" asp-action="DocumentTypes" asp-route-id="@Model.Id" 
+                           class="btn btn-outline-info">
+                            <i class="fas fa-plus mr-1"></i>@(Model.DocumentTypes.Count - 6) evrak türü daha...
+                        </a>
+                    </div>
+                }
+            </div>
+        </div>
+    }
+</div>
+
+<style>
+    .border-left-info {
+        border-left: .25rem solid #36b9cc !important;
+    }
+    
+    .category-icon {
+        width: 35px;
+        height: 35px;
+        border-radius: 8px;
+        background: linear-gradient(135deg, #36b9cc 0%, #258391 100%);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 14px;
+    }
+</style>

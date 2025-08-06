@@ -19,8 +19,10 @@ public class DocumentTypeController : Controller
     public async Task<IActionResult> Index()
     {
         var documentTypes = await _context.DocumentTypes
+            .Include(dt => dt.Category)
             .Where(dt => dt.IsActive)
-            .OrderBy(dt => dt.TypeName)
+            .OrderBy(dt => dt.Category.CategoryName)
+            .ThenBy(dt => dt.TypeName)
             .ToListAsync();
 
         return View(documentTypes);
@@ -34,6 +36,7 @@ public class DocumentTypeController : Controller
         }
 
         var documentType = await _context.DocumentTypes
+            .Include(dt => dt.Category)
             .Include(dt => dt.Documents.Where(d => d.IsActive))
                 .ThenInclude(d => d.SenderUser)
             .Include(dt => dt.DocumentPermissions)
@@ -62,24 +65,41 @@ public class DocumentTypeController : Controller
         return View(documentType);
     }
 
-    public IActionResult Create()
+    public async Task<IActionResult> Create(int? categoryId)
     {
-        return View();
+        ViewBag.Categories = await _context.DocumentTypeCategories
+            .Where(c => c.IsActive)
+            .OrderBy(c => c.CategoryName)
+            .ToListAsync();
+            
+        var documentType = new DocumentType();
+        if (categoryId.HasValue)
+        {
+            documentType.CategoryId = categoryId.Value;
+        }
+            
+        return View(documentType);
     }
 
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Create(DocumentType documentType)
     {
+        // Validate category exists
+        if (!await _context.DocumentTypeCategories.AnyAsync(c => c.Id == documentType.CategoryId && c.IsActive))
+        {
+            ModelState.AddModelError("CategoryId", "Geçerli bir kategori seçiniz.");
+        }
+        
         if (await _context.DocumentTypes.AnyAsync(dt => dt.TypeCode == documentType.TypeCode))
         {
             ModelState.AddModelError("TypeCode", "Bu evrak türü kodu zaten kullanımda.");
         }
 
-        // Check for duplicate type name
-        if (await _context.DocumentTypes.AnyAsync(dt => dt.TypeName == documentType.TypeName))
+        // Check for duplicate type name in same category
+        if (await _context.DocumentTypes.AnyAsync(dt => dt.TypeName == documentType.TypeName && dt.CategoryId == documentType.CategoryId))
         {
-            ModelState.AddModelError("TypeName", "Bu evrak türü adı zaten kullanımda.");
+            ModelState.AddModelError("TypeName", "Bu evrak türü adı bu kategoride zaten kullanımda.");
         }
 
         if (ModelState.IsValid)
@@ -94,6 +114,11 @@ public class DocumentTypeController : Controller
             return RedirectToAction(nameof(Index));
         }
 
+        ViewBag.Categories = await _context.DocumentTypeCategories
+            .Where(c => c.IsActive)
+            .OrderBy(c => c.CategoryName)
+            .ToListAsync();
+            
         return View(documentType);
     }
 
@@ -104,11 +129,19 @@ public class DocumentTypeController : Controller
             return NotFound();
         }
 
-        var documentType = await _context.DocumentTypes.FindAsync(id);
+        var documentType = await _context.DocumentTypes
+            .Include(dt => dt.Category)
+            .FirstOrDefaultAsync(dt => dt.Id == id);
+            
         if (documentType == null)
         {
             return NotFound();
         }
+
+        ViewBag.Categories = await _context.DocumentTypeCategories
+            .Where(c => c.IsActive)
+            .OrderBy(c => c.CategoryName)
+            .ToListAsync();
 
         return View(documentType);
     }
@@ -122,16 +155,22 @@ public class DocumentTypeController : Controller
             return NotFound();
         }
 
+        // Validate category exists
+        if (!await _context.DocumentTypeCategories.AnyAsync(c => c.Id == documentType.CategoryId && c.IsActive))
+        {
+            ModelState.AddModelError("CategoryId", "Geçerli bir kategori seçiniz.");
+        }
+        
         // Check for duplicate type code (excluding current document type)
         if (await _context.DocumentTypes.AnyAsync(dt => dt.TypeCode == documentType.TypeCode && dt.Id != id))
         {
             ModelState.AddModelError("TypeCode", "Bu evrak türü kodu zaten kullanımda.");
         }
 
-        // Check for duplicate type name (excluding current document type)
-        if (await _context.DocumentTypes.AnyAsync(dt => dt.TypeName == documentType.TypeName && dt.Id != id))
+        // Check for duplicate type name in same category (excluding current document type)
+        if (await _context.DocumentTypes.AnyAsync(dt => dt.TypeName == documentType.TypeName && dt.CategoryId == documentType.CategoryId && dt.Id != id))
         {
-            ModelState.AddModelError("TypeName", "Bu evrak türü adı zaten kullanımda.");
+            ModelState.AddModelError("TypeName", "Bu evrak türü adı bu kategoride zaten kullanımda.");
         }
 
         if (ModelState.IsValid)
@@ -146,6 +185,7 @@ public class DocumentTypeController : Controller
 
                 existingDocumentType.TypeName = documentType.TypeName;
                 existingDocumentType.TypeCode = documentType.TypeCode;
+                existingDocumentType.CategoryId = documentType.CategoryId;
                 existingDocumentType.Description = documentType.Description;
                 existingDocumentType.IsUrgent = documentType.IsUrgent;
                 existingDocumentType.RequiresSignature = documentType.RequiresSignature;
@@ -172,6 +212,11 @@ public class DocumentTypeController : Controller
             return RedirectToAction(nameof(Index));
         }
 
+        ViewBag.Categories = await _context.DocumentTypeCategories
+            .Where(c => c.IsActive)
+            .OrderBy(c => c.CategoryName)
+            .ToListAsync();
+            
         return View(documentType);
     }
 

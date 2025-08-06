@@ -2,8 +2,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using muhaberat_evrak_yonetim.Models;
 using muhaberat_evrak_yonetim.Entities;
-using System.Security.Claims;
-using System.Net;
 
 namespace muhaberat_evrak_yonetim.Controllers;
 

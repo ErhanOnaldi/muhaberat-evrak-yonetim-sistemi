@@ -1,0 +1,301 @@
+@model muhaberat_evrak_yonetim.Entities.DocumentType
+
+@{
+    ViewData["Title"] = "Evrak Türü Detayları";
+    var stats = ViewBag.Statistics as dynamic;
+}
+
+<div class="container-fluid">
+    <!-- Page Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3 mb-0 text-primary">
+            <i class="fas fa-file-alt mr-2"></i>Evrak Türü Detayları
+        </h1>
+        <div>
+            <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning btn-sm mr-2">
+                <i class="fas fa-edit mr-1"></i>Düzenle
+            </a>
+            <a asp-action="Index" class="btn btn-secondary btn-sm">
+                <i class="fas fa-arrow-left mr-1"></i>Geri Dön
+            </a>
+        </div>
+    </div>
+
+    <!-- Document Type Info Card -->
+    <div class="card shadow mb-4">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-primary">
+                <i class="fas fa-info-circle mr-2"></i>Evrak Türü Bilgileri
+            </h6>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="form-label font-weight-bold">Evrak Türü Adı</label>
+                        <div class="d-flex align-items-center">
+                            <div class="doctype-icon mr-2 @(Model.IsUrgent ? "bg-warning" : "")">
+                                <i class="fas @(Model.IsUrgent ? "fa-bolt" : "fa-file-alt")"></i>
+                            </div>
+                            <h5 class="mb-0">@Model.TypeName</h5>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label font-weight-bold">Evrak Türü Kodu</label>
+                        <div>
+                            <code class="bg-light p-2 rounded">@Model.TypeCode</code>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label font-weight-bold">Kategori</label>
+                        <div>
+                            <span class="badge badge-primary badge-lg">@Model.Category?.CategoryName</span>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label font-weight-bold">Açıklama</label>
+                        <div>
+                            @if (!string.IsNullOrEmpty(Model.Description))
+                            {
+                                <p class="text-muted mb-0">@Model.Description</p>
+                            }
+                            else
+                            {
+                                <span class="text-muted">Açıklama bulunmuyor</span>
+                            }
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="form-label font-weight-bold">Teslimat Süresi</label>
+                        <div>
+                            <span class="badge @(Model.EstimatedDeliveryDays <= 2 ? "badge-success" : Model.EstimatedDeliveryDays <= 5 ? "badge-warning" : "badge-secondary") badge-lg">
+                                <i class="fas fa-clock mr-1"></i>@Model.EstimatedDeliveryDays gün
+                            </span>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label font-weight-bold">Özellikler</label>
+                        <div>
+                            @if (Model.IsUrgent)
+                            {
+                                <span class="badge badge-warning mr-2">
+                                    <i class="fas fa-bolt mr-1"></i>Acil
+                                </span>
+                            }
+                            @if (Model.RequiresSignature)
+                            {
+                                <span class="badge badge-info mr-2">
+                                    <i class="fas fa-signature mr-1"></i>İmza Gerekli
+                                </span>
+                            }
+                            @if (!Model.IsUrgent && !Model.RequiresSignature)
+                            {
+                                <span class="text-muted">Özel özellik yok</span>
+                            }
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label font-weight-bold">Paket Gereksinimleri</label>
+                        <div>
+                            @if (!string.IsNullOrEmpty(Model.PackageRequirements))
+                            {
+                                <p class="text-muted mb-0">@Model.PackageRequirements</p>
+                            }
+                            else
+                            {
+                                <span class="text-muted">Belirtilmemiş</span>
+                            }
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label font-weight-bold">Durum</label>
+                        <div>
+                            @if (Model.IsActive)
+                            {
+                                <span class="badge badge-success badge-lg">
+                                    <i class="fas fa-check mr-1"></i>Aktif
+                                </span>
+                            }
+                            else
+                            {
+                                <span class="badge badge-danger badge-lg">
+                                    <i class="fas fa-times mr-1"></i>Pasif
+                                </span>
+                            }
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label font-weight-bold">Oluşturma Tarihi</label>
+                        <div>
+                            <span class="text-muted">@Model.CreatedAt.ToString("dd.MM.yyyy HH:mm")</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="row mb-4">
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-primary shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                Toplam Evrak
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">@(stats?.TotalDocuments ?? 0)</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-file-alt fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-success shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                Bu Ay
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">@(stats?.ThisMonthDocuments ?? 0)</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-calendar fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-warning shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                Bekleyen
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">@(stats?.PendingDocuments ?? 0)</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-clock fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-info shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                                Ortalama Süre
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">@(stats?.AverageDeliveryTime ?? 0) gün</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-shipping-fast fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Documents -->
+    @if (Model.Documents != null && Model.Documents.Any())
+    {
+        <div class="card shadow mb-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-success">
+                    <i class="fas fa-list mr-2"></i>Son Evraklar (@Model.Documents.Count())
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-bordered">
+                        <thead class="thead-light">
+                            <tr>
+                                <th>Evrak No</th>
+                                <th>Başlık</th>
+                                <th>Gönderen</th>
+                                <th>Durum</th>
+                                <th>Tarih</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var document in Model.Documents.Take(10))
+                            {
+                                <tr>
+                                    <td>
+                                        <a asp-controller="Document" asp-action="Details" asp-route-id="@document.Id" class="text-primary font-weight-bold">
+                                            @document.DocumentNumber
+                                        </a>
+                                    </td>
+                                    <td>@document.Title</td>
+                                    <td>@document.SenderUser?.FirstName @document.SenderUser?.LastName</td>
+                                    <td>
+                                        @{
+                                            var statusClass = document.Status switch
+                                            {
+                                                "DRAFT" => "badge-secondary",
+                                                "SENT" => "badge-primary",
+                                                "DELIVERED" => "badge-success",
+                                                "RECEIVED" => "badge-success",
+                                                "CANCELLED" => "badge-danger",
+                                                _ => "badge-secondary"
+                                            };
+                                        }
+                                        <span class="badge @statusClass">@document.Status</span>
+                                    </td>
+                                    <td>@document.CreatedDate.ToString("dd.MM.yyyy")</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+<style>
+    .doctype-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 8px;
+        background: linear-gradient(135deg, #36b9cc 0%, #258391 100%);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 16px;
+    }
+
+    .doctype-icon.bg-warning {
+        background: linear-gradient(135deg, #f6c23e 0%, #dda20a 100%);
+    }
+
+    .badge-lg {
+        font-size: 0.875rem;
+        padding: 0.5rem 0.75rem;
+    }
+</style>

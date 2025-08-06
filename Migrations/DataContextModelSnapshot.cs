@@ -165,7 +165,7 @@ namespace muhaberat_evrak_yonetim.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
-                    b.Property<int?>("DocumentTypeId")
+                    b.Property<int>("DocumentTypeId")
                         .HasColumnType("int");
 
                     b.Property<DateTime?>("EstimatedDeliveryDate")
@@ -178,10 +178,12 @@ namespace muhaberat_evrak_yonetim.Migrations
                         .HasColumnType("bit");
 
                     b.Property<string>("PackageType")
+                        .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
                     b.Property<string>("PhysicalDocumentType")
+                        .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
@@ -204,7 +206,7 @@ namespace muhaberat_evrak_yonetim.Migrations
                     b.Property<int?>("ReviewedBy")
                         .HasColumnType("int");
 
-                    b.Property<int?>("SenderDepartmentId")
+                    b.Property<int>("SenderDepartmentId")
                         .HasColumnType("int");
 
                     b.Property<int>("SenderUserId")
@@ -370,6 +372,9 @@ namespace muhaberat_evrak_yonetim.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
+                    b.Property<int>("CategoryId")
+                        .HasColumnType("int");
+
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
@@ -403,10 +408,46 @@ namespace muhaberat_evrak_yonetim.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("CategoryId");
+
                     b.HasIndex("TypeCode")
                         .IsUnique();
 
                     b.ToTable("DocumentTypes");
+                });
+
+            modelBuilder.Entity("muhaberat_evrak_yonetim.Entities.DocumentTypeCategory", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("CategoryCode")
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<string>("CategoryName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Description")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("DocumentTypeCategories");
                 });
 
             modelBuilder.Entity("muhaberat_evrak_yonetim.Entities.Role", b =>
@@ -579,7 +620,8 @@ namespace muhaberat_evrak_yonetim.Migrations
                     b.HasOne("muhaberat_evrak_yonetim.Entities.DocumentType", "DocumentType")
                         .WithMany("Documents")
                         .HasForeignKey("DocumentTypeId")
-                        .OnDelete(DeleteBehavior.SetNull);
+                        .OnDelete(DeleteBehavior.SetNull)
+                        .IsRequired();
 
                     b.HasOne("muhaberat_evrak_yonetim.Entities.Department", "ReceiverDepartment")
                         .WithMany("ReceivedDocuments")
@@ -599,7 +641,8 @@ namespace muhaberat_evrak_yonetim.Migrations
                     b.HasOne("muhaberat_evrak_yonetim.Entities.Department", "SenderDepartment")
                         .WithMany("SentDocuments")
                         .HasForeignKey("SenderDepartmentId")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
 
                     b.HasOne("muhaberat_evrak_yonetim.Entities.User", "SenderUser")
                         .WithMany("SentDocuments")
@@ -664,6 +707,17 @@ namespace muhaberat_evrak_yonetim.Migrations
                     b.Navigation("Role");
                 });
 
+            modelBuilder.Entity("muhaberat_evrak_yonetim.Entities.DocumentType", b =>
+                {
+                    b.HasOne("muhaberat_evrak_yonetim.Entities.DocumentTypeCategory", "Category")
+                        .WithMany("DocumentTypes")
+                        .HasForeignKey("CategoryId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Category");
+                });
+
             modelBuilder.Entity("muhaberat_evrak_yonetim.Entities.User", b =>
                 {
                     b.HasOne("muhaberat_evrak_yonetim.Entities.Department", "Department")
@@ -711,6 +765,11 @@ namespace muhaberat_evrak_yonetim.Migrations
                     b.Navigation("DocumentPermissions");
 
                     b.Navigation("Documents");
+                });
+
+            modelBuilder.Entity("muhaberat_evrak_yonetim.Entities.DocumentTypeCategory", b =>
+                {
+                    b.Navigation("DocumentTypes");
                 });
 
             modelBuilder.Entity("muhaberat_evrak_yonetim.Entities.Role", b =>

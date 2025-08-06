@@ -15,7 +15,8 @@
 .idea/
 .vscode/
 .claude/
-
+.todo
+*.sql
 ## NuGet packages and caches
 *.nupkg
 *.nuget.cache

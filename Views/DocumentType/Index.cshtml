@@ -224,6 +224,7 @@
                         <tr>
                             <th>Tür Adı</th>
                             <th>Tür Kodu</th>
+                            <th>Kategori</th>
                             <th>Açıklama</th>
                             <th>Teslimat Süresi</th>
                             <th>Özellikler</th>
@@ -246,6 +247,9 @@
                                 </td>
                                 <td>
                                     <code class="bg-light p-1 rounded">@docType.TypeCode</code>
+                                </td>
+                                <td>
+                                    <span class="badge badge-secondary">@docType.Category?.CategoryName</span>
                                 </td>
                                 <td>
                                     @if (!string.IsNullOrEmpty(docType.Description))
@@ -301,28 +305,6 @@
                                            class="btn btn-sm btn-outline-secondary" title="Düzenle">
                                             <i class="fas fa-edit"></i>
                                         </a>
-                                        <a asp-action="Permissions" asp-route-id="@docType.Id" 
-                                           class="btn btn-sm btn-outline-info" title="Yetkiler">
-                                            <i class="fas fa-key"></i>
-                                        </a>
-                                        @if (docType.IsActive)
-                                        {
-                                            <form asp-action="Deactivate" asp-route-id="@docType.Id" method="post" class="d-inline">
-                                                <button type="submit" class="btn btn-sm btn-outline-danger" 
-                                                        title="Deaktif Et" onclick="return confirm('Bu evrak türünü deaktif etmek istediğinize emin misiniz?')">
-                                                    <i class="fas fa-ban"></i>
-                                                </button>
-                                            </form>
-                                        }
-                                        else
-                                        {
-                                            <form asp-action="Activate" asp-route-id="@docType.Id" method="post" class="d-inline">
-                                                <button type="submit" class="btn btn-sm btn-outline-success" 
-                                                        title="Aktif Et" onclick="return confirm('Bu evrak türünü aktif etmek istediğinize emin misiniz?')">
-                                                    <i class="fas fa-check"></i>
-                                                </button>
-                                            </form>
-                                        }
                                     </div>
                                 </td>
                             </tr>
@@ -384,7 +366,7 @@
                 "pageLength": 25,
                 "responsive": true,
                 "columnDefs": [
-                    { "orderable": false, "targets": 7 } // Actions column
+                    { "orderable": false, "targets": 8 } // Actions column
                 ]
             });
 

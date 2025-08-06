@@ -683,6 +683,51 @@ public class DocumentController : BaseController
         await _context.SaveChangesAsync();
     }
 
+    [HttpGet]
+    public async Task<JsonResult> GetDocumentTitles(string query)
+    {
+        if (string.IsNullOrWhiteSpace(query) || query.Length < 2)
+        {
+            return Json(new List<string>());
+        }
+
+        var titles = await _context.Documents
+            .Where(d => d.IsActive && d.Title.Contains(query))
+            .Select(d => d.Title)
+            .Distinct()
+            .Take(10)
+            .ToListAsync();
+
+        return Json(titles);
+    }
+
+    [HttpGet]
+    public async Task<JsonResult> GetUserNames(string query)
+    {
+        if (string.IsNullOrWhiteSpace(query) || query.Length < 2)
+        {
+            return Json(new List<object>());
+        }
+
+        var users = await _context.Users
+            .Include(u => u.Department)
+            .Where(u => u.IsActive && 
+                   (u.FirstName.Contains(query) || 
+                    u.LastName.Contains(query) || 
+                    (u.FirstName + " " + u.LastName).Contains(query)))
+            .Select(u => new { 
+                id = u.Id,
+                name = u.FirstName + " " + u.LastName,
+                department = u.Department != null ? u.Department.DepartmentName : "",
+                departmentId = u.DepartmentId,
+                fullText = u.FirstName + " " + u.LastName + " (" + (u.Department != null ? u.Department.DepartmentName : "") + ")"
+            })
+            .Take(10)
+            .ToListAsync();
+
+        return Json(users);
+    }
+
     private bool DocumentExists(int id)
     {
         return _context.Documents.Any(e => e.Id == id);

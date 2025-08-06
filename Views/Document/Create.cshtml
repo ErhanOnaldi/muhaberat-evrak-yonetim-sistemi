@@ -44,7 +44,15 @@
                                 <label asp-for="Title" class="form-label">
                                     <i class="fas fa-heading mr-2"></i>Başlık <span class="text-danger">*</span>
                                 </label>
-                                <input asp-for="Title" class="form-control" placeholder="Evrak başlığını girin" required>
+                                <div class="autocomplete-container">
+                                    <input asp-for="Title" class="form-control autocomplete-input" 
+                                           placeholder="Evrak başlığını girin" 
+                                           autocomplete="off" 
+                                           spellcheck="false"
+                                           data-autocomplete-url="@Url.Action("GetDocumentTitles")"
+                                           required>
+                                    <div class="autocomplete-dropdown" style="display: none;"></div>
+                                </div>
                                 <span asp-validation-for="Title" class="text-danger small"></span>
                             </div>
                             <div class="col-md-6 mb-3">
@@ -336,7 +344,98 @@
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
     <script>
+        // Simple document title autocomplete only
+        function initializeDocumentTitleAutocomplete() {
+            var $titleInput = $('#Title');
+            var $dropdown = $titleInput.siblings('.autocomplete-dropdown');
+            var url = $titleInput.data('autocomplete-url');
+            var currentHighlight = -1;
+            var searchTimeout;
+            
+            $titleInput.on('input', function() {
+                var query = $(this).val().trim();
+                currentHighlight = -1;
+                clearTimeout(searchTimeout);
+                
+                if (query.length < 2) {
+                    $dropdown.hide().empty();
+                    return;
+                }
+                
+                searchTimeout = setTimeout(function() {
+                    $.ajax({
+                        url: url,
+                        type: 'GET',
+                        data: { query: query },
+                        success: function(data) {
+                            $dropdown.empty();
+                            
+                            if (data && data.length > 0) {
+                                $.each(data, function(index, item) {
+                                    var $item = $('<div class="autocomplete-item"></div>');
+                                    $item.text(item);
+                                    $dropdown.append($item);
+                                });
+                                $dropdown.show();
+                            } else {
+                                $dropdown.html('<div class="autocomplete-no-results">Sonuç bulunamadı</div>');
+                                $dropdown.show();
+                            }
+                        },
+                        error: function() {
+                            $dropdown.hide();
+                        }
+                    });
+                }, 300);
+            });
+            
+            // Click to select
+            $dropdown.on('click', '.autocomplete-item', function() {
+                $titleInput.val($(this).text());
+                $dropdown.hide();
+                currentHighlight = -1;
+            });
+            
+            // Keyboard navigation
+            $titleInput.on('keydown', function(e) {
+                var $items = $dropdown.find('.autocomplete-item');
+                
+                if ($dropdown.is(':visible') && $items.length > 0) {
+                    if (e.keyCode === 40) { // Down arrow
+                        e.preventDefault();
+                        currentHighlight = (currentHighlight + 1) % $items.length;
+                        $items.removeClass('highlighted');
+                        $items.eq(currentHighlight).addClass('highlighted');
+                    } else if (e.keyCode === 38) { // Up arrow
+                        e.preventDefault();
+                        currentHighlight = currentHighlight <= 0 ? $items.length - 1 : currentHighlight - 1;
+                        $items.removeClass('highlighted');
+                        $items.eq(currentHighlight).addClass('highlighted');
+                    } else if (e.keyCode === 13) { // Enter
+                        if (currentHighlight >= 0) {
+                            e.preventDefault();
+                            $items.eq(currentHighlight).click();
+                        }
+                    } else if (e.keyCode === 27) { // Escape
+                        $dropdown.hide();
+                        currentHighlight = -1;
+                    }
+                }
+            });
+            
+            // Hide dropdown when clicking outside
+            $(document).on('click', function(e) {
+                if (!$titleInput.is(e.target) && !$dropdown.is(e.target) && $dropdown.has(e.target).length === 0) {
+                    $dropdown.hide();
+                    currentHighlight = -1;
+                }
+            });
+        }
+
         $(document).ready(function() {
+            // Initialize document title autocomplete only
+            initializeDocumentTitleAutocomplete();
+            
             // Auto-select current user as sender
             var currentUserId = @(ViewData["CurrentUserId"] as int? ?? 0);
             var currentUserDepartmentId = @(ViewData["CurrentUserDepartmentId"] as int? ?? 0);
@@ -438,13 +537,6 @@
                     $('#SenderDepartmentId').focus();
                     return false;
                 }
-                
-                // Check receiver selection - allow server-side validation to handle this
-                console.log('Receiver User:', receiverUser);
-                console.log('Receiver Dept:', receiverDept);
-                
-                // Skip client-side receiver validation, let server handle it
-                // Server-side validation is more reliable for this case
                 
                 // Check physical document type
                 if (!physicalType || physicalType === '') {

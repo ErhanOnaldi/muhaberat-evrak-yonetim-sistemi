@@ -26,6 +26,10 @@
     <!-- Toastr CSS -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" />
     
+    <!-- Select2 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+    <link href="~/css/select2-custom.css" rel="stylesheet" />
+    
     <!-- JavaScript -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     
@@ -327,6 +331,17 @@
                                             <span class="menu-title">Evraklarım</span>
                                         </a>
                                     </div>
+                                    @if (ViewBag.CurrentDepartmentName == "Muhaberat")
+                                    {
+                                        <div class="menu-item">
+                                            <a class="menu-link" href="@Url.Action("Index", "DocumentType")">
+                                                <span class="menu-icon">
+                                                    <i class="fas fa-tags text-warning"></i>
+                                                </span>
+                                                <span class="menu-title">Evrak Türleri</span>
+                                            </a>
+                                        </div>
+                                    }
                                     <div class="menu-item">
                                         <a class="menu-link" href="@(ViewBag.CurrentUserRole == "Admin" ? Url.Action("Index", "Role") : Url.Action("Index", "User"))">
                                             <span class="menu-icon">
@@ -893,6 +908,9 @@
     
     <!-- Toastr JS -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+    
+    <!-- Select2 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
     
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>

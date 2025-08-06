@@ -15,6 +15,9 @@ namespace muhaberat_evrak_yonetim.Entities
         [StringLength(20)]
         public string TypeCode { get; set; } = null!;
 
+        [Required]
+        public int CategoryId { get; set; }
+
         public string? Description { get; set; }
 
         public bool IsUrgent { get; set; } = false;
@@ -27,6 +30,8 @@ namespace muhaberat_evrak_yonetim.Entities
         public bool IsActive { get; set; } = true;
         public DateTime CreatedAt { get; set; }
 
+        // Navigation Properties
+        public DocumentTypeCategory Category { get; set; } = null!;
         public ICollection<Document> Documents { get; set; } = new List<Document>();
         public ICollection<DocumentPermission> DocumentPermissions { get; set; } = new List<DocumentPermission>();
     }

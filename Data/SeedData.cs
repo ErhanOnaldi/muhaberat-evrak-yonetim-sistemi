@@ -12,11 +12,46 @@ public static class SeedData
         // Ensure database is created
         await context.Database.EnsureCreatedAsync();
 
-        // Check if data already exists
+        // GERÇEK VERİLER - Her zaman kontrol et ve yükle
+        await SeedRealData(context);
+
+        // ÖRNEK VERİLER - Sadece yoksa yükle
         if (await context.Units.AnyAsync())
         {
-            return; // Data already seeded
+            return; // Sample data already seeded
         }
+
+        await SeedSampleData(context);
+    }
+
+    private static async Task SeedRealData(DataContext context)
+    {
+        // Document Type Categories - GERÇEK veriler
+        if (!await context.DocumentTypeCategories.AnyAsync())
+        {
+            var categories = new[]
+            {
+                new DocumentTypeCategory { CategoryName = "Bireysel Müşteri Devir Evrakları", CategoryCode = "BMDE", Description = "Bireysel müşteri devir işlemleri için evraklar", IsActive = true, CreatedAt = DateTime.Now },
+                new DocumentTypeCategory { CategoryName = "Bireysel Müşteri Kayıt Evrakları", CategoryCode = "BMKE", Description = "Bireysel müşteri kayıt işlemleri için evraklar", IsActive = true, CreatedAt = DateTime.Now },
+                new DocumentTypeCategory { CategoryName = "Bireysel Müşteri Virman Evrakları", CategoryCode = "BMVE", Description = "Bireysel müşteri virman işlemleri için evraklar", IsActive = true, CreatedAt = DateTime.Now },
+                new DocumentTypeCategory { CategoryName = "Kurumsal Müşteri Devir Evrakları", CategoryCode = "KMDE", Description = "Kurumsal müşteri devir işlemleri için evraklar", IsActive = true, CreatedAt = DateTime.Now },
+                new DocumentTypeCategory { CategoryName = "Kurumsal Müşteri Kayıt Evrakları", CategoryCode = "KMKE", Description = "Kurumsal müşteri kayıt işlemleri için evraklar", IsActive = true, CreatedAt = DateTime.Now },
+                new DocumentTypeCategory { CategoryName = "Kurumsal Müşteri Virman Evrakları", CategoryCode = "KMVE", Description = "Kurumsal müşteri virman işlemleri için evraklar", IsActive = true, CreatedAt = DateTime.Now },
+                new DocumentTypeCategory { CategoryName = "Tahsisat Evrakları", CategoryCode = "TE", Description = "Tahsisat işlemleri için evraklar", IsActive = true, CreatedAt = DateTime.Now },
+                new DocumentTypeCategory { CategoryName = "Ayrılma Evrakları", CategoryCode = "AE", Description = "Ayrılma işlemleri için evraklar", IsActive = true, CreatedAt = DateTime.Now },
+                new DocumentTypeCategory { CategoryName = "Teminat/Ekspertiz Evrakları Araç", CategoryCode = "TEEA", Description = "Araç teminat ve ekspertiz evrakları", IsActive = true, CreatedAt = DateTime.Now },
+                new DocumentTypeCategory { CategoryName = "Teminat/Ekspertiz Evrakları Konut", CategoryCode = "TEEK", Description = "Konut teminat ve ekspertiz evrakları", IsActive = true, CreatedAt = DateTime.Now },
+                new DocumentTypeCategory { CategoryName = "Satış Sonrası Evrakları Araç", CategoryCode = "SSEA", Description = "Araç satış sonrası evrakları", IsActive = true, CreatedAt = DateTime.Now },
+                new DocumentTypeCategory { CategoryName = "Satış Sonrası Evrakları Konut", CategoryCode = "SSEK", Description = "Konut satış sonrası evrakları", IsActive = true, CreatedAt = DateTime.Now }
+            };
+
+            await context.DocumentTypeCategories.AddRangeAsync(categories);
+            await context.SaveChangesAsync();
+        }
+    }
+
+    private static async Task SeedSampleData(DataContext context)
+    {
 
         // Create Units
         var units = new[]
@@ -161,73 +196,11 @@ public static class SeedData
         await context.Roles.AddRangeAsync(roles);
         await context.SaveChangesAsync();
 
-        // Create Document Types
-        var documentTypes = new[]
+        // Document Types - GERÇEK veriler (statik)
+        if (!await context.DocumentTypes.AnyAsync())
         {
-            new DocumentType
-            {
-                TypeName = "Kimlik Belgesi",
-                TypeCode = "KIMLIK",
-                Description = "Kimlik belgesi ve nüfus kayıt örnekleri",
-                IsUrgent = false,
-                RequiresSignature = true,
-                EstimatedDeliveryDays = 2,
-                PackageRequirements = "Kapalı zarf içinde",
-                IsActive = true,
-                CreatedAt = DateTime.Now
-            },
-            new DocumentType
-            {
-                TypeName = "İmza Sirküleri",
-                TypeCode = "IMZA_SIRK",
-                Description = "Yetkili imza sirküleri ve örnekleri",
-                IsUrgent = true,
-                RequiresSignature = true,
-                EstimatedDeliveryDays = 1,
-                PackageRequirements = "Özel güvenlik zarfı",
-                IsActive = true,
-                CreatedAt = DateTime.Now
-            },
-            new DocumentType
-            {
-                TypeName = "Mali Durum Belgesi",
-                TypeCode = "MALI_DURUM",
-                Description = "Mali durum raporları ve belgeleri",
-                IsUrgent = false,
-                RequiresSignature = false,
-                EstimatedDeliveryDays = 3,
-                PackageRequirements = "Standart zarf",
-                IsActive = true,
-                CreatedAt = DateTime.Now
-            },
-            new DocumentType
-            {
-                TypeName = "Risk Değerlendirme Raporu",
-                TypeCode = "RISK_DEG",
-                Description = "Risk analizi ve değerlendirme raporları",
-                IsUrgent = false,
-                RequiresSignature = false,
-                EstimatedDeliveryDays = 5,
-                PackageRequirements = "Büyük zarf",
-                IsActive = true,
-                CreatedAt = DateTime.Now
-            },
-            new DocumentType
-            {
-                TypeName = "Sözleşme Belgeleri",
-                TypeCode = "SOZLESME",
-                Description = "Çeşitli sözleşme belgeleri",
-                IsUrgent = true,
-                RequiresSignature = true,
-                EstimatedDeliveryDays = 1,
-                PackageRequirements = "Özel güvenlik zarfı",
-                IsActive = true,
-                CreatedAt = DateTime.Now
-            }
-        };
-
-        await context.DocumentTypes.AddRangeAsync(documentTypes);
-        await context.SaveChangesAsync();
+            await SeedDocumentTypes(context);
+        }
 
         // Create Users
         var users = new[]
@@ -307,193 +280,218 @@ public static class SeedData
         await context.Users.AddRangeAsync(users);
         await context.SaveChangesAsync();
 
-        // Create Sample Documents
-        var documents = new[]
+        // Create sample documents with proper category relationships
+        await SeedSampleDocuments(context, users, departments);
+
+        // Sample document histories, cargo logs, and permissions will be managed through the UI
+    }
+
+    private static async Task SeedDocumentTypes(DataContext context)
+    {
+        // Get category IDs
+        var categories = await context.DocumentTypeCategories.ToDictionaryAsync(c => c.CategoryName, c => c.Id);
+
+        var documentTypes = new[]
+        {
+            // Bireysel Müşteri Devir Evrakları
+            new DocumentType { TypeName = "Ön Bilgilendirme Formu", TypeCode = "BMDE_ONBILG", CategoryId = categories["Bireysel Müşteri Devir Evrakları"], Description = "Bireysel müşteri devir işlemleri için ön bilgilendirme formu", IsActive = true, IsUrgent = false, RequiresSignature = true, EstimatedDeliveryDays = 2, PackageRequirements = "Standart zarf", CreatedAt = DateTime.Now },
+            new DocumentType { TypeName = "Kimlik Fotokopisi", TypeCode = "BMDE_KIMLIK", CategoryId = categories["Bireysel Müşteri Devir Evrakları"], Description = "Bireysel müşteri devir işlemleri için kimlik fotokopisi", IsActive = true, IsUrgent = false, RequiresSignature = false, EstimatedDeliveryDays = 1, PackageRequirements = "Standart zarf", CreatedAt = DateTime.Now },
+            new DocumentType { TypeName = "İmza Beyannamesi", TypeCode = "BMDE_IMZA", CategoryId = categories["Bireysel Müşteri Devir Evrakları"], Description = "Bireysel müşteri devir işlemleri için imza beyannamesi", IsActive = true, IsUrgent = false, RequiresSignature = true, EstimatedDeliveryDays = 2, PackageRequirements = "Standart zarf", CreatedAt = DateTime.Now },
+            new DocumentType { TypeName = "Devir Sözleşmesi", TypeCode = "BMDE_SOZLES", CategoryId = categories["Bireysel Müşteri Devir Evrakları"], Description = "Bireysel müşteri devir işlemleri için devir sözleşmesi", IsActive = true, IsUrgent = true, RequiresSignature = true, EstimatedDeliveryDays = 3, PackageRequirements = "Özel zarf", CreatedAt = DateTime.Now },
+
+            // Kurumsal Müşteri Kayıt Evrakları
+            new DocumentType { TypeName = "Sözleşme", TypeCode = "KMKE_SOZLES", CategoryId = categories["Kurumsal Müşteri Kayıt Evrakları"], Description = "Kurumsal müşteri kayıt işlemleri için sözleşme", IsActive = true, IsUrgent = true, RequiresSignature = true, EstimatedDeliveryDays = 3, PackageRequirements = "Özel zarf", CreatedAt = DateTime.Now },
+            new DocumentType { TypeName = "Kimlik Fotokopisi", TypeCode = "KMKE_KIMLIK", CategoryId = categories["Kurumsal Müşteri Kayıt Evrakları"], Description = "Kurumsal müşteri kayıt işlemleri için kimlik fotokopisi", IsActive = true, IsUrgent = false, RequiresSignature = false, EstimatedDeliveryDays = 1, PackageRequirements = "Standart zarf", CreatedAt = DateTime.Now },
+            new DocumentType { TypeName = "Dekont", TypeCode = "KMKE_DEKONT", CategoryId = categories["Kurumsal Müşteri Kayıt Evrakları"], Description = "Kurumsal müşteri kayıt işlemleri için dekont", IsActive = true, IsUrgent = false, RequiresSignature = false, EstimatedDeliveryDays = 1, PackageRequirements = "Standart zarf", CreatedAt = DateTime.Now },
+            new DocumentType { TypeName = "Katılım Payı Dilekçesi", TypeCode = "KMKE_KATPAY", CategoryId = categories["Kurumsal Müşteri Kayıt Evrakları"], Description = "Kurumsal müşteri kayıt işlemleri için katılım payı dilekçesi", IsActive = true, IsUrgent = false, RequiresSignature = true, EstimatedDeliveryDays = 2, PackageRequirements = "Standart zarf", CreatedAt = DateTime.Now },
+            new DocumentType { TypeName = "Ön Bilgilendirme Formu", TypeCode = "KMKE_ONBILG", CategoryId = categories["Kurumsal Müşteri Kayıt Evrakları"], Description = "Kurumsal müşteri kayıt işlemleri için ön bilgilendirme formu", IsActive = true, IsUrgent = false, RequiresSignature = true, EstimatedDeliveryDays = 2, PackageRequirements = "Standart zarf", CreatedAt = DateTime.Now },
+            new DocumentType { TypeName = "Vergi Levhası", TypeCode = "KMKE_VERGIL", CategoryId = categories["Kurumsal Müşteri Kayıt Evrakları"], Description = "Kurumsal müşteri kayıt işlemleri için vergi levhası", IsActive = true, IsUrgent = false, RequiresSignature = false, EstimatedDeliveryDays = 2, PackageRequirements = "Standart zarf", CreatedAt = DateTime.Now },
+            new DocumentType { TypeName = "Ödeme Planı", TypeCode = "KMKE_ODEME", CategoryId = categories["Kurumsal Müşteri Kayıt Evrakları"], Description = "Kurumsal müşteri kayıt işlemleri için ödeme planı", IsActive = true, IsUrgent = false, RequiresSignature = false, EstimatedDeliveryDays = 2, PackageRequirements = "Standart zarf", CreatedAt = DateTime.Now },
+            new DocumentType { TypeName = "İmza Beyannamesi", TypeCode = "KMKE_IMZA", CategoryId = categories["Kurumsal Müşteri Kayıt Evrakları"], Description = "Kurumsal müşteri kayıt işlemleri için imza beyannamesi", IsActive = true, IsUrgent = false, RequiresSignature = true, EstimatedDeliveryDays = 2, PackageRequirements = "Standart zarf", CreatedAt = DateTime.Now },
+            new DocumentType { TypeName = "Şirketin Faaliyet Belgesi", TypeCode = "KMKE_FAAL", CategoryId = categories["Kurumsal Müşteri Kayıt Evrakları"], Description = "Kurumsal müşteri kayıt işlemleri için şirket faaliyet belgesi", IsActive = true, IsUrgent = false, RequiresSignature = false, EstimatedDeliveryDays = 3, PackageRequirements = "Büyük zarf", CreatedAt = DateTime.Now },
+            new DocumentType { TypeName = "İmza Sirküleri", TypeCode = "KMKE_SIRK", CategoryId = categories["Kurumsal Müşteri Kayıt Evrakları"], Description = "Kurumsal müşteri kayıt işlemleri için imza sirküleri", IsActive = true, IsUrgent = true, RequiresSignature = true, EstimatedDeliveryDays = 2, PackageRequirements = "Özel zarf", CreatedAt = DateTime.Now },
+            new DocumentType { TypeName = "Ticaret Sicil Gazete Yazısı", TypeCode = "KMKE_TICSIC", CategoryId = categories["Kurumsal Müşteri Kayıt Evrakları"], Description = "Kurumsal müşteri kayıt işlemleri için ticaret sicil gazete yazısı", IsActive = true, IsUrgent = false, RequiresSignature = false, EstimatedDeliveryDays = 3, PackageRequirements = "Büyük zarf", CreatedAt = DateTime.Now },
+            new DocumentType { TypeName = "Virman Dilekçesi", TypeCode = "KMKE_VIRMAN", CategoryId = categories["Kurumsal Müşteri Kayıt Evrakları"], Description = "Kurumsal müşteri kayıt işlemleri için virman dilekçesi", IsActive = true, IsUrgent = false, RequiresSignature = true, EstimatedDeliveryDays = 2, PackageRequirements = "Standart zarf", CreatedAt = DateTime.Now },
+
+            // Bireysel Müşteri Kayıt Evrakları
+            new DocumentType { TypeName = "Sözleşme", TypeCode = "BMKE_SOZLES", CategoryId = categories["Bireysel Müşteri Kayıt Evrakları"], Description = "Bireysel müşteri kayıt işlemleri için sözleşme", IsActive = true, IsUrgent = true, RequiresSignature = true, EstimatedDeliveryDays = 3, PackageRequirements = "Özel zarf", CreatedAt = DateTime.Now },
+            new DocumentType { TypeName = "Kimlik Fotokopisi", TypeCode = "BMKE_KIMLIK", CategoryId = categories["Bireysel Müşteri Kayıt Evrakları"], Description = "Bireysel müşteri kayıt işlemleri için kimlik fotokopisi", IsActive = true, IsUrgent = false, RequiresSignature = false, EstimatedDeliveryDays = 1, PackageRequirements = "Standart zarf", CreatedAt = DateTime.Now },
+            new DocumentType { TypeName = "Dekont", TypeCode = "BMKE_DEKONT", CategoryId = categories["Bireysel Müşteri Kayıt Evrakları"], Description = "Bireysel müşteri kayıt işlemleri için dekont", IsActive = true, IsUrgent = false, RequiresSignature = false, EstimatedDeliveryDays = 1, PackageRequirements = "Standart zarf", CreatedAt = DateTime.Now },
+            new DocumentType { TypeName = "Katılım Payı Dilekçesi", TypeCode = "BMKE_KATPAY", CategoryId = categories["Bireysel Müşteri Kayıt Evrakları"], Description = "Bireysel müşteri kayıt işlemleri için katılım payı dilekçesi", IsActive = true, IsUrgent = false, RequiresSignature = true, EstimatedDeliveryDays = 2, PackageRequirements = "Standart zarf", CreatedAt = DateTime.Now },
+            new DocumentType { TypeName = "Ön Bilgilendirme Formu", TypeCode = "BMKE_ONBILG", CategoryId = categories["Bireysel Müşteri Kayıt Evrakları"], Description = "Bireysel müşteri kayıt işlemleri için ön bilgilendirme formu", IsActive = true, IsUrgent = false, RequiresSignature = true, EstimatedDeliveryDays = 2, PackageRequirements = "Standart zarf", CreatedAt = DateTime.Now },
+            new DocumentType { TypeName = "Ödeme Planı", TypeCode = "BMKE_ODEME", CategoryId = categories["Bireysel Müşteri Kayıt Evrakları"], Description = "Bireysel müşteri kayıt işlemleri için ödeme planı", IsActive = true, IsUrgent = false, RequiresSignature = false, EstimatedDeliveryDays = 2, PackageRequirements = "Standart zarf", CreatedAt = DateTime.Now },
+            new DocumentType { TypeName = "İmza Beyannamesi", TypeCode = "BMKE_IMZA", CategoryId = categories["Bireysel Müşteri Kayıt Evrakları"], Description = "Bireysel müşteri kayıt işlemleri için imza beyannamesi", IsActive = true, IsUrgent = false, RequiresSignature = true, EstimatedDeliveryDays = 2, PackageRequirements = "Standart zarf", CreatedAt = DateTime.Now },
+            new DocumentType { TypeName = "Virman Dilekçesi", TypeCode = "BMKE_VIRMAN", CategoryId = categories["Bireysel Müşteri Kayıt Evrakları"], Description = "Bireysel müşteri kayıt işlemleri için virman dilekçesi", IsActive = true, IsUrgent = false, RequiresSignature = true, EstimatedDeliveryDays = 2, PackageRequirements = "Standart zarf", CreatedAt = DateTime.Now },
+
+            // Kurumsal Müşteri Devir Evrakları
+            new DocumentType { TypeName = "Ön Bilgilendirme Formu", TypeCode = "KMDE_ONBILG", CategoryId = categories["Kurumsal Müşteri Devir Evrakları"], Description = "Kurumsal müşteri devir işlemleri için ön bilgilendirme formu", IsActive = true, IsUrgent = false, RequiresSignature = true, EstimatedDeliveryDays = 2, PackageRequirements = "Standart zarf", CreatedAt = DateTime.Now },
+            new DocumentType { TypeName = "İmza Beyannamesi", TypeCode = "KMDE_IMZA", CategoryId = categories["Kurumsal Müşteri Devir Evrakları"], Description = "Kurumsal müşteri devir işlemleri için imza beyannamesi", IsActive = true, IsUrgent = false, RequiresSignature = true, EstimatedDeliveryDays = 2, PackageRequirements = "Standart zarf", CreatedAt = DateTime.Now },
+            new DocumentType { TypeName = "Devir Sözleşmesi", TypeCode = "KMDE_SOZLES", CategoryId = categories["Kurumsal Müşteri Devir Evrakları"], Description = "Kurumsal müşteri devir işlemleri için devir sözleşmesi", IsActive = true, IsUrgent = true, RequiresSignature = true, EstimatedDeliveryDays = 3, PackageRequirements = "Özel zarf", CreatedAt = DateTime.Now },
+            new DocumentType { TypeName = "Vergi Levhası", TypeCode = "KMDE_VERGIL", CategoryId = categories["Kurumsal Müşteri Devir Evrakları"], Description = "Kurumsal müşteri devir işlemleri için vergi levhası", IsActive = true, IsUrgent = false, RequiresSignature = false, EstimatedDeliveryDays = 2, PackageRequirements = "Standart zarf", CreatedAt = DateTime.Now },
+            new DocumentType { TypeName = "Şirketin Faaliyet Belgesi", TypeCode = "KMDE_FAAL", CategoryId = categories["Kurumsal Müşteri Devir Evrakları"], Description = "Kurumsal müşteri devir işlemleri için şirket faaliyet belgesi", IsActive = true, IsUrgent = false, RequiresSignature = false, EstimatedDeliveryDays = 3, PackageRequirements = "Büyük zarf", CreatedAt = DateTime.Now },
+            new DocumentType { TypeName = "İmza Sirküleri", TypeCode = "KMDE_SIRK", CategoryId = categories["Kurumsal Müşteri Devir Evrakları"], Description = "Kurumsal müşteri devir işlemleri için imza sirküleri", IsActive = true, IsUrgent = true, RequiresSignature = true, EstimatedDeliveryDays = 2, PackageRequirements = "Özel zarf", CreatedAt = DateTime.Now },
+            new DocumentType { TypeName = "Ticaret Sicil Gazete Yazısı", TypeCode = "KMDE_TICSIC", CategoryId = categories["Kurumsal Müşteri Devir Evrakları"], Description = "Kurumsal müşteri devir işlemleri için ticaret sicil gazete yazısı", IsActive = true, IsUrgent = false, RequiresSignature = false, EstimatedDeliveryDays = 3, PackageRequirements = "Büyük zarf", CreatedAt = DateTime.Now },
+
+            // Tahsisat Evrakları (örnekler)
+            new DocumentType { TypeName = "Kimlik", TypeCode = "TE_KIMLIK", CategoryId = categories["Tahsisat Evrakları"], Description = "Tahsisat işlemleri için kimlik belgesi", IsActive = true, IsUrgent = false, RequiresSignature = false, EstimatedDeliveryDays = 1, PackageRequirements = "Standart zarf", CreatedAt = DateTime.Now },
+            new DocumentType { TypeName = "Maaş Bordrosu", TypeCode = "TE_MAAS", CategoryId = categories["Tahsisat Evrakları"], Description = "Tahsisat işlemleri için maaş bordrosu", IsActive = true, IsUrgent = false, RequiresSignature = false, EstimatedDeliveryDays = 2, PackageRequirements = "Standart zarf", CreatedAt = DateTime.Now },
+            new DocumentType { TypeName = "Kefalet Sözleşmesi", TypeCode = "TE_KEFALET", CategoryId = categories["Tahsisat Evrakları"], Description = "Tahsisat işlemleri için kefalet sözleşmesi", IsActive = true, IsUrgent = true, RequiresSignature = true, EstimatedDeliveryDays = 3, PackageRequirements = "Özel zarf", CreatedAt = DateTime.Now },
+
+            // Ayrılma Evrakları
+            new DocumentType { TypeName = "Ayrılma Dilekçesi", TypeCode = "AE_DILEKCE", CategoryId = categories["Ayrılma Evrakları"], Description = "Ayrılma işlemleri için dilekçe", IsActive = true, IsUrgent = false, RequiresSignature = true, EstimatedDeliveryDays = 2, PackageRequirements = "Standart zarf", CreatedAt = DateTime.Now },
+            new DocumentType { TypeName = "Ölüm Belgesi", TypeCode = "AE_OLUM", CategoryId = categories["Ayrılma Evrakları"], Description = "Ayrılma işlemleri için ölüm belgesi", IsActive = true, IsUrgent = true, RequiresSignature = false, EstimatedDeliveryDays = 1, PackageRequirements = "Özel güvenlik zarfı", CreatedAt = DateTime.Now },
+
+            // Araç ve Konut evrakları (örnekler)
+            new DocumentType { TypeName = "Ruhsat Fotokopisi", TypeCode = "TEEA_RUHSAT", CategoryId = categories["Teminat/Ekspertiz Evrakları Araç"], Description = "Araç teminat ve ekspertiz için ruhsat fotokopisi", IsActive = true, IsUrgent = false, RequiresSignature = false, EstimatedDeliveryDays = 1, PackageRequirements = "Standart zarf", CreatedAt = DateTime.Now },
+            new DocumentType { TypeName = "Tapu", TypeCode = "TEEK_TAPU", CategoryId = categories["Teminat/Ekspertiz Evrakları Konut"], Description = "Konut teminat ve ekspertiz için tapu", IsActive = true, IsUrgent = true, RequiresSignature = false, EstimatedDeliveryDays = 3, PackageRequirements = "Özel güvenlik zarfı", CreatedAt = DateTime.Now }
+        };
+
+        await context.DocumentTypes.AddRangeAsync(documentTypes);
+        await context.SaveChangesAsync();
+    }
+
+    private static async Task SeedSampleDocuments(DataContext context, User[] users, Department[] departments)
+    {
+        // Get some document types for sample documents
+        var documentTypes = await context.DocumentTypes.Take(10).ToListAsync();
+        if (!documentTypes.Any()) return;
+
+        var sampleDocuments = new[]
         {
             new Document
             {
-                DocumentNumber = "EVR-20250122-001",
-                DocumentTypeId = documentTypes[0].Id, // Kimlik Belgesi
-                Title = "Yeni Müşteri Kimlik Belgesi",
-                Description = "Yeni müşteri kaydı için kimlik belgesi fotokopisi",
-                SenderUserId = users[1].Id, // Muhasebe uzmanı
-                SenderDepartmentId = departments[1].Id, // Muhasebe
-                ReceiverUserId = users[0].Id, // Muhaberat admin
-                ReceiverDepartmentId = departments[0].Id, // Muhaberat
-                CustomerId = "MSTR001",
+                DocumentNumber = "DOC001",
+                Title = "Ahmet Yılmaz - Kimlik Fotokopisi",
+                DocumentTypeId = documentTypes.First(dt => dt.TypeCode == "BMKE_KIMLIK").Id,
+                Description = "Bireysel müşteri kayıt işlemi için kimlik belgesi",
+                SenderUserId = users[0].Id, // Muhaberat admin
+                ReceiverUserId = users[1].Id, // Muhasebe uzman
+                SenderDepartmentId = departments[0].Id, // Muhaberat
+                ReceiverDepartmentId = departments[1].Id, // Muhasebe
+                CreatedBy = users[0].Id,
                 CustomerName = "Ahmet Yılmaz",
-                CreatedBy = users[1].Id,
-                CreatedDate = DateTime.Now.AddDays(-5),
-                PhysicalDocumentType = "COPY",
-                PackageType = "ENVELOPE",
-                ShippingAddress = "İstanbul Şube, Levent Mahallesi",
-                DeliveryAddress = "Ankara Merkez, Kızılay",
-                Status = DocumentStatus.SENT.ToString(),
-                DeliveryStatus = DeliveryStatus.IN_TRANSIT.ToString(),
+                CustomerId = "12345678901",
+                PhysicalDocumentType = "Fotokopi",
+                PackageType = "Standart Zarf",
+                ShippingAddress = "Muhaberat Departmanı, İstanbul",
+                DeliveryAddress = "Muhasebe Departmanı, İstanbul",
+                Status = "PENDING",
+                DeliveryStatus = "PREPARING",
                 IsActive = true,
+                CreatedDate = DateTime.Now.AddDays(-5),
                 CreatedAt = DateTime.Now.AddDays(-5),
+                UpdatedAt = DateTime.Now.AddDays(-5)
+            },
+            new Document
+            {
+                DocumentNumber = "DOC002",
+                Title = "ABC Şirketi - İmza Sirküleri",
+                DocumentTypeId = documentTypes.First(dt => dt.TypeCode == "KMKE_SIRK").Id,
+                Description = "Kurumsal müşteri kayıt işlemi için imza sirküleri",
+                SenderUserId = users[0].Id,
+                ReceiverUserId = users[2].Id, // Portföy yöneticisi
+                SenderDepartmentId = departments[0].Id,
+                ReceiverDepartmentId = departments[2].Id, // Şube Portföy Yönetimi
+                CreatedBy = users[0].Id,
+                CustomerName = "ABC Şirketi",
+                CustomerId = "1234567890",
+                PhysicalDocumentType = "Orijinal Belge",
+                PackageType = "Özel Zarf",
+                ShippingAddress = "Muhaberat Departmanı, İstanbul",
+                DeliveryAddress = "Şube Portföy Yönetimi, İstanbul",
+                CargoCompany = "Aras Kargo",
+                CargoTrackingNumber = "123456789",
+                Status = "SHIPPED",
+                DeliveryStatus = "IN_TRANSIT",
+                IsActive = true,
+                CreatedDate = DateTime.Now.AddDays(-3),
+                ShippingDate = DateTime.Now.AddDays(-2),
+                EstimatedDeliveryDate = DateTime.Now.AddDays(1),
+                CreatedAt = DateTime.Now.AddDays(-3),
                 UpdatedAt = DateTime.Now.AddDays(-2)
             },
             new Document
             {
-                DocumentNumber = "EVR-20250122-002",
-                DocumentTypeId = documentTypes[1].Id, // İmza Sirküleri
-                Title = "Yetki İmza Sirküleri Güncelleme",
-                Description = "Şube yetki imza sirküleri güncelleme belgesi",
-                SenderUserId = users[2].Id, // Portföy yöneticisi
-                SenderDepartmentId = departments[2].Id, // Şube Portföy Yönetimi
-                ReceiverDepartmentId = departments[0].Id, // Muhaberat
-                CustomerId = "SUBE001",
-                CustomerName = "İstanbul Şubesi",
-                CreatedBy = users[2].Id,
-                CreatedDate = DateTime.Now.AddDays(-3),
-                PhysicalDocumentType = "ORIGINAL",
-                PackageType = "SPECIAL",
-                ShippingAddress = "İstanbul Şube Portföy Departmanı",
-                DeliveryAddress = "Ankara Merkez Muhaberat",
-                Status = DocumentStatus.DRAFT.ToString(),
-                DeliveryStatus = DeliveryStatus.PREPARING.ToString(),
+                DocumentNumber = "DOC003",
+                Title = "Mehmet Demir - Devir Sözleşmesi",
+                DocumentTypeId = documentTypes.First(dt => dt.TypeCode == "BMDE_SOZLES").Id,
+                Description = "Bireysel müşteri devir işlemi için sözleşme belgesi",
+                SenderUserId = users[3].Id, // Müşteri temsilcisi
+                ReceiverUserId = users[0].Id,
+                SenderDepartmentId = departments[3].Id, // Müşteri İlişkileri
+                ReceiverDepartmentId = departments[0].Id,
+                CreatedBy = users[3].Id,
+                CustomerName = "Mehmet Demir",
+                CustomerId = "98765432109",
+                PhysicalDocumentType = "Sözleşme",
+                PackageType = "Özel Güvenlik Zarfı",
+                ShippingAddress = "Müşteri İlişkileri, İstanbul",
+                DeliveryAddress = "Muhaberat Departmanı, İstanbul",
+                CargoCompany = "MNG Kargo",
+                CargoTrackingNumber = "987654321",
+                Status = "DELIVERED",
+                DeliveryStatus = "DELIVERED",
+                ReceivedBy = "Muhaberat Personeli",
                 IsActive = true,
-                CreatedAt = DateTime.Now.AddDays(-3),
-                UpdatedAt = DateTime.Now.AddDays(-3)
-            },
-            new Document
-            {
-                DocumentNumber = "EVR-20250122-003",
-                DocumentTypeId = documentTypes[2].Id, // Mali Durum Belgesi
-                Title = "Aylık Mali Durum Raporu",
-                Description = "Ocak 2025 aylık mali durum raporu",
-                SenderUserId = users[1].Id, // Muhasebe uzmanı
-                SenderDepartmentId = departments[1].Id, // Muhasebe
-                ReceiverUserId = users[2].Id, // Portföy yöneticisi
-                ReceiverDepartmentId = departments[2].Id, // Şube Portföy Yönetimi
-                CreatedBy = users[1].Id,
-                CreatedDate = DateTime.Now.AddDays(-1),
-                PhysicalDocumentType = "COPY",
-                PackageType = "LARGE_PACKAGE",
-                ShippingAddress = "Mali İşler Muhasebe Departmanı",
-                DeliveryAddress = "Operasyon Şube Portföy Yönetimi",
-                CargoCompany = "Aras Kargo",
-                CargoTrackingNumber = "1234567890",
-                ShippingDate = DateTime.Now,
-                Status = DocumentStatus.SENT.ToString(),
-                DeliveryStatus = DeliveryStatus.SHIPPED.ToString(),
-                IsActive = true,
-                CreatedAt = DateTime.Now.AddDays(-1),
-                UpdatedAt = DateTime.Now
+                CreatedDate = DateTime.Now.AddDays(-7),
+                ShippingDate = DateTime.Now.AddDays(-5),
+                DeliveryDate = DateTime.Now.AddDays(-2),
+                CreatedAt = DateTime.Now.AddDays(-7),
+                UpdatedAt = DateTime.Now.AddDays(-2)
             }
         };
 
-        await context.Documents.AddRangeAsync(documents);
+        await context.Documents.AddRangeAsync(sampleDocuments);
         await context.SaveChangesAsync();
 
-        // Create Document History entries
-        var documentHistories = new[]
+        // Create cargo tracking logs for the documents
+        var cargoTrackingLogs = new List<CargoTrackingLog>();
+        foreach (var doc in sampleDocuments)
         {
-            new DocumentHistory
+            cargoTrackingLogs.Add(new CargoTrackingLog
             {
-                DocumentId = documents[0].Id,
-                ActionType = "UPLOADED",
-                UserId = users[1].Id,
-                ActionDate = DateTime.Now.AddDays(-5),
-                Notes = "Evrak sisteme yüklendi",
-                IpAddress = "192.168.1.100"
-            },
-            new DocumentHistory
+                DocumentId = doc.Id,
+                OldStatus = null,
+                NewStatus = "PENDING",
+                StatusChangeDate = doc.CreatedDate,
+                Location = "Gönderen Departman",
+                UpdatedBy = doc.SenderUserId,
+                Notes = "Evrak oluşturuldu",
+                CreatedAt = doc.CreatedDate
+            });
+
+            if (doc.Status == "SHIPPED" || doc.Status == "DELIVERED")
             {
-                DocumentId = documents[0].Id,
-                ActionType = "SENT",
-                UserId = users[1].Id,
-                ActionDate = DateTime.Now.AddDays(-3),
-                Notes = "Evrak muhaberata gönderildi",
-                IpAddress = "192.168.1.100"
-            },
-            new DocumentHistory
-            {
-                DocumentId = documents[2].Id,
-                ActionType = "UPLOADED",
-                UserId = users[1].Id,
-                ActionDate = DateTime.Now.AddDays(-1),
-                Notes = "Mali durum raporu hazırlandı",
-                IpAddress = "192.168.1.101"
+                cargoTrackingLogs.Add(new CargoTrackingLog
+                {
+                    DocumentId = doc.Id,
+                    OldStatus = "PENDING",
+                    NewStatus = "SHIPPED",
+                    StatusChangeDate = doc.ShippingDate ?? doc.CreatedDate.AddHours(2),
+                    Location = "Kargo Merkezi",
+                    UpdatedBy = doc.SenderUserId,
+                    Notes = "Evrak kargoya verildi",
+                    CreatedAt = doc.ShippingDate ?? doc.CreatedDate.AddHours(2)
+                });
             }
-        };
 
-        await context.DocumentHistories.AddRangeAsync(documentHistories);
-        await context.SaveChangesAsync();
-
-        // Create Cargo Tracking Logs
-        var cargoLogs = new[]
-        {
-            new CargoTrackingLog
+            if (doc.Status == "DELIVERED")
             {
-                DocumentId = documents[2].Id,
-                OldStatus = "PREPARING",
-                NewStatus = "SHIPPED",
-                StatusChangeDate = DateTime.Now,
-                Location = "İstanbul Merkez",
-                UpdatedBy = users[0].Id, // Muhaberat admin
-                Notes = "Aras Kargo ile gönderildi - Takip No: 1234567890",
-                CreatedAt = DateTime.Now
+                cargoTrackingLogs.Add(new CargoTrackingLog
+                {
+                    DocumentId = doc.Id,
+                    OldStatus = "SHIPPED",
+                    NewStatus = "DELIVERED",
+                    StatusChangeDate = doc.DeliveryDate ?? doc.CreatedDate.AddDays(1),
+                    Location = "Alıcı Departman",
+                    UpdatedBy = doc.ReceiverUserId ?? doc.SenderUserId,
+                    Notes = "Evrak teslim edildi",
+                    CreatedAt = doc.DeliveryDate ?? doc.CreatedDate.AddDays(1)
+                });
             }
-        };
+        }
 
-        await context.CargoTrackingLogs.AddRangeAsync(cargoLogs);
-        await context.SaveChangesAsync();
-
-        // Create Document Permissions
-        var documentPermissions = new[]
-        {
-            // Muhaberat uzmanı tüm evrak türlerinde full yetki
-            new DocumentPermission
-            {
-                DocumentTypeId = documentTypes[0].Id, // Kimlik
-                RoleId = roles[5].Id, // Muhaberat Uzmanı
-                CanView = true,
-                CanUpload = true,
-                CanDownload = true,
-                CanReview = true,
-                CanApprove = true,
-                CreatedAt = DateTime.Now
-            },
-            new DocumentPermission
-            {
-                DocumentTypeId = documentTypes[1].Id, // İmza Sirküleri
-                RoleId = roles[5].Id, // Muhaberat Uzmanı
-                CanView = true,
-                CanUpload = true,
-                CanDownload = true,
-                CanReview = true,
-                CanApprove = true,
-                CreatedAt = DateTime.Now
-            },
-            // Muhasebe uzmanı mali belgeler için yetki
-            new DocumentPermission
-            {
-                DocumentTypeId = documentTypes[2].Id, // Mali Durum
-                RoleId = roles[0].Id, // Muhasebe Uzmanı
-                CanView = true,
-                CanUpload = true,
-                CanDownload = true,
-                CanReview = false,
-                CanApprove = false,
-                CreatedAt = DateTime.Now
-            },
-            // Portföy yöneticisi risk raporları için yetki
-            new DocumentPermission
-            {
-                DocumentTypeId = documentTypes[3].Id, // Risk Değerlendirme
-                RoleId = roles[1].Id, // Portföy Yöneticisi
-                CanView = true,
-                CanUpload = true,
-                CanDownload = true,
-                CanReview = true,
-                CanApprove = false,
-                CreatedAt = DateTime.Now
-            }
-        };
-
-        await context.DocumentPermissions.AddRangeAsync(documentPermissions);
+        await context.CargoTrackingLogs.AddRangeAsync(cargoTrackingLogs);
         await context.SaveChangesAsync();
     }
 }

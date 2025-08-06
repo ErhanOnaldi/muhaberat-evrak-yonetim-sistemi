@@ -1,0 +1,246 @@
+@model muhaberat_evrak_yonetim.Entities.DocumentTypeCategory
+
+@{
+    ViewData["Title"] = "Kategori Düzenle";
+}
+
+<div class="container-fluid">
+    <!-- Page Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3 mb-0 text-warning">
+            <i class="fas fa-edit mr-2"></i>Kategori Düzenle
+        </h1>
+        <div>
+            <a asp-action="Details" asp-route-id="@Model.Id" class="btn btn-info btn-sm">
+                <i class="fas fa-eye mr-1"></i>Detaylar
+            </a>
+            <a asp-action="Index" class="btn btn-secondary btn-sm">
+                <i class="fas fa-arrow-left mr-1"></i>Geri Dön
+            </a>
+        </div>
+    </div>
+
+    <!-- Edit Form -->
+    <div class="card shadow">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-warning">
+                <i class="fas fa-form mr-2"></i>Kategori Bilgilerini Düzenle
+            </h6>
+        </div>
+        <div class="card-body">
+            <form asp-action="Edit" method="post">
+                <input type="hidden" asp-for="Id" />
+                <input type="hidden" asp-for="CreatedAt" />
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label asp-for="CategoryName" class="form-label font-weight-bold">
+                                <i class="fas fa-tag mr-1 text-primary"></i>Kategori Adı
+                            </label>
+                            <input asp-for="CategoryName" class="form-control" placeholder="Örn: Bireysel Müşteri Kayıt Evrakları" />
+                            <span asp-validation-for="CategoryName" class="text-danger"></span>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label asp-for="CategoryCode" class="form-label font-weight-bold">
+                                <i class="fas fa-code mr-1 text-info"></i>Kategori Kodu (Opsiyonel)
+                            </label>
+                            <input asp-for="CategoryCode" class="form-control" placeholder="Örn: BMKE" maxlength="20" />
+                            <small class="form-text text-muted">Kısa ve benzersiz kod (opsiyonel)</small>
+                            <span asp-validation-for="CategoryCode" class="text-danger"></span>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label asp-for="Description" class="form-label font-weight-bold">
+                                <i class="fas fa-align-left mr-1 text-muted"></i>Açıklama
+                            </label>
+                            <textarea asp-for="Description" class="form-control" rows="4" placeholder="Kategori hakkında açıklama..."></textarea>
+                            <span asp-validation-for="Description" class="text-danger"></span>
+                        </div>
+                        
+                        <div class="form-group">
+                            <div class="custom-control custom-checkbox">
+                                <input asp-for="IsActive" type="checkbox" class="custom-control-input" />
+                                <label asp-for="IsActive" class="custom-control-label font-weight-bold">
+                                    <i class="fas fa-check text-success mr-1"></i>Aktif
+                                </label>
+                                <small class="form-text text-muted">Kategori aktif durumda olsun</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <hr>
+                
+                <!-- Category Information -->
+                <div class="row mb-3">
+                    <div class="col-12">
+                        <div class="alert alert-info">
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <strong><i class="fas fa-info-circle mr-1"></i>Kategori Bilgileri:</strong>
+                                    <div class="mt-2">
+                                        <small class="text-muted">
+                                            <i class="fas fa-calendar-plus mr-1"></i>Oluşturma: @Model.CreatedAt.ToString("dd.MM.yyyy HH:mm")
+                                        </small>
+                                        @if (Model.UpdatedAt.HasValue)
+                                        {
+                                            <br>
+                                            <small class="text-muted">
+                                                <i class="fas fa-calendar-edit mr-1"></i>Son Güncelleme: @Model.UpdatedAt.Value.ToString("dd.MM.yyyy HH:mm")
+                                            </small>
+                                        }
+                                    </div>
+                                </div>
+                                <div class="col-md-8">
+                                    @if (Model.DocumentTypes.Any())
+                                    {
+                                        <strong><i class="fas fa-exclamation-triangle mr-1 text-warning"></i>Dikkat:</strong>
+                                        <p class="mb-0">
+                                            Bu kategoride <strong>@Model.DocumentTypes.Count evrak türü</strong> bulunmaktadır. 
+                                            Kategoriyi deaktif ederseniz bu evrak türleri etkilenebilir.
+                                        </p>
+                                        <small class="text-muted">
+                                            Evrak türleri: @string.Join(", ", Model.DocumentTypes.Take(3).Select(dt => dt.TypeName))
+                                            @if (Model.DocumentTypes.Count > 3) { <text>ve @(Model.DocumentTypes.Count - 3) tane daha...</text> }
+                                        </small>
+                                    }
+                                    else
+                                    {
+                                        <p class="mb-0">
+                                            <i class="fas fa-info-circle mr-1"></i>
+                                            Bu kategoride henüz evrak türü bulunmuyor.
+                                        </p>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-12">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <small class="text-muted">
+                                    <i class="fas fa-info-circle mr-1"></i>
+                                    Değişiklikler kaydedildikten sonra ilgili evrak türleri güncellenecektir.
+                                </small>
+                            </div>
+                            <div>
+                                <button type="submit" class="btn btn-warning">
+                                    <i class="fas fa-save mr-1"></i>Değişiklikleri Kaydet
+                                </button>
+                                <a asp-action="Details" asp-route-id="@Model.Id" class="btn btn-secondary ml-2">
+                                    <i class="fas fa-times mr-1"></i>İptal
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+    
+    <!-- Related Document Types Preview -->
+    @if (Model.DocumentTypes.Any())
+    {
+        <div class="card shadow mt-4">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-info">
+                    <i class="fas fa-file-alt mr-2"></i>Bu Kategorideki Evrak Türleri (@Model.DocumentTypes.Count)
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    @foreach (var docType in Model.DocumentTypes.Take(8))
+                    {
+                        <div class="col-md-3 col-sm-4 col-6 mb-2">
+                            <div class="d-flex align-items-center p-2 border rounded">
+                                <i class="fas fa-file-alt text-info mr-2"></i>
+                                <div>
+                                    <small class="font-weight-bold">@docType.TypeName</small>
+                                    @if (!string.IsNullOrEmpty(docType.TypeCode))
+                                    {
+                                        <br><small class="text-muted">@docType.TypeCode</small>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+                
+                @if (Model.DocumentTypes.Count > 8)
+                {
+                    <div class="text-center mt-3">
+                        <a asp-controller="DocumentTypeCategory" asp-action="DocumentTypes" asp-route-id="@Model.Id" 
+                           class="btn btn-outline-info btn-sm">
+                            <i class="fas fa-plus mr-1"></i>@(Model.DocumentTypes.Count - 8) evrak türü daha...
+                        </a>
+                    </div>
+                }
+            </div>
+        </div>
+    }
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    
+    <script>
+        $(document).ready(function() {
+            // Auto-generate code based on name (only if code is empty)
+            $('#CategoryName').on('input', function() {
+                var name = $(this).val();
+                var currentCode = $('#CategoryCode').val();
+                
+                // Only auto-generate if code field is empty
+                if (name && !currentCode) {
+                    var code = name.toUpperCase()
+                        .replace(/[^A-ZÇĞIİÖŞÜ0-9]/g, '')
+                        .replace(/Ç/g, 'C')
+                        .replace(/Ğ/g, 'G')
+                        .replace(/I/g, 'I')
+                        .replace(/İ/g, 'I')
+                        .replace(/Ö/g, 'O')
+                        .replace(/Ş/g, 'S')
+                        .replace(/Ü/g, 'U')
+                        .substring(0, 10);
+                    $('#CategoryCode').val(code);
+                }
+            });
+            
+            // Character counter for description
+            $('#Description').on('input', function() {
+                var maxLength = 500;
+                var currentLength = $(this).val().length;
+                var remaining = maxLength - currentLength;
+                
+                if (!$(this).next('.char-counter').length) {
+                    $(this).after('<small class="char-counter form-text text-muted"></small>');
+                }
+                
+                $(this).next('.char-counter').text(remaining + ' karakter kaldı');
+                
+                if (remaining < 50) {
+                    $(this).next('.char-counter').removeClass('text-muted').addClass('text-warning');
+                } else {
+                    $(this).next('.char-counter').removeClass('text-warning').addClass('text-muted');
+                }
+            });
+            
+            // Status change warning
+            $('#IsActive').change(function() {
+                var hasDocumentTypes = @(Model.DocumentTypes.Any() ? "true" : "false");
+                if (!$(this).is(':checked') && hasDocumentTypes) {
+                    if (!confirm('Bu kategoride evrak türleri bulunmaktadır. Kategoriyi deaktif etmek istediğinize emin misiniz?')) {
+                        $(this).prop('checked', true);
+                    }
+                }
+            });
+        });
+    </script>
+}

@@ -1,0 +1,203 @@
+@model muhaberat_evrak_yonetim.Entities.DocumentType
+
+@{
+    ViewData["Title"] = "Evrak Türü Düzenle";
+}
+
+<div class="container-fluid">
+    <!-- Page Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3 mb-0 text-warning">
+            <i class="fas fa-edit mr-2"></i>Evrak Türü Düzenle
+        </h1>
+        <a asp-action="Index" class="btn btn-secondary btn-sm">
+            <i class="fas fa-arrow-left mr-1"></i>Geri Dön
+        </a>
+    </div>
+
+    <!-- Edit Form -->
+    <div class="card shadow">
+        <div class="card-header py-3">
+            <h6 class="m-0 font-weight-bold text-warning">
+                <i class="fas fa-form mr-2"></i>Evrak Türü Bilgilerini Düzenle
+            </h6>
+        </div>
+        <div class="card-body">
+            <form asp-action="Edit" method="post">
+                <input type="hidden" asp-for="Id" />
+                <input type="hidden" asp-for="CreatedAt" />
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label asp-for="TypeName" class="form-label font-weight-bold">
+                                <i class="fas fa-file-alt mr-1 text-primary"></i>Evrak Türü Adı
+                            </label>
+                            <input asp-for="TypeName" class="form-control" placeholder="Örn: Kimlik Fotokopisi" />
+                            <span asp-validation-for="TypeName" class="text-danger"></span>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label asp-for="TypeCode" class="form-label font-weight-bold">
+                                <i class="fas fa-code mr-1 text-info"></i>Evrak Türü Kodu
+                            </label>
+                            <input asp-for="TypeCode" class="form-control" placeholder="Örn: KIMLIK_01" />
+                            <small class="form-text text-muted">Benzersiz kod olmalıdır</small>
+                            <span asp-validation-for="TypeCode" class="text-danger"></span>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label asp-for="CategoryId" class="form-label font-weight-bold">
+                                <i class="fas fa-tags mr-1 text-secondary"></i>Kategori
+                            </label>
+                            <select asp-for="CategoryId" class="form-control select2" data-placeholder="Kategori seçin veya arayın...">
+                                <option value="">Kategori Seçin</option>
+                                @foreach (var category in ViewBag.Categories as IEnumerable<muhaberat_evrak_yonetim.Entities.DocumentTypeCategory>)
+                                {
+                                    <option value="@category.Id" selected="@(category.Id == Model.CategoryId)">
+                                        @category.CategoryName
+                                    </option>
+                                }
+                            </select>
+                            <span asp-validation-for="CategoryId" class="text-danger"></span>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label asp-for="Description" class="form-label font-weight-bold">
+                                <i class="fas fa-align-left mr-1 text-muted"></i>Açıklama
+                            </label>
+                            <textarea asp-for="Description" class="form-control" rows="3" placeholder="Evrak türü hakkında açıklama..."></textarea>
+                            <span asp-validation-for="Description" class="text-danger"></span>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <div class="form-group">
+                            <label asp-for="EstimatedDeliveryDays" class="form-label font-weight-bold">
+                                <i class="fas fa-clock mr-1 text-warning"></i>Tahmini Teslimat Süresi (Gün)
+                            </label>
+                            <input asp-for="EstimatedDeliveryDays" type="number" min="1" max="30" class="form-control" />
+                            <span asp-validation-for="EstimatedDeliveryDays" class="text-danger"></span>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label asp-for="PackageRequirements" class="form-label font-weight-bold">
+                                <i class="fas fa-box mr-1 text-brown"></i>Paket Gereksinimleri
+                            </label>
+                            <select asp-for="PackageRequirements" class="form-control">
+                                <option value="">Paket Tipi Seçin</option>
+                                <option value="Standart zarf">Standart zarf</option>
+                                <option value="Özel zarf">Özel zarf</option>
+                                <option value="Özel güvenlik zarfı">Özel güvenlik zarfı</option>
+                                <option value="Büyük zarf">Büyük zarf</option>
+                                <option value="Kutu">Kutu</option>
+                                <option value="Özel ambalaj">Özel ambalaj</option>
+                            </select>
+                            <span asp-validation-for="PackageRequirements" class="text-danger"></span>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label font-weight-bold">
+                                <i class="fas fa-cog mr-1 text-success"></i>Özellikler
+                            </label>
+                            <div class="custom-control custom-checkbox mb-2">
+                                <input asp-for="IsUrgent" type="checkbox" class="custom-control-input" />
+                                <label asp-for="IsUrgent" class="custom-control-label">
+                                    <i class="fas fa-bolt text-warning mr-1"></i>Acil Evrak
+                                </label>
+                                <small class="form-text text-muted">Bu evrak türü acil işlem gerektirir</small>
+                            </div>
+                            <div class="custom-control custom-checkbox mb-2">
+                                <input asp-for="RequiresSignature" type="checkbox" class="custom-control-input" />
+                                <label asp-for="RequiresSignature" class="custom-control-label">
+                                    <i class="fas fa-signature text-info mr-1"></i>İmza Gerekli
+                                </label>
+                                <small class="form-text text-muted">Bu evrak türü için imza zorunludur</small>
+                            </div>
+                            <div class="custom-control custom-checkbox">
+                                <input asp-for="IsActive" type="checkbox" class="custom-control-input" />
+                                <label asp-for="IsActive" class="custom-control-label">
+                                    <i class="fas fa-check text-success mr-1"></i>Aktif
+                                </label>
+                                <small class="form-text text-muted">Bu evrak türü aktif durumda</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <hr>
+                
+                <div class="row">
+                    <div class="col-12">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <a asp-action="Details" asp-route-id="@Model.Id" class="btn btn-info">
+                                    <i class="fas fa-eye mr-1"></i>Detayları Görüntüle
+                                </a>
+                            </div>
+                            <div>
+                                <button type="submit" class="btn btn-warning">
+                                    <i class="fas fa-save mr-1"></i>Kaydet
+                                </button>
+                                <a asp-action="Index" class="btn btn-secondary ml-2">
+                                    <i class="fas fa-times mr-1"></i>İptal
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    
+    <script>
+        $(document).ready(function() {
+            // Initialize Select2 for dropdowns
+            $('.select2').select2({
+                theme: 'classic',
+                width: '100%',
+                allowClear: true,
+                language: {
+                    noResults: function() {
+                        return "Sonuç bulunamadı";
+                    },
+                    searching: function() {
+                        return "Aranıyor...";
+                    }
+                }
+            });
+            
+            // Auto-generate code based on name
+            $('#TypeName').on('input', function() {
+                var name = $(this).val();
+                if (name && !$('#TypeCode').val()) {
+                    var code = name.toUpperCase()
+                        .replace(/[^A-Z0-9]/g, '_')
+                        .replace(/_+/g, '_')
+                        .replace(/^_|_$/g, '');
+                    $('#TypeCode').val(code + '_01');
+                }
+            });
+            
+            // Update delivery days color based on value
+            $('#EstimatedDeliveryDays').on('input', function() {
+                var days = parseInt($(this).val());
+                $(this).removeClass('border-success border-warning border-danger');
+                if (days <= 2) {
+                    $(this).addClass('border-success');
+                } else if (days <= 5) {
+                    $(this).addClass('border-warning');
+                } else {
+                    $(this).addClass('border-danger');
+                }
+            });
+            
+            // Initialize delivery days color
+            $('#EstimatedDeliveryDays').trigger('input');
+        });
+    </script>
+}
