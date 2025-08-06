@@ -1,23 +1,27 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\erhan\\OneDrive\\Masaüstü\\muhaberat-evrak-yonetim\\muhaberat-evrak-yonetim.csproj": {}
+    "C:\\Erhan\\Models - Kopya\\muhaberat-evrak-yonetim.csproj": {}
   },
   "projects": {
-    "C:\\Users\\erhan\\OneDrive\\Masaüstü\\muhaberat-evrak-yonetim\\muhaberat-evrak-yonetim.csproj": {
+    "C:\\Erhan\\Models - Kopya\\muhaberat-evrak-yonetim.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\erhan\\OneDrive\\Masaüstü\\muhaberat-evrak-yonetim\\muhaberat-evrak-yonetim.csproj",
+        "projectUniqueName": "C:\\Erhan\\Models - Kopya\\muhaberat-evrak-yonetim.csproj",
         "projectName": "muhaberat-evrak-yonetim",
-        "projectPath": "C:\\Users\\erhan\\OneDrive\\Masaüstü\\muhaberat-evrak-yonetim\\muhaberat-evrak-yonetim.csproj",
-        "packagesPath": "C:\\Users\\erhan\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\erhan\\OneDrive\\Masaüstü\\muhaberat-evrak-yonetim\\obj\\",
+        "projectPath": "C:\\Erhan\\Models - Kopya\\muhaberat-evrak-yonetim.csproj",
+        "packagesPath": "C:\\Users\\FE21533\\.nuget\\packages\\",
+        "outputPath": "C:\\Erhan\\Models - Kopya\\obj\\",
         "projectStyle": "PackageReference",
         "fallbackFolders": [
+          "C:\\Program Files\\DevExpress 22.1\\Components\\Offline Packages",
+          "C:\\Program Files\\DevExpress 23.1\\Components\\Offline Packages",
           "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
         ],
         "configFilePaths": [
-          "C:\\Users\\erhan\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Users\\FE21533\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\DevExpress 22.1.config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\DevExpress 23.1.config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
           "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
@@ -25,9 +29,11 @@
           "net9.0"
         ],
         "sources": {
+          "C:\\LocalNugetPackage": {},
           "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
           "C:\\Program Files\\dotnet\\library-packs": {},
-          "https://api.nuget.org/v3/index.json": {}
+          "https://api.nuget.org/v3/index.json": {},
+          "https://nexus.fuzulev.com.tr/repository/nuget-hosted/": {}
         },
         "frameworks": {
           "net9.0": {
@@ -45,7 +51,7 @@
           "auditLevel": "low",
           "auditMode": "direct"
         },
-        "SdkAnalysisLevel": "9.0.300"
+        "SdkAnalysisLevel": "9.0.100"
       },
       "frameworks": {
         "net9.0": {
@@ -68,6 +74,14 @@
               "suppressParent": "All",
               "target": "Package",
               "version": "[9.0.7, )"
+            },
+            "System.DirectoryServices.AccountManagement": {
+              "target": "Package",
+              "version": "[9.0.8, )"
+            },
+            "System.DirectoryServices.Protocols": {
+              "target": "Package",
+              "version": "[9.0.8, )"
             }
           },
           "imports": [
@@ -89,7 +103,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.301/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.101/PortableRuntimeIdentifierGraph.json"
         }
       }
     }

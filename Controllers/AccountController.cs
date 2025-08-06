@@ -1,7 +1,8 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using muhaberat_evrak_yonetim.Models;
 using muhaberat_evrak_yonetim.Entities;
+using muhaberat_evrak_yonetim.Models;
+using muhaberat_evrak_yonetim.Services;
 
 namespace muhaberat_evrak_yonetim.Controllers;
 
@@ -9,11 +10,13 @@ public class AccountController : Controller
 {
     private readonly DataContext _context;
     private readonly ILogger<AccountController> _logger;
+    private readonly IAuthentication _authentication;
 
-    public AccountController(DataContext context, ILogger<AccountController> logger)
+    public AccountController(DataContext context, ILogger<AccountController> logger, IAuthentication authentication)
     {
         _context = context;
         _logger = logger;
+        _authentication = authentication;
     }
 
     public IActionResult Login()
@@ -29,12 +32,18 @@ public class AccountController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> Login(string username, string password, bool rememberMe = false)
     {
+
+       
         if (string.IsNullOrEmpty(username) || string.IsNullOrEmpty(password))
         {
             ModelState.AddModelError("", "Kullanıcı adı ve şifre gereklidir.");
             return View();
         }
-
+        var IsAuthenticate =await _authentication.AuthenticateUser(new AuthenticateUserRequest
+        {
+            UserName=username,
+            Password=password
+        });
         var user = await _context.Users
             .Include(u => u.Department)
             .Include(u => u.Role)
@@ -46,6 +55,10 @@ public class AccountController : Controller
             ModelState.AddModelError("", "Geçersiz kullanıcı adı veya şifre.");
             return View();
         }
+
+
+
+
 
         HttpContext.Session.SetInt32("UserId", user.Id);
         HttpContext.Session.SetString("Username", user.Username);
