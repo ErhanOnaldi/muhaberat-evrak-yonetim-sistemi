@@ -25,165 +25,56 @@ namespace muhaberat_evrak_yonetim.Controllers
             return View(cargos);
         }
 
-        public async Task<IActionResult> Details(int id)
+
+        public IActionResult Create(string returnUrl = null)
         {
-            var cargo = await _context.Cargos
-                .Include(c => c.Documents)
-                .ThenInclude(d => d.DocumentType)
-                .Include(c => c.CargoTrackingLogs)
-                .ThenInclude(ctl => ctl.UpdatedByUser)
-                .FirstOrDefaultAsync(c => c.Id == id);
-
-            if (cargo == null)
-            {
-                return NotFound();
-            }
-
-            return View(cargo);
-        }
-
-        public IActionResult Create()
-        {
+            ViewBag.ReturnUrl = returnUrl;
             return View();
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("CargoCompany,ShippingAddress,DeliveryAddress,PackageType,EstimatedDeliveryDate")] Cargo cargo)
+        public async Task<IActionResult> Create([Bind("CargoTrackingNumber,CargoCompany,ShippingAddress,DeliveryAddress,PackageType,EstimatedDeliveryDate")] Cargo cargo, string returnUrl = null)
         {
+            if (string.IsNullOrWhiteSpace(cargo.CargoTrackingNumber))
+            {
+                ModelState.AddModelError("CargoTrackingNumber", "Takip numarası zorunludur.");
+            }
+            else
+            {
+                // Check if tracking number already exists
+                var existingCargo = await _context.Cargos
+                    .FirstOrDefaultAsync(c => c.CargoTrackingNumber == cargo.CargoTrackingNumber);
+                if (existingCargo != null)
+                {
+                    ModelState.AddModelError("CargoTrackingNumber", "Bu takip numarası zaten kullanılmaktadır.");
+                }
+            }
+
             if (ModelState.IsValid)
             {
                 cargo.CreatedAt = DateTime.Now;
                 cargo.UpdatedAt = DateTime.Now;
-                cargo.CargoTrackingNumber = GenerateTrackingNumber();
                 
                 _context.Add(cargo);
                 await _context.SaveChangesAsync();
+                
+                // If returnUrl is provided, redirect back to Document/Create with the new cargo ID
+                if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
+                {
+                    TempData["Success"] = "Kargo başarıyla oluşturuldu ve seçildi!";
+                    TempData["NewCargoId"] = cargo.Id; // Pass the new cargo ID back
+                    return Redirect(returnUrl);
+                }
+                
                 return RedirectToAction(nameof(Index));
             }
-            return View(cargo);
-        }
-
-        public async Task<IActionResult> Edit(int id)
-        {
-            var cargo = await _context.Cargos.FindAsync(id);
-            if (cargo == null)
-            {
-                return NotFound();
-            }
-            return View(cargo);
-        }
-
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("Id,CargoTrackingNumber,CargoCompany,ShippingAddress,DeliveryAddress,PackageType,ShippingDate,DeliveryDate,EstimatedDeliveryDate,DeliveryStatus,ReceivedBy,DeliveryNotes,IsActive")] Cargo cargo)
-        {
-            if (id != cargo.Id)
-            {
-                return NotFound();
-            }
-
-            if (ModelState.IsValid)
-            {
-                try
-                {
-                    cargo.UpdatedAt = DateTime.Now;
-                    _context.Update(cargo);
-                    await _context.SaveChangesAsync();
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!CargoExists(cargo.Id))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
-                }
-                return RedirectToAction(nameof(Index));
-            }
-            return View(cargo);
-        }
-
-        public async Task<IActionResult> Delete(int id)
-        {
-            var cargo = await _context.Cargos
-                .Include(c => c.Documents)
-                .FirstOrDefaultAsync(c => c.Id == id);
             
-            if (cargo == null)
-            {
-                return NotFound();
-            }
-
+            ViewBag.ReturnUrl = returnUrl;
             return View(cargo);
         }
 
-        [HttpPost, ActionName("Delete")]
-        [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(int id)
-        {
-            var cargo = await _context.Cargos.FindAsync(id);
-            if (cargo != null)
-            {
-                _context.Cargos.Remove(cargo);
-            }
 
-            await _context.SaveChangesAsync();
-            return RedirectToAction(nameof(Index));
-        }
 
-        [HttpPost]
-        public async Task<IActionResult> UpdateStatus(int id, string status, string location, string notes)
-        {
-            var cargo = await _context.Cargos.FindAsync(id);
-            if (cargo == null)
-            {
-                return NotFound();
-            }
-
-            var oldStatus = cargo.DeliveryStatus;
-            cargo.DeliveryStatus = status;
-            cargo.UpdatedAt = DateTime.Now;
-
-            if (status == "DELIVERED")
-            {
-                cargo.DeliveryDate = DateTime.Now;
-            }
-            else if (status == "SHIPPED")
-            {
-                cargo.ShippingDate = DateTime.Now;
-            }
-
-            var trackingLog = new CargoTrackingLog
-            {
-                CargoId = id,
-                OldStatus = oldStatus,
-                NewStatus = status,
-                StatusChangeDate = DateTime.Now,
-                Location = location,
-                UpdatedBy = GetCurrentUserId(),
-                Notes = notes,
-                CreatedAt = DateTime.Now
-            };
-
-            _context.CargoTrackingLogs.Add(trackingLog);
-            _context.Update(cargo);
-            await _context.SaveChangesAsync();
-
-            return RedirectToAction(nameof(Details), new { id });
-        }
-
-        private bool CargoExists(int id)
-        {
-            return _context.Cargos.Any(e => e.Id == id);
-        }
-
-        private string GenerateTrackingNumber()
-        {
-            return $"TR{DateTime.Now:yyyyMMdd}{Random.Shared.Next(1000, 9999)}";
-        }
     }
 }

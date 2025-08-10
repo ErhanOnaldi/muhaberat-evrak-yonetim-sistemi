@@ -16,15 +16,7 @@
         </a>
     </div>
 
-    @if (TempData["Success"] != null)
-    {
-        <div class="alert alert-success alert-dismissible fade show" role="alert">
-            <i class="fas fa-check-circle mr-2"></i>@TempData["Success"]
-            <button type="button" class="close" data-bs-dismiss="alert">
-                <span>&times;</span>
-            </button>
-        </div>
-    }
+    @* Success messages are now handled via Toastr in _Layout.cshtml *@
 
     <!-- Filter Cards -->
     <div class="row mb-4">
@@ -339,8 +331,7 @@
                                         {
                                             <form method="post" asp-action="ReceiveDocument" asp-route-id="@item.Id" class="d-inline">
                                                 @Html.AntiForgeryToken()
-                                                <button type="submit" class="btn btn-sm btn-outline-primary" title="Teslim Al"
-                                                        onclick="return confirm('Bu evrağı teslim almak istediğinizden emin misiniz?')">
+                                                <button type="submit" class="btn btn-sm btn-outline-primary" title="Teslim Al">
                                                     <i class="fas fa-inbox"></i>
                                                 </button>
                                             </form>

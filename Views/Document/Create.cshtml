@@ -45,7 +45,7 @@
                                     <i class="fas fa-heading mr-2"></i>Başlık <span class="text-danger">*</span>
                                 </label>
                                 <input asp-for="Title" class="form-control" 
-                                       placeholder="Evrak başlığını girin" 
+                                       placeholder="Başlık" 
                                        required>
                                 <span asp-validation-for="Title" class="text-danger small"></span>
                             </div>
@@ -76,7 +76,7 @@
                                 <i class="fas fa-align-left mr-2"></i>Açıklama
                             </label>
                             <textarea asp-for="Description" class="form-control" rows="3" 
-                                     placeholder="Evrak hakkında detaylı bilgi..."></textarea>
+                                     placeholder="Açıklama"></textarea>
                             <span asp-validation-for="Description" class="text-danger small"></span>
                         </div>
 
@@ -96,14 +96,14 @@
                                 <label asp-for="CustomerId" class="form-label">
                                     <i class="fas fa-user-tie mr-2"></i>Müşteri ID
                                 </label>
-                                <input asp-for="CustomerId" class="form-control" placeholder="Müşteri kimlik numarası">
+                                <input asp-for="CustomerId" class="form-control" placeholder="Müşteri ID">
                                 <span asp-validation-for="CustomerId" class="text-danger small"></span>
                             </div>
                             <div class="col-md-6 mb-3">
                                 <label asp-for="CustomerName" class="form-label">
                                     <i class="fas fa-user mr-2"></i>Müşteri Adı
                                 </label>
-                                <input asp-for="CustomerName" class="form-control" placeholder="Müşteri adı ve soyadı">
+                                <input asp-for="CustomerName" class="form-control" placeholder="Müşteri Adı">
                                 <span asp-validation-for="CustomerName" class="text-danger small"></span>
                             </div>
                         </div>
@@ -127,7 +127,7 @@
                                     var receiverUsers = ViewData["Users"] as List<muhaberat_evrak_yonetim.Entities.User>;
                                 }
                                 <select asp-for="ReceiverUserId" class="form-control" id="ReceiverUserId">
-                                    <option value="">Kullanıcı seçin (opsiyonel)</option>
+                                    <option value="">Alıcı Kullanıcı</option>
                                     @if (receiverUsers != null)
                                     {
                                         @foreach (var user in receiverUsers)
@@ -145,7 +145,7 @@
                                     <i class="fas fa-building mr-2"></i>Alıcı Departman
                                 </label>
                                 <select asp-for="ReceiverDepartmentId" class="form-control" id="ReceiverDepartmentId">
-                                    <option value="">Departman seçin (opsiyonel)</option>
+                                    <option value="">Alıcı Departman</option>
                                     @{
                                         var receiverDepartments = ViewData["Departments"] as List<muhaberat_evrak_yonetim.Entities.Department>;
                                     }
@@ -187,10 +187,10 @@
                             </div>
                             <div class="col-md-6 mb-3">
                                 <label asp-for="CargoId" class="form-label">
-                                    <i class="fas fa-truck mr-2"></i>Kargo
+                                    <i class="fas fa-truck mr-2"></i>Kargo <span class="text-danger">*</span>
                                 </label>
-                                <select asp-for="CargoId" class="form-control">
-                                    <option value="">Mevcut kargo seçin (opsiyonel)</option>
+                                <select asp-for="CargoId" class="form-control" required>
+                                    <option value="">Kargo Seçin</option>
                                     @{
                                         var cargos = ViewData["Cargos"] as List<muhaberat_evrak_yonetim.Entities.Cargo>;
                                     }
@@ -202,7 +202,12 @@
                                         }
                                     }
                                 </select>
-                                <small class="form-text text-muted">Mevcut bir kargoya evrak ekleyebilir veya boş bırakarak sonra ekleyebilirsiniz.</small>
+                                <div class="mt-2">
+                                    <button type="button" class="btn btn-sm btn-outline-primary" id="createCargoBtn">
+                                        <i class="fas fa-plus mr-1"></i>Yeni Kargo Oluştur
+                                    </button>
+                                </div>
+                                <small class="form-text text-muted">Sadece "Hazırlanıyor" durumundaki kargolar gösterilir. Eğer uygun kargo yoksa yukarıdaki butona tıklayarak yeni kargo oluşturun.</small>
                                 <span asp-validation-for="CargoId" class="text-danger small"></span>
                             </div>
                         </div>
@@ -225,7 +230,7 @@
                                 <i class="fas fa-user mr-2"></i>Gönderen Kullanıcı <span class="text-danger">*</span>
                             </label>
                             <select asp-for="SenderUserId" class="form-control" required>
-                                <option value="">Kullanıcı seçin</option>
+                                <option value="">Gönderen Kullanıcı</option>
                                 @{
                                     var users = ViewData["Users"] as List<muhaberat_evrak_yonetim.Entities.User>;
                                     var currentUserId = ViewData["CurrentUserId"] as int?;
@@ -254,7 +259,7 @@
                                 <i class="fas fa-building mr-2"></i>Gönderen Departman <span class="text-danger">*</span>
                             </label>
                             <select asp-for="SenderDepartmentId" class="form-control" required>
-                                <option value="">Departman seçin</option>
+                                <option value="">Gönderen Departman</option>
                                 @{
                                     var departments = ViewData["Departments"] as List<muhaberat_evrak_yonetim.Entities.Department>;
                                     var currentUserDepartmentId = ViewData["CurrentUserDepartmentId"] as int?;
@@ -335,6 +340,18 @@
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
     <script>
         $(document).ready(function() {
+            // Check if new cargo was created and auto-select it
+            @if (TempData["NewCargoId"] != null)
+            {
+                <text>
+                var newCargoId = @TempData["NewCargoId"];
+                if (newCargoId && $('#CargoId option[value="' + newCargoId + '"]').length > 0) {
+                    $('#CargoId').val(newCargoId);
+                    // Message will be shown via Toastr from TempData in Layout
+                }
+                </text>
+            }
+            
             // Initialize Select2 for searchable dropdowns
             $('#DocumentTypeId').select2({
                 placeholder: "Evrak türü seçin veya arayın",
@@ -349,8 +366,8 @@
             // --- Other existing logic ---
 
             // Auto-select current user as sender
-            var currentUserId = @Html.Raw(ViewData["CurrentUserId"] as int? ?? 0);
-            var currentUserDepartmentId = @Html.Raw(ViewData["CurrentUserDepartmentId"] as int? ?? 0);
+            var currentUserId = @(ViewData["CurrentUserId"] ?? 0);
+            var currentUserDepartmentId = @(ViewData["CurrentUserDepartmentId"] ?? 0);
             
             if (currentUserId > 0) {
                 $('#SenderUserId').val(currentUserId);
@@ -397,6 +414,7 @@
             $('form').on('submit', function(e) {
                 var receiverUser = $('#ReceiverUserId').val();
                 var receiverDept = $('#ReceiverDepartmentId').val();
+                var cargoId = $('#CargoId').val();
 
                 // Validation: Ensure at least one recipient is selected
                 if ((!receiverUser || receiverUser === '') && (!receiverDept || receiverDept === '')) {
@@ -410,6 +428,45 @@
                     }
                     return false;
                 }
+
+                // Validation: Ensure cargo is selected
+                if (!cargoId || cargoId === '') {
+                    e.preventDefault();
+                    alert('Lütfen bir kargo seçin veya yeni kargo oluşturun.');
+                    $('#CargoId').focus();
+                    return false;
+                }
+            });
+
+            // Handle "Create Cargo" button click - save form data first
+            $('#createCargoBtn').click(function(e) {
+                e.preventDefault();
+                
+                // Collect current form data
+                var formData = {
+                    Title: $('#Title').val(),
+                    Description: $('#Description').val(),
+                    DocumentTypeId: $('#DocumentTypeId').val(),
+                    SenderUserId: $('#SenderUserId').val(),
+                    SenderDepartmentId: $('#SenderDepartmentId').val(),
+                    ReceiverUserId: $('#ReceiverUserId').val(),
+                    ReceiverDepartmentId: $('#ReceiverDepartmentId').val(),
+                    CustomerName: $('#CustomerName').val(),
+                    CustomerId: $('#CustomerId').val(),
+                    PhysicalDocumentType: $('#PhysicalDocumentType').val(),
+                    CargoId: $('#CargoId').val()
+                };
+                
+                // Save form data to server
+                $.post('@Url.Action("SaveFormData", "Document")', { formData: JSON.stringify(formData) })
+                    .done(function() {
+                        // Navigate to cargo creation
+                        window.location.href = '@Url.Action("Create", "Cargo", new { returnUrl = Url.Action("Create", "Document") })';
+                    })
+                    .fail(function() {
+                        // If save fails, still navigate (fallback)
+                        window.location.href = '@Url.Action("Create", "Cargo", new { returnUrl = Url.Action("Create", "Document") })';
+                    });
             });
         });
     </script>

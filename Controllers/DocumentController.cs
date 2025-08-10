@@ -116,7 +116,8 @@ public class DocumentController : BaseController
             .Include(d => d.ReviewedByUser)
             .Include(d => d.DocumentHistories)
                 .ThenInclude(dh => dh.User)
-            .Include(d => d.CargoTrackingLogs)
+            .Include(d => d.Cargo)
+                .ThenInclude(c => c.CargoTrackingLogs)
                 .ThenInclude(ct => ct.UpdatedByUser)
             .FirstOrDefaultAsync(d => d.Id == id);
 
@@ -124,6 +125,12 @@ public class DocumentController : BaseController
         {
             return NotFound();
         }
+
+        // ViewBag değerlerini set et
+        ViewBag.CurrentUserId = GetCurrentUserId();
+        ViewBag.CurrentUserDepartmentId = GetCurrentUserDepartmentId();
+        ViewBag.HasFullAccess = HasFullAccess();
+        ViewBag.CurrentUserInfo = GetCurrentUserInfo();
 
         return View(document);
     }
@@ -144,7 +151,7 @@ public class DocumentController : BaseController
             .ToListAsync();
 
         ViewData["Cargos"] = await _context.Cargos
-            .Where(c => c.IsActive && c.DeliveryStatus != "DELIVERED")
+            .Where(c => c.IsActive && c.DeliveryStatus == "PREPARING")
             .OrderBy(c => c.CargoTrackingNumber)
             .ToListAsync();
 
@@ -157,7 +164,78 @@ public class DocumentController : BaseController
             ViewData["CurrentUserDepartmentId"] = currentUserDepartmentId;
         }
 
-        return View();
+        // Restore form data if coming back from cargo creation
+        var document = new Document();
+        
+        if (TempData.ContainsKey("FormData"))
+        {
+            try
+            {
+                var formDataJson = TempData["FormData"]?.ToString();
+                if (!string.IsNullOrEmpty(formDataJson))
+                {
+                    // Parse JSON manually to avoid navigation property issues
+                    var formDataDict = System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, object>>(formDataJson);
+                    
+                    if (formDataDict != null)
+                    {
+                        if (formDataDict.ContainsKey("Title") && formDataDict["Title"] != null)
+                            document.Title = formDataDict["Title"].ToString();
+                            
+                        if (formDataDict.ContainsKey("Description") && formDataDict["Description"] != null)
+                            document.Description = formDataDict["Description"].ToString();
+                            
+                        if (formDataDict.ContainsKey("DocumentTypeId") && formDataDict["DocumentTypeId"] != null && int.TryParse(formDataDict["DocumentTypeId"].ToString(), out int docTypeId))
+                            document.DocumentTypeId = docTypeId > 0 ? docTypeId : null;
+                            
+                        if (formDataDict.ContainsKey("SenderUserId") && formDataDict["SenderUserId"] != null && int.TryParse(formDataDict["SenderUserId"].ToString(), out int senderUserId))
+                            document.SenderUserId = senderUserId;
+                            
+                        if (formDataDict.ContainsKey("SenderDepartmentId") && formDataDict["SenderDepartmentId"] != null && int.TryParse(formDataDict["SenderDepartmentId"].ToString(), out int senderDeptId))
+                            document.SenderDepartmentId = senderDeptId;
+                            
+                        if (formDataDict.ContainsKey("ReceiverUserId") && formDataDict["ReceiverUserId"] != null && int.TryParse(formDataDict["ReceiverUserId"].ToString(), out int receiverUserId))
+                            document.ReceiverUserId = receiverUserId > 0 ? receiverUserId : null;
+                            
+                        if (formDataDict.ContainsKey("ReceiverDepartmentId") && formDataDict["ReceiverDepartmentId"] != null && int.TryParse(formDataDict["ReceiverDepartmentId"].ToString(), out int receiverDeptId))
+                            document.ReceiverDepartmentId = receiverDeptId > 0 ? receiverDeptId : null;
+                            
+                        if (formDataDict.ContainsKey("CustomerName") && formDataDict["CustomerName"] != null)
+                            document.CustomerName = formDataDict["CustomerName"].ToString();
+                            
+                        if (formDataDict.ContainsKey("CustomerId") && formDataDict["CustomerId"] != null)
+                            document.CustomerId = formDataDict["CustomerId"].ToString();
+                            
+                        if (formDataDict.ContainsKey("PhysicalDocumentType") && formDataDict["PhysicalDocumentType"] != null)
+                            document.PhysicalDocumentType = formDataDict["PhysicalDocumentType"].ToString();
+                            
+                        if (formDataDict.ContainsKey("CargoId") && formDataDict["CargoId"] != null && int.TryParse(formDataDict["CargoId"].ToString(), out int cargoId))
+                            document.CargoId = cargoId > 0 ? cargoId : null;
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                // If parsing fails, use empty document but log the error
+                System.Diagnostics.Debug.WriteLine($"Form data parsing failed: {ex.Message}");
+                document = new Document();
+            }
+            // Keep TempData for one more request
+            TempData.Keep("FormData");
+        }
+
+        return View(document);
+    }
+
+    [HttpPost]
+    public IActionResult SaveFormData(string formData)
+    {
+        if (!string.IsNullOrEmpty(formData))
+        {
+            TempData["FormData"] = formData;
+            TempData.Keep("FormData"); // Ensure it persists
+        }
+        return Json(new { success = true });
     }
 
     [HttpPost]
@@ -203,6 +281,11 @@ public class DocumentController : BaseController
             ModelState.AddModelError("PhysicalDocumentType", "Fiziksel evrak türü seçimi zorunludur.");
         }
 
+        if (document.CargoId == null || document.CargoId <= 0)
+        {
+            ModelState.AddModelError("CargoId", "Kargo seçimi zorunludur. Mevcut bir kargo seçin veya yeni kargo oluşturun.");
+        }
+
 
         if (document.DocumentTypeId == null || document.DocumentTypeId <= 0)
         {
@@ -246,6 +329,11 @@ public class DocumentController : BaseController
         
         ViewData["Departments"] = await _context.Departments
             .Where(d => d.IsActive)
+            .ToListAsync();
+
+        ViewData["Cargos"] = await _context.Cargos
+            .Where(c => c.IsActive && c.DeliveryStatus == "PREPARING")
+            .OrderBy(c => c.CargoTrackingNumber)
             .ToListAsync();
 
         var currentUserId = GetCurrentUserId();
@@ -366,10 +454,19 @@ public class DocumentController : BaseController
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Send(int id)
+    public async Task<IActionResult> Send(int id, string sendNotes)
     {
-        var currentUserId = GetCurrentUserIdRequired();
-        var document = await _context.Documents.FindAsync(id);
+        try
+        {
+            _logger.LogInformation($"Send action called - DocumentId: {id}, SendNotes: {sendNotes ?? "null"}");
+            var currentUserId = GetCurrentUserIdRequired();
+            _logger.LogInformation($"CurrentUserId obtained: {currentUserId}");
+        
+        var document = await _context.Documents
+            .Include(d => d.Cargo)
+            .ThenInclude(c => c.Documents)
+            .FirstOrDefaultAsync(d => d.Id == id);
+            
         if (document == null)
         {
             return NotFound();
@@ -377,22 +474,62 @@ public class DocumentController : BaseController
 
         if (document.Status == DocumentStatus.DRAFT.ToString())
         {
+            // Update document status
             document.Status = DocumentStatus.SENT.ToString();
             document.UpdatedAt = DateTime.Now;
+            
+            // If document has cargo, update cargo and all related documents
+            if (document.CargoId.HasValue && document.Cargo != null)
+            {
+                var cargo = document.Cargo;
+                
+                // Update cargo status to SHIPPED (Kargoya Verildi) and set shipping date
+                cargo.DeliveryStatus = "SHIPPED";
+                cargo.ShippingDate = DateTime.Now;
+                cargo.UpdatedAt = DateTime.Now;
+                
+                // Update all documents in the same cargo to SENT status
+                foreach (var cargoDocument in cargo.Documents)
+                {
+                    if (cargoDocument.Status == DocumentStatus.DRAFT.ToString())
+                    {
+                        cargoDocument.Status = DocumentStatus.SENT.ToString();
+                        cargoDocument.UpdatedAt = DateTime.Now;
+                        
+                        // Log history for each document
+                        await LogDocumentHistoryAsync(cargoDocument.Id, "SENT", currentUserId, 
+                            $"Evrak kargo ile birlikte gönderildi. {(!string.IsNullOrEmpty(sendNotes) ? $"Not: {sendNotes}" : "")}");
+                    }
+                }
+                
+                _context.Update(cargo);
+                TempData["Success"] = $"Evrak ve kargo başarıyla gönderildi. Kargo içindeki {cargo.Documents.Count(d => d.Status == DocumentStatus.SENT.ToString())} evrak 'Gönderildi' durumuna geçti.";
+            }
+            else
+            {
+                // Document without cargo - just update the document
+                await LogDocumentHistoryAsync(id, "SENT", currentUserId, 
+                    $"Evrak gönderildi. {(!string.IsNullOrEmpty(sendNotes) ? $"Not: {sendNotes}" : "")}");
+                TempData["Success"] = "Evrak başarıyla gönderildi.";
+            }
 
             _context.Update(document);
             await _context.SaveChangesAsync();
-
-            await LogDocumentHistoryAsync(id, "SENT", currentUserId, "Evrak gönderildi");
-
-            TempData["Success"] = "Evrak başarıyla gönderildi.";
         }
 
-        return RedirectToAction(nameof(Details), new { id });
+            return RedirectToAction(nameof(Details), new { id });
+        }
+        catch (UnauthorizedAccessException)
+        {
+            TempData["Error"] = "Bu işlemi gerçekleştirmek için oturumunuzun açık olması gerekiyor.";
+            return RedirectToAction("Login", "Account");
+        }
+        catch (Exception ex)
+        {
+            TempData["Error"] = $"Evrak gönderimi sırasında hata oluştu: {ex.Message}";
+            return RedirectToAction(nameof(Details), new { id });
+        }
     }
-
-    [HttpPost]
-    [ValidateAntiForgeryToken]
 
     public async Task<IActionResult> History(int id)
     {
@@ -400,6 +537,10 @@ public class DocumentController : BaseController
             .Include(d => d.DocumentType)
             .Include(d => d.SenderUser)
             .Include(d => d.ReceiverUser)
+            .Include(d => d.SenderDepartment)
+            .Include(d => d.ReceiverDepartment)
+            .Include(d => d.CreatedByUser)
+            .Include(d => d.ReviewedByUser)
             .FirstOrDefaultAsync(d => d.Id == id);
 
         if (document == null)
@@ -410,6 +551,9 @@ public class DocumentController : BaseController
         var documentHistory = await _context.DocumentHistories
             .Where(dh => dh.DocumentId == id)
             .Include(dh => dh.User)
+                .ThenInclude(u => u.Department)
+            .Include(dh => dh.User)
+                .ThenInclude(u => u.Role)
             .OrderByDescending(dh => dh.ActionDate)
             .ToListAsync();
 
@@ -421,74 +565,213 @@ public class DocumentController : BaseController
     public async Task<IActionResult> CargoTracking(int id)
     {
         var document = await _context.Documents
-            .Include(d => d.DocumentType)
-            .Include(d => d.SenderUser)
-            .Include(d => d.ReceiverUser)
+            .Include(d => d.Cargo)
+            .ThenInclude(c => c.Documents)
+            .ThenInclude(d => d.DocumentType)
+            .Include(d => d.Cargo)
+            .ThenInclude(c => c.CargoTrackingLogs)
+            .ThenInclude(ctl => ctl.UpdatedByUser)
             .FirstOrDefaultAsync(d => d.Id == id);
 
-        if (document == null)
+        if (document == null || document.Cargo == null)
         {
             return NotFound();
         }
 
-        var cargoLogs = await _context.CargoTrackingLogs
-            .Where(ct => ct.DocumentId == id)
-            .Include(ct => ct.UpdatedByUser)
-            .OrderByDescending(ct => ct.StatusChangeDate)
-            .ToListAsync();
+        return View(document.Cargo);
+    }
 
-        ViewBag.Document = document;
-        
-        return View(cargoLogs);
+    [HttpPost]
+    public async Task<IActionResult> UpdateCargoStatus(int cargoId, string status, string location, string notes)
+    {
+        var cargo = await _context.Cargos
+            .Include(c => c.Documents)
+            .FirstOrDefaultAsync(c => c.Id == cargoId);
+            
+        if (cargo == null)
+        {
+            return NotFound();
+        }
+
+        var oldStatus = cargo.DeliveryStatus;
+        cargo.DeliveryStatus = status;
+        cargo.UpdatedAt = DateTime.Now;
+
+        // Update cargo timestamps
+        if (status == "DELIVERED")
+        {
+            cargo.DeliveryDate = DateTime.Now;
+        }
+        else if (status == "SHIPPED")
+        {
+            cargo.ShippingDate = DateTime.Now;
+        }
+
+        // Sync document statuses with cargo status
+        await SyncDocumentStatusesWithCargo(cargo, status);
+
+        var trackingLog = new CargoTrackingLog
+        {
+            CargoId = cargoId,
+            OldStatus = oldStatus,
+            NewStatus = status,
+            StatusChangeDate = DateTime.Now,
+            Location = location,
+            UpdatedBy = GetCurrentUserId(),
+            Notes = notes,
+            CreatedAt = DateTime.Now
+        };
+
+        _context.CargoTrackingLogs.Add(trackingLog);
+        _context.Update(cargo);
+        await _context.SaveChangesAsync();
+
+        return RedirectToAction(nameof(CargoTrackingById), new { cargoId });
+    }
+
+    private async Task SyncDocumentStatusesWithCargo(Cargo cargo, string cargoStatus)
+    {
+        string newDocumentStatus = cargoStatus switch
+        {
+            "PREPARING" => null, // Don't change - documents can stay as DRAFT
+            "SHIPPED" => "SENT", // All documents should be SENT when cargo is shipped
+            "IN_TRANSIT" => "SENT", // All documents should be SENT when cargo is in transit
+            "DELIVERED" => "DELIVERED", // All documents should be DELIVERED when cargo is delivered
+            "RETURNED" => null, // Don't change - keep current status
+            _ => null
+        };
+
+        if (newDocumentStatus != null)
+        {
+            foreach (var document in cargo.Documents.Where(d => d.IsActive))
+            {
+                // Only update if the current status allows it
+                if (ShouldUpdateDocumentStatus(document.Status, newDocumentStatus))
+                {
+                    var oldDocumentStatus = document.Status;
+                    document.Status = newDocumentStatus;
+                    document.UpdatedAt = DateTime.Now;
+
+                    // Log document history for status change
+                    var currentUserId = GetCurrentUserId() ?? 1; // Default to system user if null
+                    await LogDocumentHistoryAsync(document.Id, newDocumentStatus, currentUserId, 
+                        $"Durum kargo ile senkronize edildi: {cargoStatus}");
+                }
+            }
+        }
+    }
+
+    private bool ShouldUpdateDocumentStatus(string currentStatus, string newStatus)
+    {
+        // Business rules for when document status can be updated
+        return (currentStatus, newStatus) switch
+        {
+            // Can always move from DRAFT to SENT
+            ("DRAFT", "SENT") => true,
+            
+            // Can move from SENT to DELIVERED
+            ("SENT", "DELIVERED") => true,
+            
+            // Don't downgrade statuses (e.g., DELIVERED back to SENT)
+            ("DELIVERED", "SENT") => false,
+            ("RECEIVED", "SENT") => false,
+            ("RECEIVED", "DELIVERED") => false,
+            
+            // Allow same status (no change needed but safe)
+            var (current, target) when current == target => false,
+            
+            // Default: allow the change
+            _ => true
+        };
+    }
+
+    public async Task<IActionResult> CargoTrackingById(int cargoId)
+    {
+        var cargo = await _context.Cargos
+            .Include(c => c.Documents)
+            .ThenInclude(d => d.DocumentType)
+            .Include(c => c.CargoTrackingLogs)
+            .ThenInclude(ctl => ctl.UpdatedByUser)
+            .FirstOrDefaultAsync(c => c.Id == cargoId);
+
+        if (cargo == null)
+        {
+            return NotFound();
+        }
+
+        return View("CargoTracking", cargo);
     }
 
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> ReceiveDocument(int id, string receivedByName, string receiptNotes)
     {
-        var currentUserId = GetCurrentUserIdRequired();
-        var document = await _context.Documents.FindAsync(id);
-        if (document == null)
+        try
         {
-            return NotFound();
-        }
+            var currentUserId = GetCurrentUserIdRequired();
+            _logger.LogInformation($"ReceiveDocument başlatıldı. DocumentId: {id}, UserId: {currentUserId}");
+            
+            var document = await _context.Documents.FindAsync(id);
+            if (document == null)
+            {
+                _logger.LogWarning($"Document bulunamadı. DocumentId: {id}");
+                return NotFound();
+            }
 
-        if (document.Status != DocumentStatus.SENT.ToString())
-        {
-            TempData["Error"] = "Bu evrak henüz gönderilmediği için teslim alınamaz.";
+            _logger.LogInformation($"Evrak durumu: {document.Status}");
+
+            if (document.Status != DocumentStatus.SENT.ToString() && document.Status != DocumentStatus.DELIVERED.ToString())
+            {
+                TempData["Error"] = $"Bu evrak '{document.Status}' durumunda olduğu için teslim alınamaz. Sadece 'SENT' veya 'DELIVERED' durumundaki evraklar teslim alınabilir.";
+                _logger.LogWarning($"Evrak durumu uygun değil. Mevcut durum: {document.Status}");
+                return RedirectToAction(nameof(Details), new { id });
+            }
+
+            var hasFullAccess = HasFullAccess();
+            var currentUserDepartmentId = GetCurrentUserDepartmentId();
+            
+            _logger.LogInformation($"Yetki kontrolleri - FullAccess: {hasFullAccess}, ReceiverUserId: {document.ReceiverUserId}, CurrentUserId: {currentUserId}, ReceiverDepartmentId: {document.ReceiverDepartmentId}, CurrentUserDepartmentId: {currentUserDepartmentId}");
+            
+            bool canReceive = hasFullAccess || 
+                             document.ReceiverUserId == currentUserId ||
+                             document.ReceiverDepartmentId == currentUserDepartmentId;
+
+            if (!canReceive)
+            {
+                TempData["Error"] = "Bu evrağı teslim alma yetkiniz bulunmamaktadır.";
+                _logger.LogWarning($"Yetkisiz teslim alma girişimi. DocumentId: {id}, UserId: {currentUserId}");
+                return RedirectToAction(nameof(Details), new { id });
+            }
+
+            // Durumu güncelle
+            document.Status = DocumentStatus.RECEIVED.ToString();
+            document.UpdatedAt = DateTime.Now;
+
+            _logger.LogInformation($"Evrak durumu güncellendi: {DocumentStatus.RECEIVED.ToString()}");
+
+            _context.Update(document);
+            await _context.SaveChangesAsync();
+            
+            _logger.LogInformation("Veritabanı güncellemesi tamamlandı");
+
+            var notes = $"Evrak teslim alındı. Teslim alan: {(!string.IsNullOrEmpty(receivedByName) ? receivedByName : GetCurrentUserInfo())}";
+            if (!string.IsNullOrEmpty(receiptNotes))
+            {
+                notes += $" - Not: {receiptNotes}";
+            }
+
+            await LogDocumentHistoryAsync(id, "RECEIVED", currentUserId, notes);
+            _logger.LogInformation("DocumentHistory kaydı eklendi");
+
+            TempData["Success"] = "Evrak başarıyla teslim alındı.";
             return RedirectToAction(nameof(Details), new { id });
         }
-
-        var hasFullAccess = HasFullAccess();
-        var currentUserDepartmentId = GetCurrentUserDepartmentId();
-        
-        bool canReceive = hasFullAccess || 
-                         document.ReceiverUserId == currentUserId ||
-                         document.ReceiverDepartmentId == currentUserDepartmentId;
-
-        if (!canReceive)
+        catch (Exception ex)
         {
-            TempData["Error"] = "Bu evrağı teslim alma yetkiniz bulunmamaktadır.";
+            _logger.LogError(ex, $"ReceiveDocument hatası. DocumentId: {id}");
+            TempData["Error"] = $"Teslim alma işlemi sırasında hata oluştu: {ex.Message}";
             return RedirectToAction(nameof(Details), new { id });
         }
-
-        document.Status = DocumentStatus.RECEIVED.ToString();
- 
-        document.UpdatedAt = DateTime.Now;
-
-        _context.Update(document);
-        await _context.SaveChangesAsync();
-
-        var notes = $"Evrak teslim alındı. Teslim alan: {(!string.IsNullOrEmpty(receivedByName) ? receivedByName : GetCurrentUserInfo())}";
-        if (!string.IsNullOrEmpty(receiptNotes))
-        {
-            notes += $" - Not: {receiptNotes}";
-        }
-
-        await LogDocumentHistoryAsync(id, "RECEIVED", currentUserId, notes);
-
-        TempData["Success"] = "Evrak başarıyla teslim alındı.";
-        return RedirectToAction(nameof(Details), new { id });
     }
 
     [HttpPost]

@@ -5,7 +5,7 @@ using muhaberat_evrak_yonetim.Entities;
 
 namespace muhaberat_evrak_yonetim.Controllers;
 
-public class DocumentTypeController : Controller
+public class DocumentTypeController : BaseController
 {
     private readonly DataContext _context;
     private readonly ILogger<DocumentTypeController> _logger;
@@ -18,6 +18,8 @@ public class DocumentTypeController : Controller
 
     public async Task<IActionResult> Index()
     {
+        ViewBag.PageTitle = "Evrak Türleri";
+        
         var documentTypes = await _context.DocumentTypes
             .Include(dt => dt.Category)
             .Where(dt => dt.IsActive)

@@ -7,8 +7,9 @@ namespace muhaberat_evrak_yonetim.Entities
         [Key]
         public int Id { get; set; }
 
+        [Required(ErrorMessage = "Takip numarası zorunludur.")]
         [StringLength(50)]
-        public string? CargoTrackingNumber { get; set; }
+        public string CargoTrackingNumber { get; set; } = null!;
 
         [StringLength(100)]
         public string? CargoCompany { get; set; }

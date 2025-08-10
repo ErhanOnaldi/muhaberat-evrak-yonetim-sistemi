@@ -13,15 +13,30 @@
             <div class="card-body">
                 <form asp-action="Create">
                     <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                    
+                    @if (ViewBag.ReturnUrl != null)
+                    {
+                        <input type="hidden" name="returnUrl" value="@ViewBag.ReturnUrl" />
+                    }
 
                     <div class="row">
                         <div class="col-md-6">
                             <div class="form-group mb-3">
+                                <label asp-for="CargoTrackingNumber" class="form-label">Takip Numarası <span class="text-danger">*</span></label>
+                                <input asp-for="CargoTrackingNumber" class="form-control" placeholder="Takip Numarası" required />
+                                <span asp-validation-for="CargoTrackingNumber" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group mb-3">
                                 <label asp-for="CargoCompany" class="form-label">Kargo Şirketi</label>
-                                <input asp-for="CargoCompany" class="form-control" placeholder="Örn: MNG Kargo" />
+                                <input asp-for="CargoCompany" class="form-control" placeholder="Kargo Şirketi" />
                                 <span asp-validation-for="CargoCompany" class="text-danger"></span>
                             </div>
                         </div>
+                    </div>
+
+                    <div class="row">
                         <div class="col-md-6">
                             <div class="form-group mb-3">
                                 <label asp-for="PackageType" class="form-label">Paket Türü <span class="text-danger">*</span></label>
@@ -41,7 +56,7 @@
                         <div class="col-md-12">
                             <div class="form-group mb-3">
                                 <label asp-for="ShippingAddress" class="form-label">Gönderim Adresi <span class="text-danger">*</span></label>
-                                <textarea asp-for="ShippingAddress" class="form-control" rows="3" placeholder="Gönderim adresi"></textarea>
+                                <textarea asp-for="ShippingAddress" class="form-control" rows="3" placeholder="Gönderim Adresi"></textarea>
                                 <span asp-validation-for="ShippingAddress" class="text-danger"></span>
                             </div>
                         </div>
@@ -51,7 +66,7 @@
                         <div class="col-md-12">
                             <div class="form-group mb-3">
                                 <label asp-for="DeliveryAddress" class="form-label">Teslimat Adresi <span class="text-danger">*</span></label>
-                                <textarea asp-for="DeliveryAddress" class="form-control" rows="3" placeholder="Teslimat adresi"></textarea>
+                                <textarea asp-for="DeliveryAddress" class="form-control" rows="3" placeholder="Teslimat Adresi"></textarea>
                                 <span asp-validation-for="DeliveryAddress" class="text-danger"></span>
                             </div>
                         </div>
@@ -71,9 +86,18 @@
                         <button type="submit" class="btn btn-primary">
                             <i class="fas fa-save"></i> Kaydet
                         </button>
-                        <a asp-action="Index" class="btn btn-secondary">
-                            <i class="fas fa-times"></i> İptal
-                        </a>
+                        @if (ViewBag.ReturnUrl != null)
+                        {
+                            <a href="@ViewBag.ReturnUrl" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left"></i> Evrak Oluşturmaya Geri Dön
+                            </a>
+                        }
+                        else
+                        {
+                            <a asp-action="Index" class="btn btn-secondary">
+                                <i class="fas fa-times"></i> İptal
+                            </a>
+                        }
                     </div>
                 </form>
             </div>
@@ -87,7 +111,7 @@
             </div>
             <div class="card-body">
                 <ul class="list-unstyled">
-                    <li><strong>Takip Numarası:</strong> Otomatik oluşturulacaktır</li>
+                    <li><strong>Takip Numarası:</strong> Manuel olarak giriniz</li>
                     <li><strong>Durum:</strong> Hazırlanıyor olarak başlayacaktır</li>
                     <li><strong>Evraklar:</strong> Kargo oluşturduktan sonra evrak ekleyebilirsiniz</li>
                 </ul>

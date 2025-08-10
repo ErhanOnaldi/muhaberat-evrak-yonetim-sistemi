@@ -1,11 +1,19 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Hosting;
 using muhaberat_evrak_yonetim.Models;
 using muhaberat_evrak_yonetim.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
+// Suppress localhost certificate warnings
+builder.Services.Configure<ConsoleLifetimeOptions>(opts => opts.SuppressStatusMessages = true);
+
 // Add services to the container.
-builder.Services.AddControllersWithViews();
+builder.Services.AddControllersWithViews()
+    .AddJsonOptions(options =>
+    {
+        options.JsonSerializerOptions.ReferenceHandler = System.Text.Json.Serialization.ReferenceHandler.IgnoreCycles;
+    });
 
 // Add session support
 builder.Services.AddSession(options =>

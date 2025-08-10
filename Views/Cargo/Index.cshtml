@@ -24,7 +24,7 @@
                         <th>Durum</th>
                         <th>Gönderim Tarihi</th>
                         <th>Tahmini Teslimat</th>
-                        <th>İşlemler</th>
+                        <th>Evrak Durumu</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -102,20 +102,7 @@
                                 }
                             </td>
                             <td>
-                                <div class="btn-group btn-group-sm" role="group">
-                                    <a asp-action="Details" asp-route-id="@cargo.Id" class="btn btn-outline-info" title="Detaylar">
-                                        <i class="fas fa-eye"></i>
-                                    </a>
-                                    <a asp-action="Edit" asp-route-id="@cargo.Id" class="btn btn-outline-warning" title="Düzenle">
-                                        <i class="fas fa-edit"></i>
-                                    </a>
-                                    @if (cargo.Documents.Count == 0)
-                                    {
-                                        <a asp-action="Delete" asp-route-id="@cargo.Id" class="btn btn-outline-danger" title="Sil">
-                                            <i class="fas fa-trash"></i>
-                                        </a>
-                                    }
-                                </div>
+                                <span class="badge bg-info">@cargo.Documents.Count evrak</span>
                             </td>
                         </tr>
                     }

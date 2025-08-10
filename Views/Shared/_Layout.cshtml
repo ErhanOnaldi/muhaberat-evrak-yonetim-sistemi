@@ -75,12 +75,18 @@
                                 <div class="flex-grow-1 me-2">
                                     <!--begin::Username-->
                                     <a id="userName" class="text-white text-hover-primary fs-6 fw-bold">
-                                        <!-- İsim buraya gelecek -->
+                                        @(ViewBag.CurrentUserFullName ?? "Kullanıcı")
                                     </a>
                                     <!--end::Username-->
                                     <!--begin::Description-->
                                     <span id="userTitle" class="text-gray-600 fw-bold d-block fs-8 mb-1">
-                                        <!-- Title buraya gelecek -->
+                                        @{
+                                            var pageTitle = ViewBag.PageTitle as string;
+                                            var departmentName = ViewBag.CurrentDepartmentName as string;
+                                            var roleName = ViewBag.CurrentRoleName as string;
+                                            var displayTitle = pageTitle ?? $"{departmentName ?? "Departman"} - {roleName ?? "Rol"}";
+                                        }
+                                        @displayTitle
                                     </span>
                                     <!--end::Description-->
                                     <!--begin::Label-->
@@ -279,7 +285,8 @@
                              id="#kt_aside_menu"
                              data-kt-menu="true">
                             <div data-kt-menu-trigger="click"
-                                 class="menu-item menu-accordion">
+                                 class="menu-item menu-accordion @(Context.Request.Path.StartsWithSegments("/Document") || Context.Request.Path.StartsWithSegments("/DocumentType") || Context.Request.Path.StartsWithSegments("/Cargo") ? "here show" : "")"
+                                 @(Context.Request.Path.StartsWithSegments("/Document") || Context.Request.Path.StartsWithSegments("/DocumentType") || Context.Request.Path.StartsWithSegments("/Cargo") ? "data-kt-menu-expanded=\"true\"" : "")>
                                 <span class="menu-link">
                                     <span class="menu-icon">
                                         <!--begin::Svg Icon | path: icons/duotune/general/gen022.svg-->
@@ -333,8 +340,8 @@
                                     </div>
                                     @if (ViewBag.CurrentDepartmentName == "Muhaberat")
                                     {
-                                        <div class="menu-item">
-                                            <a class="menu-link" href="@Url.Action("Index", "DocumentType")">
+                                        <div class="menu-item @(Context.Request.Path.StartsWithSegments("/DocumentType") ? "menu-item-active" : "")">
+                                            <a class="menu-link @(Context.Request.Path.StartsWithSegments("/DocumentType") ? "menu-link-active" : "")" href="@Url.Action("Index", "DocumentType")">
                                                 <span class="menu-icon">
                                                     <i class="fas fa-tags text-warning"></i>
                                                 </span>
@@ -958,6 +965,42 @@
                 window.location.href = "@Url.Action("Logout", "Account")";
             });
         });
+
+        // Configure Toastr
+        toastr.options = {
+            "closeButton": true,
+            "debug": false,
+            "newestOnTop": true,
+            "progressBar": true,
+            "positionClass": "toast-top-right",
+            "preventDuplicates": true,
+            "showDuration": "300",
+            "hideDuration": "1000",
+            "timeOut": "5000",
+            "extendedTimeOut": "1000",
+            "showEasing": "swing",
+            "hideEasing": "linear",
+            "showMethod": "fadeIn",
+            "hideMethod": "fadeOut"
+        };
+
+        // Display TempData messages via Toastr
+        @if (TempData["Success"] != null)
+        {
+            <text>toastr.success('@Html.Raw(TempData["Success"].ToString().Replace("'", "\\'"))');</text>
+        }
+        @if (TempData["Error"] != null)  
+        {
+            <text>toastr.error('@Html.Raw(TempData["Error"].ToString().Replace("'", "\\'"))');</text>
+        }
+        @if (TempData["Warning"] != null)
+        {
+            <text>toastr.warning('@Html.Raw(TempData["Warning"].ToString().Replace("'", "\\'"))');</text>
+        }
+        @if (TempData["Info"] != null)
+        {
+            <text>toastr.info('@Html.Raw(TempData["Info"].ToString().Replace("'", "\\'"))');</text>
+        }
     </script>
     @await RenderSectionAsync("Scripts", required: false)
     <!--end::Body-->
