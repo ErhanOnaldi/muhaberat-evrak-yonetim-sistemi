@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("muhaberat-evrak-yonetim")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+8290ac2a53a25185e31afc7e332c6ca68e1303fb")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+28ccbc8c4a59eb2bc840f12c0bf6811615030ac2")]
 [assembly: System.Reflection.AssemblyProductAttribute("muhaberat-evrak-yonetim")]
 [assembly: System.Reflection.AssemblyTitleAttribute("muhaberat-evrak-yonetim")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
